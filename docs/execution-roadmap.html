@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Execution Roadmap · The Ecosystem Engine — BDA Group Project</title>
+<style>
+  :root{
+    --bg:#EDF2F8; --paper:#FFFFFF; --panel:#FFFFFF; --panel2:#E9F0F8; --line:#D5E0ED; --line2:#C6D4E4;
+    --cyan:#2E8BC0; --cyan-lt:#176390;
+    --gold:#C08A2E; --gold-lt:#8A5E17;
+    --red:#DB4A40;  --red-lt:#C0392E;
+    --green:#2AA277; --green-lt:#1C8560;
+    --ink:#14263C; --body:#2B3D52; --soft:#546A82; --dim:#7E92A8;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+    --maxw:64ch;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    background:
+      radial-gradient(1100px 650px at 80% -10%, rgba(46,139,192,.10) 0%, rgba(237,242,248,0) 55%),
+      var(--bg);
+    color:var(--ink); font-family:var(--sans); line-height:1.6;
+    font-size:17px; -webkit-font-smoothing:antialiased;
+  }
+
+  .progress{position:fixed;top:0;left:0;height:3px;width:0%;z-index:60;
+    background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .12s linear}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:50;
+    display:flex;align-items:center;gap:14px;padding:0 20px;
+    background:rgba(237,242,248,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);font-size:12.5px}
+  .topbar .course{color:var(--cyan-lt);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .topbar .sep{color:var(--dim)}
+  .topbar .sess{color:var(--gold-lt);font-weight:700}
+  .topbar .right{margin-left:auto;color:var(--soft)}
+
+  .shell{display:grid;grid-template-columns:238px minmax(0,1fr);gap:0;
+    max-width:1180px;margin:0 auto;padding-top:52px}
+  .rail{position:sticky;top:52px;align-self:start;height:calc(100vh - 52px);
+    padding:30px 18px 30px 24px;overflow-y:auto}
+  .rail .rlabel{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dim);font-weight:800;margin:0 0 14px 8px}
+  .rail a{display:block;text-decoration:none;color:var(--soft);font-size:13px;
+    padding:6px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0;
+    transition:.18s;line-height:1.35}
+  .rail a .act{display:block;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:1px}
+  .rail a:hover{color:var(--ink);background:rgba(46,139,192,.09)}
+  .rail a.on{color:var(--cyan-lt);border-left-color:var(--cyan);background:rgba(46,139,192,.12);font-weight:700}
+  .rail a.on .act{color:var(--gold-lt)}
+
+  main{padding:0 clamp(20px,5vw,64px) 120px;min-width:0}
+
+  .hero{padding:56px 0 30px}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;
+    color:var(--cyan-lt);margin-bottom:20px}
+  .eyebrow .n{color:var(--gold-lt)}
+  .hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(38px,6.4vw,68px);
+    line-height:1.02;letter-spacing:-.01em;color:var(--ink);margin-bottom:22px}
+  .hero h1 em{font-style:italic;color:var(--gold-lt)}
+  .hero .deck{font-size:19.5px;color:var(--soft);max-width:60ch;line-height:1.5}
+  .hero .deck b{color:var(--ink);font-weight:600}
+  .herofig{margin:38px 0 6px}
+  .grounded-note{margin-top:26px;font-size:13px;color:var(--dim);
+    border-top:1px solid var(--line);padding-top:16px;line-height:1.7}
+  .grounded-note code{font-family:var(--mono);color:var(--cyan-lt);font-size:12px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:22px;
+    padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .legend .li{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--soft)}
+  .legend .dot{width:11px;height:11px;border-radius:3px;flex:none}
+  .legend b{color:var(--ink);font-weight:650}
+
+  section{padding:52px 0;border-top:1px solid var(--line);scroll-margin-top:64px}
+  .sec-eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+    color:var(--gold-lt);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .sec-eyebrow .num{font-family:var(--mono);color:var(--cyan);font-size:12px}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(27px,3.8vw,40px);
+    line-height:1.08;letter-spacing:-.01em;color:var(--ink);margin-bottom:18px}
+  h3{font-size:19px;font-weight:750;color:var(--cyan-lt);margin:30px 0 10px}
+  h4{font-size:15.5px;font-weight:750;color:var(--ink);margin:22px 0 8px}
+  p{max-width:var(--maxw);margin-bottom:16px;color:var(--body)}
+  p b{color:var(--ink);font-weight:650}
+  p .hl{color:var(--gold-lt);font-weight:650}
+  ul.pts{list-style:none;max-width:var(--maxw);margin:6px 0 18px}
+  ul.pts li{position:relative;padding-left:26px;margin-bottom:11px;color:var(--body)}
+  ul.pts li::before{content:"";position:absolute;left:3px;top:9px;width:9px;height:9px;
+    border-radius:2px;background:var(--cyan);transform:rotate(45deg)}
+  ul.pts li b{color:var(--ink);font-weight:650}
+  ol.steps{list-style:none;counter-reset:st;max-width:var(--maxw);margin:6px 0 18px}
+  ol.steps li{position:relative;padding-left:36px;margin-bottom:13px;color:var(--body)}
+  ol.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;
+    width:24px;height:24px;border-radius:7px;background:rgba(46,139,192,.14);color:var(--cyan-lt);
+    font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+  ol.steps li b{color:var(--ink);font-weight:650}
+  .lead{font-size:20px;color:var(--soft);max-width:58ch;line-height:1.5;margin-bottom:20px}
+  .lead b{color:var(--ink)}
+
+  .fig{margin:26px 0;padding:22px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;display:flex;flex-direction:column;align-items:center;
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .fig svg{width:100%;height:auto;max-width:620px}
+  .fig.wide svg{max-width:760px}
+  .fig .cap{margin-top:14px;font-size:12.5px;color:var(--soft);text-align:center;max-width:56ch}
+  .fig .cap b{color:var(--ink);font-weight:650}
+
+  .box{margin:24px 0;border-radius:14px;padding:18px 20px;font-size:16px;line-height:1.5;
+    border-left:4px solid var(--line);background:var(--panel);color:var(--body)}
+  .box .lab{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:800;margin-bottom:8px}
+  .box b{color:var(--ink);font-weight:650}
+  .box.take{border-left-color:var(--cyan);background:rgba(46,139,192,.08)}
+  .box.take .lab{color:var(--cyan-lt)}
+  .box.board{border-left-color:var(--gold);background:rgba(192,138,46,.11)}
+  .box.board .lab{color:var(--gold-lt)}
+  .box.brk{border-left-color:var(--red);background:rgba(219,74,64,.08)}
+  .box.brk .lab{color:var(--red-lt)}
+  .box.discuss{border-left-color:var(--gold);background:rgba(192,138,46,.07);border-left-style:dashed}
+  .box.discuss .lab{color:var(--gold-lt)}
+  .box .sub{display:block;margin-top:10px;font-size:14px;color:var(--soft);font-weight:400}
+  .box ul{margin:8px 0 0 0;list-style:none}
+  .box ul li{position:relative;padding-left:20px;margin-bottom:7px;font-size:15px}
+  .box ul li::before{content:"—";position:absolute;left:0;color:var(--dim)}
+
+  .term{color:var(--gold-lt);font-weight:650;border-bottom:1px dotted var(--gold);cursor:help}
+
+  .ground{margin:30px 0;border:1px solid var(--green);border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(42,162,119,.07),rgba(42,162,119,.02));
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .ground .ghead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:13px 18px;background:rgba(42,162,119,.12);border-bottom:1px solid rgba(42,162,119,.30)}
+  .ground .gtag{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;
+    color:var(--green-lt)}
+  .ground .gtag::before{content:"◆ ";color:var(--green)}
+  .ground .gfile{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);
+    background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+  .ground .gbody{padding:18px 20px}
+  .ground .gbody > p:first-child{margin-top:0}
+
+  .code{background:#F5F8FC;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+  .code .chead{display:flex;align-items:center;gap:8px;padding:8px 14px;
+    background:#E8F0F8;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+  .code .chead .dotrow{display:flex;gap:6px;margin-right:6px}
+  .code .chead .cdot{width:10px;height:10px;border-radius:50%;background:#C6D4E4}
+  .code .chead .cname{color:var(--cyan-lt)}
+  .code .chead .cbadge{margin-left:auto;color:var(--dim)}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.65;color:#2A3B4E}
+  .code pre .cm{color:#8496AC;font-style:italic}
+  .code pre .kw{color:#9A6B15}
+  .code pre .fn{color:#176390}
+  .code pre .st{color:#1C8560}
+  .code pre .warnln{background:rgba(219,74,64,.12);display:inline-block;width:100%}
+
+  .walk{margin:16px 0;border-left:2px solid var(--line);padding-left:0}
+  .walk .w{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line2)}
+  .walk .w:last-child{border-bottom:0}
+  .walk .wc{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);background:#EBF1F8;
+    border:1px solid var(--line);border-radius:6px;padding:6px 9px;height:fit-content;white-space:pre-wrap;
+    max-width:280px;overflow-x:auto}
+  .walk .wt{color:var(--body);font-size:14.5px;line-height:1.5}
+  .walk .wt b{color:var(--ink)}
+  .walk .wt .warn{color:var(--red-lt);font-weight:650}
+  @media(max-width:640px){.walk .w{grid-template-columns:1fr}.walk .wc{max-width:100%}}
+
+  .tree{font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--soft);white-space:pre;
+    background:#F5F8FC;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0;overflow-x:auto}
+  .tree .dir{color:var(--cyan-lt);font-weight:600}
+  .tree .gone{color:var(--red-lt);text-decoration:line-through;opacity:.8}
+  .tree .rep{color:var(--gold-lt);font-weight:600}
+  .tree .note{color:var(--dim)}
+
+  /* tables */
+  .tw{overflow-x:auto;margin:20px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+  th{background:var(--panel2);color:var(--ink);font-weight:750;text-align:left;
+    padding:11px 14px;border-bottom:1px solid var(--line);font-size:12.5px;
+    letter-spacing:.03em;text-transform:uppercase}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td b{color:var(--ink)}
+  td code,th code{font-family:var(--mono);font-size:12px;color:var(--cyan-lt)}
+  .num{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .tot td{background:rgba(46,139,192,.07);font-weight:750;color:var(--ink)}
+
+  /* stat strip */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .stat .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--cyan-lt);line-height:1.1}
+  .stat .v.g{color:var(--gold-lt)} .stat .v.r{color:var(--red-lt)} .stat .v.gr{color:var(--green-lt)}
+  .stat .k{font-size:12px;color:var(--soft);margin-top:6px;line-height:1.35}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .chip{font-family:var(--mono);font-size:11.5px;padding:5px 10px;border-radius:7px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--cyan-lt)}
+  .chip.g{background:rgba(192,138,46,.12);border-color:rgba(192,138,46,.35);color:var(--gold-lt)}
+  .chip.gr{background:rgba(42,162,119,.12);border-color:rgba(42,162,119,.35);color:var(--green-lt)}
+  .chip.r{background:rgba(219,74,64,.10);border-color:rgba(219,74,64,.33);color:var(--red-lt)}
+
+  .quote{font-family:var(--serif);font-size:clamp(24px,3.6vw,36px);line-height:1.25;
+    color:var(--ink);font-weight:600;max-width:24ch;margin:8px 0}
+  .quote .a{color:var(--gold-lt);font-style:italic}
+  .closer{margin-top:20px;padding:34px 30px;border-radius:18px;
+    background:linear-gradient(140deg,#E8F1FB,#F6FAFD);border:1px solid var(--line)}
+  .next{display:flex;align-items:center;gap:14px;margin-top:26px;padding:16px 20px;
+    border:1px solid var(--line);border-radius:14px;background:var(--panel);text-decoration:none;color:inherit;transition:.18s;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .next:hover{border-color:var(--cyan)}
+  .next .arw{font-size:24px;color:var(--cyan)}
+  .next .nl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .next .nt{color:var(--cyan-lt);font-weight:700;font-size:16px;margin-top:2px}
+  .next .nd{font-size:13px;color:var(--soft);margin-top:2px}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 10px;margin-top:40px;font-size:12.5px;color:var(--dim);line-height:1.9}
+  footer b{color:var(--soft)}
+  footer code{font-family:var(--mono);color:var(--cyan-lt);font-size:11.5px}
+  footer a{color:var(--cyan-lt);text-decoration:none;border-bottom:1px dotted var(--line2)}
+  footer a:hover{border-bottom-style:solid}
+
+  .rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  @media(max-width:1000px){
+    .shell{grid-template-columns:1fr}
+    .rail{display:none}
+    main{padding:0 22px 90px}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="topbar">
+  <span class="course">Big Data Analytics</span>
+  <span class="sep">·</span>
+  <span class="sess">MBA Group Project — 20 marks</span>
+  <span class="right">Execution Roadmap v1 · 5 Aug 2026</span>
+</div>
+
+<div class="shell">
+<nav class="rail">
+  <div class="rlabel">The Roadmap</div>
+  <a href="#s1"><span class="act">Read first</span>How this page works</a>
+  <a href="#s2"><span class="act">Strategy</span>One base, three forks</a>
+  <a href="#s3"><span class="act">Step 0</span>Unblock &amp; set up the Mac</a>
+  <a href="#s4"><span class="act">Step 1</span>Get the data (1.7 GB)</a>
+  <a href="#s5"><span class="act">Step 2</span>Prove the parser ×6</a>
+  <a href="#s6"><span class="act">Step 3</span>Bronze → Silver</a>
+  <a href="#s7"><span class="act">Step 4</span>Silver → Gold (Spark)</a>
+  <a href="#s8"><span class="act">Step 5</span>The fork bake-off</a>
+  <a href="#s9"><span class="act">Step 6</span>Scale to 20 GB</a>
+  <a href="#s10"><span class="act">Step 7</span>Move to Databricks</a>
+  <a href="#s11"><span class="act">Step 8</span>Models in MLlib</a>
+  <a href="#s12"><span class="act">Step 9</span>Package &amp; submit</a>
+  <a href="#s13"><span class="act">Spec map</span>Every mark, mapped</a>
+</nav>
+
+<main>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <div class="eyebrow">NMIMS · MBA Business Analytics · Trimester IV <span class="n">· Execution Roadmap</span></div>
+  <h1>The build, <em>step by step</em></h1>
+  <p class="deck">
+    The plan says <b>what</b> and <b>why</b>. This page says <b>when, in what order, and with which
+    commands</b>. Ten steps, from an empty laptop to a submitted project. Each step lists the exact
+    terminal commands, what "done" looks like, and — in the coloured chips — <b>which requirement of
+    the brief that step earns</b>. Follow it top to bottom.
+  </p>
+
+  <div class="herofig">
+    <div class="fig wide">
+      <svg viewBox="0 0 760 260" role="img" aria-label="Four stages: your Mac for steps 0 to 5, full scale at step 6, Databricks for steps 7 and 8, then submission at step 9">
+        <defs>
+          <marker id="har" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#546A82"/>
+          </marker>
+        </defs>
+
+        <!-- stage 1: laptop -->
+        <rect x="10" y="52" width="168" height="158" rx="14" fill="#FFFFFF" stroke="#2E8BC0" stroke-width="1.8"/>
+        <rect x="24" y="40" width="86" height="24" rx="8" fill="#2E8BC0"/>
+        <text x="67" y="56" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="800" fill="#FFFFFF">STEPS 0–5</text>
+        <text x="94" y="92" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="700" fill="#176390">Your Mac</text>
+        <text x="94" y="116" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">download 1.7 GB subset</text>
+        <text x="94" y="134" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">prove the parser</text>
+        <text x="94" y="152" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">Bronze → Silver → Gold</text>
+        <text x="94" y="170" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" font-weight="700" fill="#8A5E17">fork bake-off:</text>
+        <text x="94" y="186" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" font-weight="700" fill="#8A5E17">pick the question</text>
+
+        <path d="M182 131 L200 131" stroke="#546A82" stroke-width="2.2" fill="none" marker-end="url(#har)"/>
+
+        <!-- stage 2: full scale -->
+        <rect x="204" y="52" width="160" height="158" rx="14" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.8"/>
+        <rect x="218" y="40" width="72" height="24" rx="8" fill="#C08A2E"/>
+        <text x="254" y="56" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="800" fill="#FFFFFF">STEP 6</text>
+        <text x="284" y="92" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="700" fill="#8A5E17">Full scale</text>
+        <text x="284" y="116" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">20.3 GB Zenodo archive</text>
+        <text x="284" y="134" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">21.6 M real hands</text>
+        <text x="284" y="152" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">re-run the same pipeline</text>
+        <text x="284" y="170" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">overnight, unattended</text>
+
+        <path d="M368 131 L386 131" stroke="#546A82" stroke-width="2.2" fill="none" marker-end="url(#har)"/>
+
+        <!-- stage 3: databricks -->
+        <rect x="390" y="52" width="168" height="158" rx="14" fill="#FFFFFF" stroke="#2AA277" stroke-width="1.8"/>
+        <rect x="404" y="40" width="86" height="24" rx="8" fill="#2AA277"/>
+        <text x="447" y="56" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="800" fill="#FFFFFF">STEPS 7–8</text>
+        <text x="474" y="92" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="700" fill="#1C8560">Databricks</text>
+        <text x="474" y="116" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">the graded notebook</text>
+        <text x="474" y="134" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">Phase 2: clean + features</text>
+        <text x="474" y="152" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">Phase 3: MLlib models,</text>
+        <text x="474" y="170" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">≥ 2 approaches compared</text>
+
+        <path d="M562 131 L580 131" stroke="#546A82" stroke-width="2.2" fill="none" marker-end="url(#har)"/>
+
+        <!-- stage 4: submit -->
+        <rect x="584" y="52" width="166" height="158" rx="14" fill="#FFFFFF" stroke="#546A82" stroke-width="1.8"/>
+        <rect x="598" y="40" width="72" height="24" rx="8" fill="#546A82"/>
+        <text x="634" y="56" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="800" fill="#FFFFFF">STEP 9</text>
+        <text x="667" y="92" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="700" fill="#14263C">Submit</text>
+        <text x="667" y="116" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">executable notebook</text>
+        <text x="667" y="134" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">consulting report PDF</text>
+        <text x="667" y="152" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">deck ≤ 10 slides</text>
+        <text x="667" y="170" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">GitHub commit history</text>
+
+        <text x="380" y="242" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#176390" font-weight="600">everything left of Databricks runs on the 16 GB MacBook — cheaply, privately, and repeatably</text>
+      </svg>
+      <div class="cap">The whole build in one line. <b>Six of the ten steps happen on the laptop</b>
+      before Databricks ever enters the picture — by the time you pay the cloud any attention, the
+      pipeline is already proven.</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="li"><span class="dot" style="background:#2E8BC0"></span><b>Takeaway</b> — the point in one line</div>
+    <div class="li"><span class="dot" style="background:#C08A2E"></span><b>Key idea</b> — worth memorising</div>
+    <div class="li"><span class="dot" style="background:#DB4A40"></span><b>Where it breaks</b> — an honest weakness</div>
+    <div class="li"><span class="dot" style="background:#2AA277"></span><b>Verified</b> — someone actually checked this</div>
+  </div>
+
+  <div class="grounded-note">
+    The commands on this page are adapted from <code>data-pipeline-guide.html</code>, whose core steps
+    were run against real dataset files on this machine on <b>1–2 Aug 2026</b>. Numbers repeated here
+    (21.6 M hands, 27.9% VPIP, 3.7% median rake, 91.7% ID overlap…) were measured then — this page adds
+    <b>no new measurements</b>. Anything marked <b>est.</b> is an estimate, not a claim.
+  </div>
+</header>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+  <div class="sec-eyebrow"><span class="num">01</span> Read first</div>
+  <h2>How this page works</h2>
+  <p class="lead">Every step below has the same three parts: <b>the commands to run, a "done when"
+  checklist, and spec chips</b> that say which requirement of the graded brief that step earns.</p>
+
+  <p>The chips are the point of this page. The brief has three kinds of requirements — the three
+  <b>phases</b> (ingestion &amp; storage → Databricks data engineering → MLlib models), the seven
+  <b>rubric lines</b> that add up to 20 marks, and the three physical <b>deliverables</b> (notebook,
+  report, deck). Each chip colour maps to one kind:</p>
+
+  <div class="chips rv">
+    <span class="chip gr">PHASE — a requirement from the 3-phase brief</span>
+    <span class="chip g">RUBRIC — a graded line, with its marks</span>
+    <span class="chip">DELIVERABLE — feeds the notebook / report / deck</span>
+    <span class="chip r">RISK — a known danger this step retires</span>
+  </div>
+
+  <p>This page deliberately repeats <b>none of the theory</b>. When a step needs the deep explanation
+  — what Spark is, why Parquet, how a hand becomes rows — it links into the three companion documents
+  instead:</p>
+
+  <div class="tw rv"><table>
+    <tr><th>Document</th><th>What it answers</th><th>Open it when</th></tr>
+    <tr><td><b><a href="poker-project-plan.html" style="color:var(--cyan-lt)">poker-project-plan.html</a></b></td>
+        <td><i>What</i> are we building and <i>why</i> will it earn marks?</td>
+        <td>You need the business story or the rubric argument.</td></tr>
+    <tr><td><b><a href="poker-explained.html" style="color:var(--cyan-lt)">poker-explained.html</a></b></td>
+        <td><i>What</i> does the game mean? Cards → columns.</td>
+        <td>A poker term or an action code confuses you.</td></tr>
+    <tr><td><b><a href="data-pipeline-guide.html" style="color:var(--cyan-lt)">data-pipeline-guide.html</a></b></td>
+        <td><i>How</i> does each pipeline piece actually work?</td>
+        <td>You're executing a step and want the full explanation.</td></tr>
+    <tr><td><b>This page</b></td>
+        <td><i>When</i>, in <i>what order</i>, and <i>what it earns</i>.</td>
+        <td>Always — it's the checklist you come back to.</td></tr>
+  </table></div>
+
+  <div class="box take rv"><span class="lab">Takeaway — one standing rule</span>
+    <b>Every step ends with a git commit.</b> The brief grades "a GitHub repo with commit history
+    across the trimester" under Professionalism &amp; Documentation. A repo with forty small commits
+    tells the story of real work; a repo with three giant commits the night before looks like
+    something else. The commit is not admin — it is evidence.
+  </div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+  <div class="sec-eyebrow"><span class="num">02</span> Strategy</div>
+  <h2>One base, three forks — don't marry the churn model yet</h2>
+  <p class="lead">The smartest thing this project can do is <b>delay one decision</b>: which
+  supervised question becomes the headline. Build one shared base, prototype three candidate
+  questions on it cheaply, and let the data pick the winner.</p>
+
+  <p>The <b>base</b> is everything the forks share: the Bronze → Silver → Gold pipeline (Steps 1–4)
+  and the K-Means player segmentation from the original plan. The base is never at risk — every fork
+  needs it, so no work on it can be wasted. On top of the base sit three <b>forks</b>, each a
+  different supervised question asked of the same Gold tables:</p>
+
+  <ul class="pts">
+    <li><b>Fork A — Churn classification.</b> "Which currently-active players will stop playing?"
+      The original headline. Label: a player active in the first stretch of the 23 days who
+      disappears in the final week — honestly called <span class="hl">short-horizon lapse</span>,
+      not churn.</li>
+    <li><b>Fork B — Player value prediction.</b> "How much is each player worth to the operator
+      next week?" A regression on future volume / rake contribution. Retention budgets only make
+      sense when you know <i>who is worth retaining</i>.</li>
+    <li><b>Fork C — Hand-economics prediction.</b> "How big will the pot be, given the table?"
+      A regression at the <i>hand</i> level, not the player level: predict pot size (in big blinds)
+      from table composition, stake and time. Pot size × rake % = revenue per hand — this is a
+      <span class="hl">revenue-per-seat forecasting tool</span>.</li>
+  </ul>
+
+  <div class="fig wide rv">
+    <svg viewBox="0 0 760 360" role="img" aria-label="The Gold tables feed three candidate model forks; a bake-off at step 5 picks one winner to carry into Databricks">
+      <defs>
+        <marker id="far" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#546A82"/>
+        </marker>
+        <marker id="fag" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#2AA277"/>
+        </marker>
+      </defs>
+
+      <!-- gold base -->
+      <rect x="16" y="128" width="188" height="104" rx="14" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.8"/>
+      <text x="110" y="156" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#8A5E17">The base (Steps 1–4)</text>
+      <text x="110" y="176" text-anchor="middle" font-family="SF Mono,Menlo,monospace" font-size="10" fill="#546A82">gold/player_features</text>
+      <text x="110" y="192" text-anchor="middle" font-family="SF Mono,Menlo,monospace" font-size="10" fill="#546A82">gold/hand_features</text>
+      <text x="110" y="212" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">+ K-Means segments</text>
+
+      <!-- fork A -->
+      <rect x="286" y="24" width="216" height="84" rx="12" fill="#FFFFFF" stroke="#2E8BC0" stroke-width="1.8"/>
+      <text x="394" y="50" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#176390">Fork A · Churn (lapse)</text>
+      <text x="394" y="70" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">who stops playing? · player level</text>
+      <text x="394" y="88" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#1C8560">coverage: ~100% of hands</text>
+
+      <!-- fork B -->
+      <rect x="286" y="138" width="216" height="84" rx="12" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.8"/>
+      <text x="394" y="164" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#8A5E17">Fork B · Player value</text>
+      <text x="394" y="184" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">worth next week? · player level</text>
+      <text x="394" y="202" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#C0392E">money targets: ~⅓ coverage</text>
+
+      <!-- fork C -->
+      <rect x="286" y="252" width="216" height="84" rx="12" fill="#FFFFFF" stroke="#546A82" stroke-width="1.8"/>
+      <text x="394" y="278" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#2B3D52">Fork C · Hand economics</text>
+      <text x="394" y="298" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">pot size in bb? · hand level</text>
+      <text x="394" y="316" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#1C8560">pot derivable on ~every hand</text>
+
+      <!-- arrows base -> forks -->
+      <path d="M208 158 Q 246 120 282 70" stroke="#546A82" stroke-width="2" fill="none" marker-end="url(#far)"/>
+      <path d="M208 180 L282 180" stroke="#546A82" stroke-width="2" fill="none" marker-end="url(#far)"/>
+      <path d="M208 202 Q 246 240 282 290" stroke="#546A82" stroke-width="2" fill="none" marker-end="url(#far)"/>
+
+      <!-- bake-off -->
+      <rect x="562" y="118" width="182" height="124" rx="14" fill="#FFFFFF" stroke="#2AA277" stroke-width="2"/>
+      <text x="653" y="146" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#1C8560">Step 5 · Bake-off</text>
+      <text x="653" y="168" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">score each fork on signal,</text>
+      <text x="653" y="184" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">coverage &amp; business story</text>
+      <text x="653" y="208" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" font-weight="700" fill="#14263C">one winner goes to</text>
+      <text x="653" y="226" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" font-weight="700" fill="#14263C">Databricks (Steps 7–8)</text>
+
+      <!-- arrows forks -> bakeoff -->
+      <path d="M506 66 Q 540 90 558 130" stroke="#2AA277" stroke-width="2" fill="none" marker-end="url(#fag)"/>
+      <path d="M506 180 L558 180" stroke="#2AA277" stroke-width="2" fill="none" marker-end="url(#fag)"/>
+      <path d="M506 294 Q 540 270 558 230" stroke="#2AA277" stroke-width="2" fill="none" marker-end="url(#fag)"/>
+    </svg>
+    <div class="cap"><b>The fork strategy.</b> The base is built once and shared. The three candidate
+    questions are prototyped cheaply on the subset in Step 5, and only the winner is carried into the
+    expensive phases. The losers don't vanish — they become the report's "alternatives considered"
+    paragraph.</div>
+  </div>
+
+  <div class="box board rv"><span class="lab">Key idea — two levels of comparison, and where the "≥ 2 approaches" rule is met</span>
+    The brief demands <b>at least two ML approaches with compared metrics</b>. That requirement is
+    satisfied <b>inside the winning fork</b> — two different MLlib algorithms trained on the same
+    question and scored against each other (Step 8) — <i>plus</i> K-Means segmentation as the
+    unsupervised layer. The fork-level bake-off is a bonus on top: it shows the panel you chose your
+    question deliberately, which is exactly what "justify every decision" means.
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — the forks are not on a level playing field</span>
+    Money-based targets (Fork B's rake/winnings, part of Fork A's value features) only reconcile on
+    <b>~⅓ of hands</b> — 211 of 991 sampled hands lack a <code style="font-family:var(--mono);font-size:13px">winnings</code>
+    column and 486 more have it all-zero, for reasons still unexplained. Behavioural features work on
+    ~100% of hands, and pot size is computable from the betting actions themselves on essentially
+    every hand. <b>The bake-off must therefore compare coverage, not just accuracy</b> — a slightly
+    better model on a third of the data can be the worse choice.
+  </div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+  <div class="sec-eyebrow"><span class="num">03</span> Step 0</div>
+  <h2>Unblock the project, then set up the Mac</h2>
+  <p class="lead">Two things happen before any data is downloaded: <b>the professor question gets
+  asked</b>, and the laptop gets a working Python + Spark environment.</p>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — the one question that can sink everything</span>
+    <b>Nobody has confirmed a gambling-industry dataset is acceptable.</b> It is a 30-second
+    office-hours question (booked through the CR) and the defence is ready: this is a
+    <i>responsible-gaming and retention</i> problem — the models exist to protect recreational
+    players, not to teach poker. Steps 0–5 cost the team roughly a weekend, so starting now is a
+    reasonable bet — but <b>do not let the team pass Step 6 (the 20 GB download and full-scale runs)
+    before the answer comes back</b>.
+  </div>
+
+  <h3>Set up the environment</h3>
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">Terminal — from the Project/ repo root</span><span class="cbadge">step 0</span></div>
+    <pre><span class="cm"># 1 — a virtual environment, from a Python that HAS tomllib (3.11+).</span>
+<span class="warnln"><span class="cm"># Bare `python3` on this Mac is Apple's 3.9.6 — no tomllib, parser dies.</span></span>
+python3.13 -m venv .venv
+<span class="fn">source</span> .venv/bin/activate
+
+<span class="cm"># 2 — install the stack</span>
+pip install --upgrade pip
+pip install pyspark polars pyarrow pandas
+
+<span class="cm"># 3 — Java is already installed (OpenJDK 17); point Spark at it</span>
+java -version
+<span class="kw">export</span> JAVA_HOME=$(/usr/libexec/java_home -v 17)
+
+<span class="cm"># 4 — smoke-test Spark. If this prints a number, you are ready.</span>
+python -c <span class="st">"from pyspark.sql import SparkSession; \
+s=SparkSession.builder.master('local[*]').getOrCreate(); \
+print('spark ok:', s.range(1000).count()); s.stop()"</span></pre>
+  </div>
+
+  <div class="box board rv"><span class="lab">Key idea — if the smoke test complains about the Python version</span>
+    PySpark is sometimes slow to support the newest Python. If step 4 fails with a version error,
+    install a slightly older one and rebuild the venv:
+    <code style="font-family:var(--mono);font-size:13px">brew install python@3.12</code> then
+    <code style="font-family:var(--mono);font-size:13px">python3.12 -m venv .venv</code>.
+    Everything else on this page is unchanged — <code style="font-family:var(--mono);font-size:13px">tomllib</code>
+    works on any Python 3.11+.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>The approval question is <b>asked</b> (or a booking exists to ask it).</li>
+    <li><code style="font-family:var(--mono);font-size:13px">spark ok: 1000</code> prints in the terminal.</li>
+    <li>The venv activates from the repo root and <code style="font-family:var(--mono);font-size:13px">.venv/</code> is ignored by git (already in <code style="font-family:var(--mono);font-size:13px">.gitignore</code>).</li>
+    <li>Commit: <i>"Step 0: environment ready"</i> (commit the README note, not the venv).</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip r">RISK · retires "wrong dataset" &amp; "Spark won't run"</span>
+    <span class="chip gr">PHASE 1 · environment for ingestion</span>
+    <span class="chip g">RUBRIC · Professionalism &amp; Documentation (2)</span>
+  </div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+  <div class="sec-eyebrow"><span class="num">04</span> Step 1</div>
+  <h2>Get the data — the 1.7 GB development subset</h2>
+  <p class="lead">Development happens against the <b>GitHub subset (~1.7 GB)</b>. The full 20.3 GB
+  Zenodo archive waits until Step 6, when the pipeline is proven and the topic is approved.</p>
+
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">Terminal — download Route A (subset)</span><span class="cbadge">step 1</span></div>
+    <pre><span class="cm"># work inside data/ — everything under it is gitignored, so 1.7 GB never hits the repo</span>
+<span class="kw">cd</span> data
+
+<span class="cm"># clone the structure without file contents, then pull ONLY the real-money hands</span>
+git clone --filter=blob:none --sparse https://github.com/uoftcprg/phh-dataset.git
+<span class="kw">cd</span> phh-dataset
+git sparse-checkout set data/handhq
+
+<span class="cm"># see what you got — expect ~1.7 GB</span>
+du -sh data/handhq
+ls data/handhq</pre>
+  </div>
+
+  <p>Then lay the raw files into <b>Bronze</b> in the partitioned layout the repo's
+  <code style="font-family:var(--mono);font-size:13px">data/README.md</code> defines — untouched
+  <code style="font-family:var(--mono);font-size:13px">.phhs</code> files, foldered by venue and
+  stake. The folder names carry free metadata
+  (<code style="font-family:var(--mono);font-size:13px">{SITE}-{dates}_{stake}NLH_OBFU/{big_blind}/</code>),
+  so the copy loop just parses the path:</p>
+
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">Terminal — from the Project/ repo root</span><span class="cbadge">step 1</span></div>
+    <pre><span class="cm"># copy into Bronze, partitioned by venue and stake</span>
+<span class="kw">for</span> d <span class="kw">in</span> data/phh-dataset/data/handhq/*/; <span class="kw">do</span>
+  site=$(<span class="fn">basename</span> <span class="st">"$d"</span> | cut -d- -f1)
+  <span class="kw">for</span> s <span class="kw">in</span> <span class="st">"$d"</span>*/; <span class="kw">do</span>
+    stake=$(<span class="fn">basename</span> <span class="st">"$s"</span>)
+    <span class="fn">mkdir</span> -p <span class="st">"data/bronze/handhq/venue=$site/stake=$stake"</span>
+    <span class="fn">cp</span> <span class="st">"$s"</span>*.phhs <span class="st">"data/bronze/handhq/venue=$site/stake=$stake/"</span>
+  <span class="kw">done</span>
+<span class="kw">done</span>
+
+<span class="fn">find</span> data/bronze -name <span class="st">"*.phhs"</span> | wc -l   <span class="cm"># how many raw files landed</span></pre>
+  </div>
+
+  <div class="tree rv"><span class="dir">data/</span>
+├── <span class="dir">phh-dataset/</span>          <span class="note">← the sparse clone; keep it as the pristine source</span>
+├── <span class="dir">bronze/handhq/</span>
+│   ├── <span class="dir">venue=PS/stake=0.25/</span>  <span class="rep">*.phhs</span>   <span class="note">← untouched copies, never edited</span>
+│   ├── <span class="dir">venue=PTY/…</span>  <span class="dir">venue=IPN/…</span>  <span class="dir">venue=ONG/…</span>  <span class="dir">venue=FTP/…</span>  <span class="dir">venue=ABS/…</span>
+├── <span class="dir">silver/</span>               <span class="note">← Step 3 writes Parquet here</span>
+└── <span class="dir">gold/</span>                 <span class="note">← Step 4 writes features here</span></div>
+
+  <div class="box take rv"><span class="lab">Takeaway — why the folder gymnastics matter</span>
+    Partitioning Bronze by <b>venue</b> and <b>stake</b> is the storage story the rubric's
+    "Data Engineering &amp; Architecture" line wants: a query about one site never has to read the
+    other five. That's <b>partition pruning</b> — the same idea that makes real lakehouses fast —
+    demonstrated in a folder structure. Bronze is never edited; if a parser bug appears, Silver and
+    Gold are rebuilt <i>from</i> Bronze. That is the whole reason Bronze exists.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li><code style="font-family:var(--mono);font-size:13px">du -sh</code> reports roughly 1.7 GB in the sparse clone.</li>
+    <li>All six venue folders exist under <code style="font-family:var(--mono);font-size:13px">data/bronze/handhq/</code>.</li>
+    <li>The file count from the copy loop is recorded (it goes in the report's Data Understanding section).</li>
+    <li>Commit: <i>"Step 1: bronze layer populated (subset)"</i> — the commit is small because data is gitignored; commit the counts into a note or the README.</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip gr">PHASE 1 · ingestion from a public source</span>
+    <span class="chip gr">PHASE 1 · distributed-storage layout (partitioned lake)</span>
+    <span class="chip g">RUBRIC · Data Engineering &amp; Architecture (4)</span>
+    <span class="chip">DELIVERABLE · report §Data Understanding (5 Vs) + dataset citation</span>
+  </div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+  <div class="sec-eyebrow"><span class="num">05</span> Step 2</div>
+  <h2>Prove the parser — on all six venues, not one</h2>
+  <p class="lead">The parser already exists and is tested — <b>on PokerStars files only</b>. Before
+  anything is built on top of it, run it against one file from <b>each</b> of the six platforms.</p>
+
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">Terminal — from the Project/ repo root, venv active</span><span class="cbadge">step 2</span></div>
+    <pre><span class="cm"># the known-good case first (PS = PokerStars)</span>
+python3.13 src/parse_phh.py <span class="st">"data/bronze/handhq/venue=PS/stake=0.25/"</span>*handhq_1*.phhs
+
+<span class="cm"># then one file from EACH remaining venue — PTY, IPN, ONG, FTP, ABS</span>
+<span class="kw">for</span> v <span class="kw">in</span> PTY IPN ONG FTP ABS; <span class="kw">do</span>
+  f=$(<span class="fn">find</span> <span class="st">"data/bronze/handhq/venue=$v"</span> -name <span class="st">"*.phhs"</span> | head -1)
+  <span class="fn">echo</span> <span class="st">"=== $v ==="</span>; python3.13 src/parse_phh.py <span class="st">"$f"</span>
+<span class="kw">done</span></pre>
+  </div>
+
+  <p>What a healthy run looks like — these are the numbers actually measured on this machine:</p>
+
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">console — measured output, PS file 1 (989 hands)</span><span class="cbadge">verified 2 Aug 2026</span></div>
+    <pre>hands=989  hand_players=6098  actions=10440
+action mix: fold 4874 · check 1849 · call 1531 · bet 791 · raise 769 · show 626
+reconciled rake on 288 hands  (preflop-only 109 → $0.00, flop median 3.70%)
+pooled VPIP = 27.9%   pooled PFR = 10.2%
+<span class="warnln">big blinds who 'vpip'd = 27.4%  ← THE correctness test — must NOT be ~100%</span></pre>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — the one number that must be right</span>
+    <b>Big-blind VPIP must land near ~27%, never near 100%.</b> The big blind can check for free
+    pre-flop, which looks identical to a call in the action codes. Count that wrong and every
+    player's VPIP inflates, and the clustering downstream becomes meaningless.
+    <code style="font-family:var(--mono);font-size:13px">parse_phh.py</code> prints this check on
+    every run — read it every time, on every venue.
+  </div>
+
+  <div class="box board rv"><span class="lab">Key idea — dropped hands are reported, never silent</span>
+    About <b>two hands per file</b> are legitimately dropped (no big blind ⇒ money cannot be
+    normalised). Fine — but <b>count them and write the count down</b>. "We dropped 0.2% of hands,
+    here is why" is a sentence that earns marks; silent data loss is what "justify every decision"
+    is designed to catch.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>All six venues parse without crashing, or the failures are documented as findings.</li>
+    <li>Big-blind VPIP is sane (~25–30%) on every venue.</li>
+    <li>Drop counts per venue are recorded.</li>
+    <li>Commit: <i>"Step 2: parser validated on all 6 venues"</i> — include any parser fixes.</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip r">RISK · retires "parser breaks at scale on venue #4"</span>
+    <span class="chip g">RUBRIC · Data Engineering &amp; Architecture (4)</span>
+    <span class="chip">DELIVERABLE · report §Data Quality — the justification evidence</span>
+  </div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+  <div class="sec-eyebrow"><span class="num">06</span> Step 3</div>
+  <h2>Bronze → Silver: every file, three Parquet tables</h2>
+  <p class="lead">Now the parser runs over <b>every</b> Bronze file and writes the three flat tables
+  — <b>hands, hand_players, actions</b> — as Parquet into <code style="font-family:var(--mono);font-size:14px">data/silver/</code>.
+  Plain Python and Polars; Spark is not needed yet.</p>
+
+  <p>This is the script the guides already name: <b><code style="font-family:var(--mono);font-size:14px">src/build_silver.py</code></b>.
+  Its shape (from <a href="data-pipeline-guide.html#s8" style="color:var(--cyan-lt)">the pipeline guide, step 4</a>),
+  with paths adapted to this repo's lake:</p>
+
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">src/build_silver.py — plain Python, 8 cores</span><span class="cbadge">step 3</span></div>
+    <pre><span class="kw">from</span> multiprocessing <span class="kw">import</span> Pool
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">import</span> polars <span class="kw">as</span> pl
+<span class="kw">from</span> parse_phh <span class="kw">import</span> parse_file
+
+SRC = Path(<span class="st">"data/bronze/handhq"</span>)
+OUT = Path(<span class="st">"data/silver"</span>)
+
+<span class="kw">def</span> <span class="fn">safe</span>(p):
+    <span class="kw">try</span>:
+        <span class="kw">return</span> parse_file(p)
+    <span class="kw">except</span> Exception <span class="kw">as</span> e:
+        print(<span class="st">"SKIP"</span>, p.name, e)   <span class="cm"># never let one bad file kill the run</span>
+        <span class="kw">return</span> [], [], []
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    files = sorted(SRC.rglob(<span class="st">"*.phhs"</span>))
+    print(len(files), <span class="st">"files"</span>)
+    <span class="kw">with</span> Pool(8) <span class="kw">as</span> pool:          <span class="cm"># 8 of the 10 cores</span>
+        results = pool.map(safe, files, chunksize=8)
+    <span class="kw">for</span> i, name <span class="kw">in</span> enumerate([<span class="st">"hands"</span>, <span class="st">"hand_players"</span>, <span class="st">"actions"</span>]):
+        rows = [r <span class="kw">for</span> res <span class="kw">in</span> results <span class="kw">for</span> r <span class="kw">in</span> res[i]]
+        pl.DataFrame(rows).write_parquet(OUT / <span class="kw">f</span><span class="st">"{name}.parquet"</span>)
+        print(name, len(rows), <span class="st">"rows"</span>)</pre>
+  </div>
+
+  <div class="box take rv"><span class="lab">Takeaway — why Parquet is the architecture argument</span>
+    Raw text ~18 GB (est. at full scale) becomes <b>2–4 GB of Parquet (est.)</b> because Parquet is
+    columnar and compressed — a query that needs three columns reads three columns, not every byte.
+    The business consequence: the laptop becomes big enough for a "big data" project, and the exact
+    same files upload to Databricks unchanged. One storage decision, argued in one report paragraph,
+    worth real rubric marks.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>Three <code style="font-family:var(--mono);font-size:13px">.parquet</code> files exist in <code style="font-family:var(--mono);font-size:13px">data/silver/</code> with row counts printed and recorded.</li>
+    <li>The <code style="font-family:var(--mono);font-size:13px">SKIP</code> count is ~0 — anything else becomes a documented finding.</li>
+    <li>Commit: <i>"Step 3: build_silver.py — silver layer built (subset)"</i>.</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip gr">PHASE 1 · distributed storage (columnar Parquet lake)</span>
+    <span class="chip g">RUBRIC · Data Engineering &amp; Architecture (4)</span>
+    <span class="chip">DELIVERABLE · the tables every later artifact reads</span>
+  </div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+  <div class="sec-eyebrow"><span class="num">07</span> Step 4</div>
+  <h2>Silver → Gold: features, in Spark, on the laptop</h2>
+  <p class="lead">This is where Spark finally earns its seat — and where the fork strategy makes its
+  first physical demand: <b>two Gold tables, not one</b>, because Fork C lives at a different grain.</p>
+
+  <p><b><code style="font-family:var(--mono);font-size:14px">src/features.py</code></b> (the second
+  script the guides name) starts with the tuned local session — these settings are for <i>this</i>
+  16 GB machine, and the defaults they replace are wrong for it:</p>
+
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">src/features.py — the tuned local session</span><span class="cbadge">step 4</span></div>
+    <pre><span class="kw">from</span> pyspark.sql <span class="kw">import</span> SparkSession, functions <span class="kw">as</span> F
+
+spark = (SparkSession.builder
+    .appName(<span class="st">"ecosystem-engine"</span>)
+    .master(<span class="st">"local[8]"</span>)                            <span class="cm"># 8 of the 10 cores</span>
+    .config(<span class="st">"spark.driver.memory"</span>, <span class="st">"9g"</span>)           <span class="cm"># leave RAM for macOS</span>
+    .config(<span class="st">"spark.sql.shuffle.partitions"</span>, <span class="st">"48"</span>)  <span class="cm"># default 200 is cluster-tuned</span>
+    .config(<span class="st">"spark.local.dir"</span>, <span class="st">"/tmp/spark-scratch"</span>)
+    .getOrCreate())
+
+hp    = spark.read.parquet(<span class="st">"data/silver/hand_players.parquet"</span>)
+hands = spark.read.parquet(<span class="st">"data/silver/hands.parquet"</span>)</pre>
+  </div>
+
+  <p>Then the two Gold outputs. The player-level aggregation is spelled out line by line in
+  <a href="data-pipeline-guide.html#s10" style="color:var(--cyan-lt)">the pipeline guide, step 6</a>
+  (VPIP, PFR, aggression factor, bb/100, days active, the multi-tabling detector). The hand-level
+  table is the roadmap's one addition:</p>
+
+  <div class="walk rv">
+    <div class="w"><div class="wc">gold/player_features</div>
+      <div class="wt"><b>One row per (venue, player).</b> Feeds K-Means, Fork A and Fork B.
+      ~200 MB at full scale (est.) — small enough for anything.</div></div>
+    <div class="w"><div class="wc">gold/hand_features</div>
+      <div class="wt"><b>One row per hand.</b> Feeds Fork C: stake, number of players, hour of day,
+      whether the flop was seen, showdown flag, and the target — <b>pot size in big blinds</b>.
+      The parser already computes each player's contributions for its rake check; surfacing
+      <code style="font-family:var(--mono);font-size:12px">pot_bb</code> per hand in the Silver
+      <code style="font-family:var(--mono);font-size:12px">hands</code> table is a small, honest
+      extension of <code style="font-family:var(--mono);font-size:12px">parse_phh.py</code> —
+      <span class="warn">with the uncalled-bet correction, or the number is garbage</span>.</div></div>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — the #1 way to kill a local Spark job</span>
+    <b>Never call <code style="font-family:var(--mono);font-size:13px">.toPandas()</code> or
+    <code style="font-family:var(--mono);font-size:13px">.collect()</code> on anything but a Gold
+    table.</b> On a laptop the Spark driver <i>is</i> your 16 GB of RAM; pulling Silver into it ends
+    the session. If a full-scale run still OOMs, add
+    <code style="font-family:var(--mono);font-size:13px">spark.sql.files.maxPartitionBytes=64m</code>.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>Both Gold tables exist under <code style="font-family:var(--mono);font-size:13px">data/gold/</code>, built from the subset.</li>
+    <li>Sanity check passes: pooled VPIP in Gold ≈ the parser's ~27.9%, top players play plausible hand counts.</li>
+    <li>Commit: <i>"Step 4: features.py — two gold tables (subset)"</i>.</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip gr">PHASE 2 · feature engineering (developed locally, re-run in Databricks)</span>
+    <span class="chip g">RUBRIC · Feature Engineering (3)</span>
+    <span class="chip">DELIVERABLE · the tables the models and the deck's numbers come from</span>
+  </div>
+</section>
+
+<!-- ===================== 8 ===================== -->
+<section id="s8">
+  <div class="sec-eyebrow"><span class="num">08</span> Step 5</div>
+  <h2>The fork bake-off — pick the question on evidence</h2>
+  <p class="lead">Three cheap, throwaway prototypes on the subset Gold tables. Nothing here is
+  graded; the graded models are rebuilt properly in MLlib in Step 8. <b>This step exists to make one
+  decision well.</b></p>
+
+  <p>Each fork gets a few hours, not a week. Quick models —
+  scikit-learn or Polars locally is fine <i>for the bake-off only</i> — scored on a common scorecard:</p>
+
+  <div class="tw rv"><table>
+    <tr><th>Fork</th><th>Label / target on this data</th><th>Coverage</th><th>Honest risk</th></tr>
+    <tr><td><b>A · Churn</b><br>(classification)</td>
+      <td>Active in days 1–16, zero hands in days 17–23 ⇒ "lapsed". Behavioural features only.</td>
+      <td class="num">~100%</td>
+      <td>23 days ⇒ it's <b>short-horizon lapse</b>, not churn. Say so, always.</td></tr>
+    <tr><td><b>B · Player value</b><br>(regression)</td>
+      <td>Predict next-week volume (100% coverage) or rake contribution (needs money columns).</td>
+      <td class="num">~100% / ~⅓</td>
+      <td>The money version inherits the unexplained all-zero
+        <code>winnings</code> problem.</td></tr>
+    <tr><td><b>C · Hand economics</b><br>(regression)</td>
+      <td>Predict <code>pot_bb</code> from stake, seat count, hour, venue.</td>
+      <td class="num">~100%</td>
+      <td>Reads as "game analytics" unless framed hard as revenue-per-seat forecasting.</td></tr>
+  </table></div>
+
+  <div class="box take rv"><span class="lab">Takeaway — how to score the bake-off</span>
+    Rank each fork 1–5 on four axes and add them up: <b>signal</b> (does the prototype beat a dumb
+    baseline?), <b>coverage</b> (what fraction of the data can it legally use?), <b>business story</b>
+    (can one slide explain what management does with the output?), and <b>rubric fit</b> (does it
+    exercise classification <i>or</i> regression cleanly with honest metrics?). Accuracy alone is
+    explicitly <i>not</i> the criterion — a fork that wins on a third of the data can lose the
+    scorecard.
+  </div>
+
+  <div class="box discuss rv"><span class="lab">Team decision — write it down</span>
+    The bake-off ends with a <b>one-page decision note committed to the repo</b>: the scorecard, the
+    winner, and two sentences on why each loser lost. That page is rubric material twice over — it
+    is "justify every decision" in its purest form, and it becomes the report's <i>alternatives
+    considered</i> paragraph almost verbatim.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>Three prototype scripts/notebooks ran end-to-end on the subset.</li>
+    <li>Each fork has a baseline comparison (majority class / mean predictor), not just a score.</li>
+    <li>The decision note is committed: <i>"Step 5: bake-off — Fork ✕ wins"</i>.</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip g">RUBRIC · Business Problem &amp; Storytelling (3)</span>
+    <span class="chip g">RUBRIC · groundwork for ML Implementation (4)</span>
+    <span class="chip r">RISK · retires "three weeks on the wrong question"</span>
+  </div>
+</section>
+
+<!-- ===================== 9 ===================== -->
+<section id="s9">
+  <div class="sec-eyebrow"><span class="num">09</span> Step 6</div>
+  <h2>Scale to the full 20 GB — same pipeline, all of it</h2>
+  <p class="lead">Only two things change at full scale: <b>where the data comes from</b> (the Zenodo
+  archive) and <b>how long the runs take</b>. The code does not change. That is the whole point of
+  having built the pipeline first.</p>
+
+  <div class="box brk rv"><span class="lab">Gate — do not start this step until</span>
+    The professor has accepted the dataset (Step 0's question), <b>and</b> the parser is proven on
+    all six venues (Step 2). This download is ~20.3 GB and the re-runs are overnight jobs — it is
+    the first step that is expensive to repeat.
+  </div>
+
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">Terminal — download Route B (full archive)</span><span class="cbadge">step 6</span></div>
+    <pre><span class="cm"># -C - lets you resume if the connection drops. It will take a while.</span>
+curl -L -C - -o poker-hand-histories.zip \
+  <span class="st">"https://zenodo.org/records/17136841/files/poker-hand-histories.zip?download=1"</span>
+
+<span class="cm"># verify the size — the archive is exactly 20,289,230,983 bytes</span>
+ls -l poker-hand-histories.zip
+
+<span class="cm"># LOOK before you extract — never unzip this blind</span>
+unzip -l poker-hand-histories.zip | head -40
+
+<span class="warnln"><span class="cm"># extract ONLY the real-money folder. The archive also holds 619 M bot-vs-bot</span></span>
+<span class="warnln"><span class="cm"># hands (ACPC) — enormous, and useless for a business project. Do NOT omit the pattern.</span></span>
+unzip poker-hand-histories.zip <span class="st">'*/data/handhq/*'</span> -d data/full</pre>
+  </div>
+
+  <p>Then repeat, verbatim, what already works: the Bronze partition loop from Step 1 (pointed at
+  <code style="font-family:var(--mono);font-size:14px">data/full</code>), <code style="font-family:var(--mono);font-size:14px">build_silver.py</code>,
+  and <code style="font-family:var(--mono);font-size:14px">features.py</code>. Run the big two
+  overnight and record wall-clock times — "the Silver build took N hours on 8 cores" is a genuinely
+  good sentence for the report's architecture section.</p>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>Silver's <code style="font-family:var(--mono);font-size:13px">hands</code> row count lands near <b>21,605,687</b> minus the documented drops.</li>
+    <li>Both Gold tables are rebuilt at full scale; the headline stats (players, hands, actions ≈ 229 M est.) are recorded.</li>
+    <li>Commit: <i>"Step 6: full-scale run — counts &amp; timings"</i>.</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip gr">PHASE 1 · complete, at real Volume</span>
+    <span class="chip g">RUBRIC · Data Engineering &amp; Architecture (4)</span>
+    <span class="chip">DELIVERABLE · report §5 Vs — Volume/Velocity numbers with receipts</span>
+  </div>
+</section>
+
+<!-- ===================== 10 ===================== -->
+<section id="s10">
+  <div class="sec-eyebrow"><span class="num">10</span> Step 7</div>
+  <h2>Move to Databricks — Phase 2, for real this time</h2>
+  <p class="lead">Databricks is where the <b>graded notebook</b> lives. The trick that makes this
+  step calm instead of terrifying: <b>you are not writing new logic — you are re-hosting logic that
+  already ran</b> on the laptop.</p>
+
+  <ul class="pts">
+    <li><b>Sign up for Databricks Free Edition.</b> (Community Edition retired on 1 Jan 2026;
+      tutorials that mention it are out of date. Which tier the course itself provides is still an
+      open question — ask alongside the Step 0 question.)</li>
+    <li><b>Upload the Gold tables first</b> (~200 MB est. — trivially uploadable), then Silver if
+      the free tier's storage quota allows. If it doesn't, upload one venue-stake slice of Silver
+      and let the notebook demonstrate the full Phase-2 logic on the slice, quoting the full-scale
+      counts from Step 6 alongside. Say exactly that in a markdown cell — honesty about
+      where each number ran <i>is</i> the professionalism mark.</li>
+    <li><b>Build the notebook as the brief's Phase-2 checklist</b>, one section per requirement,
+      each with a one-line justification cell: cleaning &amp; joins · missing values · outliers ·
+      feature engineering · encoding + scaling.</li>
+  </ul>
+
+  <div class="box board rv"><span class="lab">Key idea — this dataset hands you real Phase-2 material</span>
+    You do not need to manufacture data-quality work; it is already there.
+    <b>Missing values:</b> 21.3% of hands lack <code style="font-family:var(--mono);font-size:13px">winnings</code>
+    (structural — handle by feature design, not imputation), 4.3% lack
+    <code style="font-family:var(--mono);font-size:13px">seat_count</code> (recoverable — count the
+    players array). <b>Outliers:</b> the multi-tabling grinders are 3σ outliers on volume — and they
+    are <i>real and load-bearing</i>, so the justified decision is to keep them and cap nothing
+    blindly. <b>Scaling:</b> K-Means measures distance, so unscaled features would let one big
+    column dominate the clustering. Each of those is a justification cell the rubric pays for.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>The Databricks notebook runs top-to-bottom on a fresh cluster without edits.</li>
+    <li>Every Phase-2 requirement has its own section <i>and</i> its own justification cell.</li>
+    <li>The notebook is exported into <code style="font-family:var(--mono);font-size:13px">notebooks/</code> and committed: <i>"Step 7: Databricks Phase-2 notebook"</i>.</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip gr">PHASE 2 · Databricks + PySpark, decisions justified</span>
+    <span class="chip">DELIVERABLE · the executable notebook</span>
+    <span class="chip g">RUBRIC · Data Engineering (4) + Feature Engineering (3)</span>
+  </div>
+</section>
+
+<!-- ===================== 11 ===================== -->
+<section id="s11">
+  <div class="sec-eyebrow"><span class="num">11</span> Step 8</div>
+  <h2>Phase 3 — the models, in MLlib, metrics compared</h2>
+  <p class="lead">The winning fork from Step 5, rebuilt properly in <b>PySpark MLlib</b>: two
+  different algorithms on the same question, one honest comparison table, plus K-Means as the
+  unsupervised layer.</p>
+
+  <ul class="pts">
+    <li><b>K-Means segmentation</b> (the base, always in): choose k with an elbow/silhouette check
+      <i>and</i> business readability — four clusters nobody can name lose to three clusters
+      management can act on. Compare the found clusters against the four hypothesised archetypes;
+      matching or <i>not</i> matching are both findings.</li>
+    <li><b>Winning fork, algorithm 1 — a linear baseline.</b> Logistic regression (Fork A) or
+      linear regression (B/C). Interpretable coefficients: "what drives the risk" is a slide.</li>
+    <li><b>Winning fork, algorithm 2 — a tree ensemble.</b> Random forest or gradient-boosted
+      trees. Usually stronger, less interpretable — which is exactly the comparison story.</li>
+    <li><b>The comparison table</b>: AUC / precision / recall at a chosen operating point for
+      classification; RMSE / MAE and error-vs-baseline for regression — plus one row for the dumb
+      baseline, so every gain is visible and honest.</li>
+  </ul>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — leakage, the silent metric-inflator</span>
+    Split so the test set is information the model <b>could not have seen</b>. For the player-grain
+    forks: features from days 1–16, labels from days 17–23, and <b>split by player</b> — no player
+    appears in both train and test. For the hand-grain fork: <b>split by time</b> — train on the
+    early days, test on the late ones. A random shuffle would leak the same player (or the same
+    session) across the split and quietly flatter every metric.
+  </div>
+
+  <div class="box take rv"><span class="lab">Takeaway — tie one metric to money</span>
+    The Model Evaluation marks are earned the moment a threshold becomes a business decision:
+    "at this cut-off, the retention team contacts the top N% of at-risk players; a false positive
+    costs one bonus offer, a false negative costs a customer's remaining lifetime value." One
+    sentence like that turns a metrics table into a management tool — which is the course's whole
+    thesis.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>K-Means + two supervised MLlib algorithms trained and evaluated in the notebook.</li>
+    <li>The comparison table includes the naive baseline and a stated winner with a reason.</li>
+    <li>Commit: <i>"Step 8: MLlib models + evaluation"</i>.</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip gr">PHASE 3 · MLlib, ≥ 2 approaches, metrics compared</span>
+    <span class="chip g">RUBRIC · ML Implementation (4)</span>
+    <span class="chip g">RUBRIC · Model Evaluation (2)</span>
+  </div>
+</section>
+
+<!-- ===================== 12 ===================== -->
+<section id="s12">
+  <div class="sec-eyebrow"><span class="num">12</span> Step 9</div>
+  <h2>Package &amp; submit — three artifacts, one story</h2>
+  <p class="lead">Everything now exists; this step <b>shapes</b> it. The notebook proves the work,
+  the report argues it, the deck sells it — and all three must tell the same story with the same
+  numbers.</p>
+
+  <ul class="pts">
+    <li><b>The notebook</b> — final top-to-bottom run on a fresh cluster, then export to
+      <code style="font-family:var(--mono);font-size:14px">notebooks/</code>. Every section already
+      exists from Steps 7–8.</li>
+    <li><b>The consulting report (PDF)</b>, in the brief's own section order: Exec Summary ·
+      Business Context · Data Understanding (5 Vs) · Enterprise Architecture · Data Engineering ·
+      ML · Business Insights · Strategic Recommendations · Appendix. The appendix has <b>three
+      named, non-optional items</b>: references (the dataset citation from the plan), the
+      <b>AI-usage disclosure</b>, and <b>team contributions</b>.</li>
+    <li><b>The deck — max 10 slides including title and thank-you</b>, so eight content slides:
+      problem → data (5 Vs) → architecture → segments → the headline model → evaluation → the
+      money recommendation → risks &amp; honesty. Each slide is one claim with one number from the
+      Verified panels.</li>
+    <li><b>The repo</b> — fill the README team table, check the commit history reads as a
+      trimester of work (it will, if every step committed), tag the final commit.</li>
+  </ul>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — the honesty slide is load-bearing</span>
+    The professor will probe. The deck and report must volunteer, before being asked: the data is
+    from <b>July 2009</b> (argue the <i>method</i> transfers, don't hide the date); rake is
+    <b>estimated</b>, not a recorded column; 23 days makes it <b>short-horizon lapse</b>, not churn;
+    there is <b>no ground truth for bots</b>; and player IDs are <b>never merged across venues</b>.
+    Owning the weaknesses is worth more marks than pretending there are none.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>All three artifacts final, mutually consistent, and in <code style="font-family:var(--mono);font-size:13px">deliverables/</code>.</li>
+    <li>The appendix's three named items are present.</li>
+    <li>Final commit &amp; tag; submission uploaded.</li>
+  </ol>
+
+  <h4>Specs this step earns</h4>
+  <div class="chips rv">
+    <span class="chip">DELIVERABLE · notebook + report + deck, all three</span>
+    <span class="chip g">RUBRIC · Business Recommendations (2)</span>
+    <span class="chip g">RUBRIC · Professionalism &amp; Documentation (2)</span>
+  </div>
+</section>
+
+<!-- ===================== 13 ===================== -->
+<section id="s13">
+  <div class="sec-eyebrow"><span class="num">13</span> Spec map</div>
+  <h2>Every mark, mapped to the step that earns it</h2>
+  <p class="lead">The rubric has seven lines totalling 20 marks. Here is where each one is won —
+  if a line's steps are done, its marks are defended.</p>
+
+  <div class="tw rv"><table>
+    <tr><th>Rubric line</th><th class="num">Marks</th><th>Earned mainly in</th><th>The evidence artifact</th></tr>
+    <tr><td><b>Business problem &amp; storytelling</b></td><td class="num">3</td>
+      <td>Strategy §02 · Step 5 · Step 9</td>
+      <td>The fork decision note; the deck's problem &amp; recommendation slides.</td></tr>
+    <tr><td><b>Data Engineering &amp; Architecture</b></td><td class="num">4</td>
+      <td>Steps 1–3 · Step 6 · Step 7</td>
+      <td>Partitioned Bronze; Parquet Silver; full-scale counts &amp; timings; the notebook's Phase-2 sections.</td></tr>
+    <tr><td><b>Feature Engineering</b></td><td class="num">3</td>
+      <td>Step 4 · Step 7</td>
+      <td>Two Gold tables; per-feature justification cells (incl. bb-normalisation, the VPIP check).</td></tr>
+    <tr><td><b>ML Implementation</b></td><td class="num">4</td>
+      <td>Step 5 · Step 8</td>
+      <td>K-Means + two MLlib algorithms on the winning fork.</td></tr>
+    <tr><td><b>Model Evaluation</b></td><td class="num">2</td>
+      <td>Step 8</td>
+      <td>Comparison table with baseline; leakage-safe split; threshold tied to money.</td></tr>
+    <tr><td><b>Business Recommendations</b></td><td class="num">2</td>
+      <td>Step 9</td>
+      <td>Report §Strategic Recommendations; the deck's money slide.</td></tr>
+    <tr><td><b>Professionalism &amp; Documentation</b></td><td class="num">2</td>
+      <td>Every step's commit · Step 9</td>
+      <td>Commit history across the trimester; README; the appendix's three named items.</td></tr>
+    <tr class="tot"><td>Total</td><td class="num">20</td><td colspan="2">No step on this page fails to feed at least one line.</td></tr>
+  </table></div>
+
+  <div class="tw rv"><table>
+    <tr><th>Phase (from the brief)</th><th>Steps</th><th>Where it runs</th></tr>
+    <tr><td><b>Phase 1</b> — ingestion &amp; distributed storage</td><td>Steps 1, 3, 6</td><td>The MacBook</td></tr>
+    <tr><td><b>Phase 2</b> — Databricks + PySpark data &amp; feature engineering</td><td>Steps 4, 7</td><td>Developed locally, graded in Databricks</td></tr>
+    <tr><td><b>Phase 3</b> — MLlib, ≥ 2 approaches, compared</td><td>Steps 5 (scout), 8 (real)</td><td>Databricks</td></tr>
+  </table></div>
+
+  <div class="closer rv">
+    <div class="quote">The plan says <span class="a">what</span>. The guides say <span class="a">how</span>.
+    This page says <span class="a">in what order</span> — now go run Step 0.</div>
+    <p style="margin-top:14px">If a step confuses you, its link points into the guide that explains
+    it from zero. If a number surprises you, check whether it sits in a green Verified panel — if it
+    does, someone actually measured it; if it says <b>est.</b>, treat it as a planning guess.</p>
+    <a class="next" href="data-pipeline-guide.html">
+      <span class="arw">→</span>
+      <span>
+        <span class="nl">Companion · the deep how</span>
+        <span class="nt" style="display:block">data-pipeline-guide.html</span>
+        <span class="nd" style="display:block">The same pipeline, explained from scratch — Spark, Parquet, and every command in full.</span>
+      </span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <b>What on this page is measured vs planned.</b> Measured (1–2 Aug 2026, on this machine, from real
+  dataset files): the 21,605,687-hand count and per-site split, the 989-hand parser run (VPIP 27.9% ·
+  PFR 10.2% · BB-VPIP 27.4%), the rake reconciliation (109/109 preflop at $0.00, flop median 3.70%),
+  the 91.7% player-ID overlap, the missing-data rates (21.3% <code>winnings</code>, 4.3%
+  <code>seat_count</code>), and the exact Zenodo archive size (20,289,230,983 bytes). Estimated
+  (labelled <b>est.</b>): Parquet sizes, Gold table size, action-row total, run times. Planned (not
+  yet real): everything from Step 3 onward — <code>build_silver.py</code>, <code>features.py</code>,
+  the bake-off, all Databricks work. Companions:
+  <a href="poker-project-plan.html">poker-project-plan.html</a> ·
+  <a href="poker-explained.html">poker-explained.html</a> ·
+  <a href="data-pipeline-guide.html">data-pipeline-guide.html</a>.
+</footer>
+
+</main>
+</div>
+
+<script>
+/* ---------- reading progress ---------- */
+const prog = document.getElementById('progress');
+function onScroll(){
+  const h = document.documentElement;
+  const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  prog.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+document.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+/* ---------- scroll-spy rail ---------- */
+const links = [...document.querySelectorAll('.rail a')];
+const map = {};
+links.forEach(a => map[a.getAttribute('href').slice(1)] = a);
+const sections = [...document.querySelectorAll('section')];
+let spyActive = null;
+function setActive(){
+  const line = 150;
+  let current = sections[0];
+  for(const s of sections){
+    if(s.getBoundingClientRect().top <= line) current = s;
+  }
+  if(current.id === spyActive) return;
+  spyActive = current.id;
+  links.forEach(l=>l.classList.remove('on'));
+  const a = map[current.id];
+  if(a) a.classList.add('on');
+}
+document.addEventListener('scroll', setActive, {passive:true});
+window.addEventListener('resize', setActive, {passive:true});
+setActive();
+
+/* ---------- reveal on scroll (scroll-driven, never stuck hidden) ---------- */
+const rvEls = [...document.querySelectorAll('.rv')];
+function revealInView(){
+  const vh = window.innerHeight;
+  for(const el of rvEls){
+    if(el.classList.contains('in')) continue;
+    if(el.getBoundingClientRect().top < vh * 0.92) el.classList.add('in');
+  }
+}
+document.addEventListener('scroll', revealInView, {passive:true});
+window.addEventListener('resize', revealInView, {passive:true});
+window.addEventListener('hashchange', ()=>{ [80,300,600].forEach(t=>setTimeout(revealInView, t)); });
+revealInView();
+</script>
+</body>
+</html>
