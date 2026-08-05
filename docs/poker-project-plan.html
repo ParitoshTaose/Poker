@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Plan · The Ecosystem Engine — BDA Group Project</title>
+<style>
+  :root{
+    --bg:#EDF2F8; --paper:#FFFFFF; --panel:#FFFFFF; --panel2:#E9F0F8; --line:#D5E0ED; --line2:#C6D4E4;
+    --cyan:#2E8BC0; --cyan-lt:#176390;
+    --gold:#C08A2E; --gold-lt:#8A5E17;
+    --red:#DB4A40;  --red-lt:#C0392E;
+    --green:#2AA277; --green-lt:#1C8560;
+    --ink:#14263C; --body:#2B3D52; --soft:#546A82; --dim:#7E92A8;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+    --maxw:64ch;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    background:
+      radial-gradient(1100px 650px at 80% -10%, rgba(46,139,192,.10) 0%, rgba(237,242,248,0) 55%),
+      var(--bg);
+    color:var(--ink); font-family:var(--sans); line-height:1.6;
+    font-size:17px; -webkit-font-smoothing:antialiased;
+  }
+
+  .progress{position:fixed;top:0;left:0;height:3px;width:0%;z-index:60;
+    background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .12s linear}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:50;
+    display:flex;align-items:center;gap:14px;padding:0 20px;
+    background:rgba(237,242,248,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);font-size:12.5px}
+  .topbar .course{color:var(--cyan-lt);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .topbar .sep{color:var(--dim)}
+  .topbar .sess{color:var(--gold-lt);font-weight:700}
+  .topbar .right{margin-left:auto;color:var(--soft)}
+
+  .shell{display:grid;grid-template-columns:238px minmax(0,1fr);gap:0;
+    max-width:1180px;margin:0 auto;padding-top:52px}
+  .rail{position:sticky;top:52px;align-self:start;height:calc(100vh - 52px);
+    padding:30px 18px 30px 24px;overflow-y:auto}
+  .rail .rlabel{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dim);font-weight:800;margin:0 0 14px 8px}
+  .rail a{display:block;text-decoration:none;color:var(--soft);font-size:13px;
+    padding:6px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0;
+    transition:.18s;line-height:1.35}
+  .rail a .act{display:block;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:1px}
+  .rail a:hover{color:var(--ink);background:rgba(46,139,192,.09)}
+  .rail a.on{color:var(--cyan-lt);border-left-color:var(--cyan);background:rgba(46,139,192,.12);font-weight:700}
+  .rail a.on .act{color:var(--gold-lt)}
+
+  main{padding:0 clamp(20px,5vw,64px) 120px;min-width:0}
+
+  .hero{padding:56px 0 30px}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;
+    color:var(--cyan-lt);margin-bottom:20px}
+  .eyebrow .n{color:var(--gold-lt)}
+  .hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(38px,6.4vw,68px);
+    line-height:1.02;letter-spacing:-.01em;color:var(--ink);margin-bottom:22px}
+  .hero h1 em{font-style:italic;color:var(--gold-lt)}
+  .hero .deck{font-size:19.5px;color:var(--soft);max-width:60ch;line-height:1.5}
+  .hero .deck b{color:var(--ink);font-weight:600}
+  .herofig{margin:38px 0 6px}
+  .grounded-note{margin-top:26px;font-size:13px;color:var(--dim);
+    border-top:1px solid var(--line);padding-top:16px;line-height:1.7}
+  .grounded-note code{font-family:var(--mono);color:var(--cyan-lt);font-size:12px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:22px;
+    padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .legend .li{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--soft)}
+  .legend .dot{width:11px;height:11px;border-radius:3px;flex:none}
+  .legend b{color:var(--ink);font-weight:650}
+
+  section{padding:52px 0;border-top:1px solid var(--line);scroll-margin-top:64px}
+  .sec-eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+    color:var(--gold-lt);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .sec-eyebrow .num{font-family:var(--mono);color:var(--cyan);font-size:12px}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(27px,3.8vw,40px);
+    line-height:1.08;letter-spacing:-.01em;color:var(--ink);margin-bottom:18px}
+  h3{font-size:19px;font-weight:750;color:var(--cyan-lt);margin:30px 0 10px}
+  h4{font-size:15.5px;font-weight:750;color:var(--ink);margin:22px 0 8px}
+  p{max-width:var(--maxw);margin-bottom:16px;color:var(--body)}
+  p b{color:var(--ink);font-weight:650}
+  p .hl{color:var(--gold-lt);font-weight:650}
+  ul.pts{list-style:none;max-width:var(--maxw);margin:6px 0 18px}
+  ul.pts li{position:relative;padding-left:26px;margin-bottom:11px;color:var(--body)}
+  ul.pts li::before{content:"";position:absolute;left:3px;top:9px;width:9px;height:9px;
+    border-radius:2px;background:var(--cyan);transform:rotate(45deg)}
+  ul.pts li b{color:var(--ink);font-weight:650}
+  ol.steps{list-style:none;counter-reset:st;max-width:var(--maxw);margin:6px 0 18px}
+  ol.steps li{position:relative;padding-left:36px;margin-bottom:13px;color:var(--body)}
+  ol.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;
+    width:24px;height:24px;border-radius:7px;background:rgba(46,139,192,.14);color:var(--cyan-lt);
+    font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+  ol.steps li b{color:var(--ink);font-weight:650}
+  .lead{font-size:20px;color:var(--soft);max-width:58ch;line-height:1.5;margin-bottom:20px}
+  .lead b{color:var(--ink)}
+
+  .fig{margin:26px 0;padding:22px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;display:flex;flex-direction:column;align-items:center;
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .fig svg{width:100%;height:auto;max-width:620px}
+  .fig.wide svg{max-width:760px}
+  .fig .cap{margin-top:14px;font-size:12.5px;color:var(--soft);text-align:center;max-width:56ch}
+  .fig .cap b{color:var(--ink);font-weight:650}
+
+  .box{margin:24px 0;border-radius:14px;padding:18px 20px;font-size:16px;line-height:1.5;
+    border-left:4px solid var(--line);background:var(--panel);color:var(--body)}
+  .box .lab{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:800;margin-bottom:8px}
+  .box b{color:var(--ink);font-weight:650}
+  .box.take{border-left-color:var(--cyan);background:rgba(46,139,192,.08)}
+  .box.take .lab{color:var(--cyan-lt)}
+  .box.board{border-left-color:var(--gold);background:rgba(192,138,46,.11)}
+  .box.board .lab{color:var(--gold-lt)}
+  .box.brk{border-left-color:var(--red);background:rgba(219,74,64,.08)}
+  .box.brk .lab{color:var(--red-lt)}
+  .box.discuss{border-left-color:var(--gold);background:rgba(192,138,46,.07);border-left-style:dashed}
+  .box.discuss .lab{color:var(--gold-lt)}
+  .box .sub{display:block;margin-top:10px;font-size:14px;color:var(--soft);font-weight:400}
+  .box ul{margin:8px 0 0 0;list-style:none}
+  .box ul li{position:relative;padding-left:20px;margin-bottom:7px;font-size:15px}
+  .box ul li::before{content:"—";position:absolute;left:0;color:var(--dim)}
+
+  .term{color:var(--gold-lt);font-weight:650;border-bottom:1px dotted var(--gold);cursor:help}
+
+  .ground{margin:30px 0;border:1px solid var(--green);border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(42,162,119,.07),rgba(42,162,119,.02));
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .ground .ghead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:13px 18px;background:rgba(42,162,119,.12);border-bottom:1px solid rgba(42,162,119,.30)}
+  .ground .gtag{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;
+    color:var(--green-lt)}
+  .ground .gtag::before{content:"◆ ";color:var(--green)}
+  .ground .gfile{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);
+    background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+  .ground .gbody{padding:18px 20px}
+  .ground .gbody > p:first-child{margin-top:0}
+
+  .code{background:#F5F8FC;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+  .code .chead{display:flex;align-items:center;gap:8px;padding:8px 14px;
+    background:#E8F0F8;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+  .code .chead .dotrow{display:flex;gap:6px;margin-right:6px}
+  .code .chead .cdot{width:10px;height:10px;border-radius:50%;background:#C6D4E4}
+  .code .chead .cname{color:var(--cyan-lt)}
+  .code .chead .cbadge{margin-left:auto;color:var(--dim)}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.65;color:#2A3B4E}
+  .code pre .cm{color:#8496AC;font-style:italic}
+  .code pre .kw{color:#9A6B15}
+  .code pre .fn{color:#176390}
+  .code pre .st{color:#1C8560}
+  .code pre .warnln{background:rgba(219,74,64,.12);display:inline-block;width:100%}
+
+  .walk{margin:16px 0;border-left:2px solid var(--line);padding-left:0}
+  .walk .w{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line2)}
+  .walk .w:last-child{border-bottom:0}
+  .walk .wc{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);background:#EBF1F8;
+    border:1px solid var(--line);border-radius:6px;padding:6px 9px;height:fit-content;white-space:pre-wrap;
+    max-width:280px;overflow-x:auto}
+  .walk .wt{color:var(--body);font-size:14.5px;line-height:1.5}
+  .walk .wt b{color:var(--ink)}
+  .walk .wt .warn{color:var(--red-lt);font-weight:650}
+  @media(max-width:640px){.walk .w{grid-template-columns:1fr}.walk .wc{max-width:100%}}
+
+  .tree{font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--soft);white-space:pre;
+    background:#F5F8FC;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0;overflow-x:auto}
+  .tree .dir{color:var(--cyan-lt);font-weight:600}
+  .tree .gone{color:var(--red-lt);text-decoration:line-through;opacity:.8}
+  .tree .rep{color:var(--gold-lt);font-weight:600}
+  .tree .note{color:var(--dim)}
+
+  /* tables */
+  .tw{overflow-x:auto;margin:20px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+  th{background:var(--panel2);color:var(--ink);font-weight:750;text-align:left;
+    padding:11px 14px;border-bottom:1px solid var(--line);font-size:12.5px;
+    letter-spacing:.03em;text-transform:uppercase}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td b{color:var(--ink)}
+  td code,th code{font-family:var(--mono);font-size:12px;color:var(--cyan-lt)}
+  .num{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .tot td{background:rgba(46,139,192,.07);font-weight:750;color:var(--ink)}
+
+  /* stat strip */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .stat .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--cyan-lt);line-height:1.1}
+  .stat .v.g{color:var(--gold-lt)} .stat .v.r{color:var(--red-lt)} .stat .v.gr{color:var(--green-lt)}
+  .stat .k{font-size:12px;color:var(--soft);margin-top:6px;line-height:1.35}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .chip{font-family:var(--mono);font-size:11.5px;padding:5px 10px;border-radius:7px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--cyan-lt)}
+  .chip.g{background:rgba(192,138,46,.12);border-color:rgba(192,138,46,.35);color:var(--gold-lt)}
+  .chip.gr{background:rgba(42,162,119,.12);border-color:rgba(42,162,119,.35);color:var(--green-lt)}
+  .chip.r{background:rgba(219,74,64,.10);border-color:rgba(219,74,64,.33);color:var(--red-lt)}
+
+  /* interactive demo */
+  .demo{margin:28px 0;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .demo .dhead{padding:14px 18px 4px}
+  .demo .dhead .t{font-weight:750;color:var(--cyan-lt);font-size:15px}
+  .demo .dhead .s{font-size:13px;color:var(--soft);margin-top:3px}
+  .demo .stage{padding:6px 18px 0}
+  .demo svg{width:100%;height:auto;max-width:640px;display:block;margin:0 auto}
+  .demo .status{margin:6px 18px 4px;min-height:96px;padding:13px 15px;border-radius:10px;
+    background:#F5F8FC;border:1px solid var(--line);font-size:14px;
+    color:var(--body);line-height:1.55;transition:.2s}
+  .demo .status .ok{color:var(--green-lt);font-weight:650}
+  .demo .status .bad{color:var(--red-lt);font-weight:650}
+  .demo .status .name{color:var(--gold-lt);font-weight:700}
+  .demo .status .sm{display:block;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--soft)}
+  .demo .ctrl{display:flex;flex-wrap:wrap;gap:10px;padding:12px 18px 18px}
+  .demo button{font-family:var(--sans);font-size:13px;font-weight:650;cursor:pointer;
+    border-radius:9px;padding:9px 14px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);transition:.15s}
+  .demo button:hover{border-color:var(--cyan);color:var(--cyan-lt)}
+  .demo button.on{border-color:var(--cyan);background:rgba(46,139,192,.14);color:var(--cyan-lt)}
+  .demo button.ghost{background:transparent;color:var(--soft)}
+  /* explicit base styles so transitions never fall back to black */
+  .demo .pt{fill:#C6D4E4;stroke:#FFFFFF;stroke-width:1.2;transition:fill .3s, r .3s, opacity .3s;opacity:.75}
+  .demo .pt.lit{opacity:1;stroke-width:1.6}
+  .demo .hull{fill:none;stroke:#C6D4E4;stroke-width:2;stroke-dasharray:6 5;opacity:0;transition:opacity .3s}
+  .demo .hull.show{opacity:1}
+
+  .quote{font-family:var(--serif);font-size:clamp(24px,3.6vw,36px);line-height:1.25;
+    color:var(--ink);font-weight:600;max-width:24ch;margin:8px 0}
+  .quote .a{color:var(--gold-lt);font-style:italic}
+  .closer{margin-top:20px;padding:34px 30px;border-radius:18px;
+    background:linear-gradient(140deg,#E8F1FB,#F6FAFD);border:1px solid var(--line)}
+  .next{display:flex;align-items:center;gap:14px;margin-top:26px;padding:16px 20px;
+    border:1px solid var(--line);border-radius:14px;background:var(--panel);text-decoration:none;color:inherit;transition:.18s;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .next:hover{border-color:var(--cyan)}
+  .next .arw{font-size:24px;color:var(--cyan)}
+  .next .nl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .next .nt{color:var(--cyan-lt);font-weight:700;font-size:16px;margin-top:2px}
+  .next .nd{font-size:13px;color:var(--soft);margin-top:2px}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 10px;margin-top:40px;font-size:12.5px;color:var(--dim);line-height:1.9}
+  footer b{color:var(--soft)}
+  footer code{font-family:var(--mono);color:var(--cyan-lt);font-size:11.5px}
+  footer a{color:var(--cyan-lt);text-decoration:none;border-bottom:1px dotted var(--line2)}
+  footer a:hover{border-bottom-style:solid}
+
+  .rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  @media(max-width:1000px){
+    .shell{grid-template-columns:1fr}
+    .rail{display:none}
+    main{padding:0 22px 90px}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="topbar">
+  <span class="course">Big Data Analytics</span>
+  <span class="sep">·</span>
+  <span class="sess">MBA Group Project — 20 marks</span>
+  <span class="right">Plan v1 · 1 Aug 2026</span>
+</div>
+
+<div class="shell">
+<nav class="rail">
+  <div class="rlabel">The Plan</div>
+  <a href="#s1"><span class="act">Start here</span>Poker in 60 seconds</a>
+  <a href="#s2"><span class="act">Act I</span>The problem: the lake is dying</a>
+  <a href="#s3"><span class="act">Act I</span>Why this is really Big Data</a>
+  <a href="#s4"><span class="act">Act II</span>Where the data comes from</a>
+  <a href="#s5"><span class="act">Act II</span>What one hand looks like</a>
+  <a href="#s6"><span class="act">Act II</span>What I checked myself</a>
+  <a href="#s7"><span class="act">Act III</span>The architecture</a>
+  <a href="#s8"><span class="act">Phase 1</span>Getting &amp; storing the data</a>
+  <a href="#s9"><span class="act">Phase 2</span>Cleaning &amp; building features</a>
+  <a href="#s10"><span class="act">Phase 3</span>The three models</a>
+  <a href="#s11"><span class="act">Act IV</span>What management does</a>
+  <a href="#s12"><span class="act">Honesty</span>Risks &amp; weak spots</a>
+  <a href="#s13"><span class="act">Delivery</span>Timeline &amp; roles</a>
+  <a href="#s14"><span class="act">Delivery</span>How it earns 20/20</a>
+  <a href="#s15"><span class="act">Now</span>What to send today</a>
+</nav>
+
+<main>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <div class="eyebrow">NMIMS · MBA Business Analytics · Trimester IV <span class="n">· Group Project Plan</span></div>
+  <h1>The <em>Ecosystem</em> Engine</h1>
+  <p class="deck">
+    An online poker company does not gamble. It takes a tiny cut of every pot — so it only makes money
+    if people keep playing. <b>The strong players slowly take all the money from the casual players,
+    the casual players quit, and then the whole business dies.</b> This project builds the data pipeline
+    and the machine-learning models that let management see that happening — and stop it — using
+    <b>21.6 million real hands of real-money online poker.</b>
+  </p>
+
+  <div class="herofig">
+    <div class="fig wide">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Money flows from casual players to strong players, and the operator takes a small cut called rake">
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#DB4A40"/>
+          </marker>
+          <marker id="arg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#2AA277"/>
+          </marker>
+          <marker id="arc" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#2E8BC0"/>
+          </marker>
+        </defs>
+
+        <!-- casual players -->
+        <rect x="24" y="92" width="176" height="118" rx="14" fill="#FFFFFF" stroke="#2E8BC0" stroke-width="1.6"/>
+        <text x="112" y="120" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="700" fill="#176390">Casual players</text>
+        <text x="112" y="139" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">play for fun after work</text>
+        <circle cx="66" cy="168" r="13" fill="#2E8BC0" opacity=".85"/>
+        <circle cx="96" cy="168" r="13" fill="#2E8BC0" opacity=".85"/>
+        <circle cx="126" cy="168" r="13" fill="#2E8BC0" opacity=".85"/>
+        <circle cx="156" cy="168" r="13" fill="#2E8BC0" opacity=".85"/>
+        <text x="112" y="196" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#7E92A8">bring the money in</text>
+
+        <!-- the table -->
+        <ellipse cx="380" cy="150" rx="86" ry="56" fill="#E9F0F8" stroke="#C6D4E4" stroke-width="1.6"/>
+        <text x="380" y="145" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#14263C">the pot</text>
+        <text x="380" y="164" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">money on the table</text>
+
+        <!-- strong players -->
+        <rect x="560" y="92" width="176" height="118" rx="14" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.6"/>
+        <text x="648" y="120" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="700" fill="#8A5E17">Strong players</text>
+        <text x="648" y="139" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">play 12 tables, for a living</text>
+        <circle cx="618" cy="168" r="13" fill="#C08A2E" opacity=".85"/>
+        <circle cx="648" cy="168" r="13" fill="#C08A2E" opacity=".85"/>
+        <circle cx="678" cy="168" r="13" fill="#C08A2E" opacity=".85"/>
+        <text x="648" y="196" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#7E92A8">take the money out</text>
+
+        <!-- flows -->
+        <path d="M204 150 L288 150" stroke="#DB4A40" stroke-width="2.6" fill="none" marker-end="url(#ar)"/>
+        <path d="M470 150 L554 150" stroke="#DB4A40" stroke-width="2.6" fill="none" marker-end="url(#ar)"/>
+
+        <!-- rake to house -->
+        <rect x="296" y="24" width="168" height="42" rx="11" fill="#FFFFFF" stroke="#2AA277" stroke-width="1.6"/>
+        <text x="380" y="43" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#1C8560">The poker company</text>
+        <text x="380" y="58" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">takes ~5% of each pot = "rake"</text>
+        <path d="M380 94 L380 72" stroke="#2AA277" stroke-width="2.4" fill="none" marker-end="url(#arg)"/>
+
+        <!-- return arrow -->
+        <path d="M600 224 Q 380 274 160 224" stroke="#2E8BC0" stroke-width="2" fill="none" stroke-dasharray="6 5" marker-end="url(#arc)"/>
+        <text x="380" y="270" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#176390" font-weight="600">casual players must keep coming back — or there is no game at all</text>
+      </svg>
+      <div class="cap">The whole business in one picture. The company (green) never plays. It survives on
+      a small slice of each pot. That slice only exists while <b>casual players keep sitting down</b>.</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="li"><span class="dot" style="background:#2E8BC0"></span><b>Takeaway</b> — the point in one line</div>
+    <div class="li"><span class="dot" style="background:#C08A2E"></span><b>Key idea</b> — worth memorising</div>
+    <div class="li"><span class="dot" style="background:#DB4A40"></span><b>Where it breaks</b> — an honest weakness</div>
+    <div class="li"><span class="dot" style="background:#2AA277"></span><b>Verified</b> — I actually checked this</div>
+  </div>
+
+  <div class="grounded-note">
+    Every number in the green <b>Verified</b> panels was measured by downloading and parsing the real
+    dataset files on <b>1 Aug 2026</b>, not estimated. Source files sampled:
+    <code>data/handhq/PS-2009-07-01_2009-07-23_25NLH_OBFU/0.25/ps NLH handhq_{1,2,3}-OBFUSCATED.phhs</code>
+    from the University of Toronto <code>phh-dataset</code> repository.
+  </div>
+</header>
+
+<!-- ===================== 1 ===================== -->
+<section id="s1">
+  <div class="sec-eyebrow"><span class="num">01</span> Start here</div>
+  <h2>Poker in 60 seconds — the business, not the game</h2>
+  <p class="lead">You do not need to know how to play poker to run this project. You need to
+  understand <b>where the money goes</b>. That is all.</p>
+
+  <p>Six people sit at a table. Each is dealt two secret cards. They bet. Five shared cards are
+  turned over one group at a time, with more betting in between. Whoever has the best five-card
+  hand at the end takes all the money in the middle — <b>the pot</b>. Then the next hand starts,
+  and it all happens again, roughly <b>every 30 seconds</b>.</p>
+
+  <p>Here is the part that matters for us. <b>The poker company is not one of the six players.</b>
+  It does not win or lose. It simply takes a small percentage out of every pot — usually about 5%,
+  with a cap of a dollar or two. That cut is called the <span class="term">rake</span>. It is the
+  company's entire revenue.</p>
+
+  <div class="box board">
+    <span class="lab">Key idea — the one formula</span>
+    <b>Revenue = number of hands played × average rake per hand.</b>
+    The company does not care who wins. It cares only that hands keep being played. Every business
+    question in this project comes back to protecting that number.
+  </div>
+
+  <h3>The four words you need</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:22%">Word</th><th>What it means in plain English</th></tr></thead>
+    <tbody>
+      <tr><td><b>Rake</b></td><td>The company's cut of each pot. About 5%, capped. This is the revenue.</td></tr>
+      <tr><td><b>Big blind (bb)</b></td><td>A forced bet that starts every hand, so there is always something to fight over. It is also the <b>unit of measurement</b> in poker. At a "25NL" table the big blind is $0.25; at "1000NL" it is $10. Saying "she won 40 big blinds" means the same thing at both tables — saying "she won $10" does not.</td></tr>
+      <tr><td><b>Recreational player</b></td><td>Someone playing for fun, usually on one table, in the evening, who loses slowly over time. Also called a "fish". <b>They are the customer.</b> All the money in the system comes from them.</td></tr>
+      <tr><td><b>Regular / grinder</b></td><td>Someone playing for profit, often on 8–24 tables at once, for hours. Also called a "shark" or "reg". They win money <i>from</i> the recreational players.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box take">
+    <span class="lab">Takeaway</span>
+    Poker between players is a <b>zero-sum game</b> — for someone to win a rupee, someone else must
+    lose it. But the company's business is <b>not</b> zero-sum: it wants the same money to circulate
+    round and round for as long as possible, taking a small slice each lap. Its enemy is not losing —
+    its enemy is <b>the game stopping</b>.
+  </div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section id="s2">
+  <div class="sec-eyebrow"><span class="num">02</span> Act I · The business problem</div>
+  <h2>The lake is dying, and nobody can see it</h2>
+
+  <p class="lead">This is the real strategic problem of every online poker company on earth.
+  It has a name in the industry: <b>ecosystem management</b>.</p>
+
+  <h3>The fishing lake analogy</h3>
+  <p>Imagine you own a fishing lake. You do not fish. You make money by selling fishing licences.
+  There are <b>fish</b> in the lake, and there are <b>sharks</b> — very good anglers who catch a lot.</p>
+
+  <p>If the sharks catch fish at a sensible rate, everything is fine. The fish enjoy their day out,
+  come back next weekend, and you sell licences forever. But if you let in <b>too many sharks</b>, or
+  let them fish <b>twelve rods at once</b>, the fish get cleaned out in a single afternoon. They go
+  home, they do not come back, and within a season your lake is nothing but sharks staring at each
+  other in empty water. <b>Then the sharks leave too</b> — because there is nothing left to catch.
+  Your licence revenue goes to zero.</p>
+
+  <p>That is exactly an online poker room. The recreational players are the fish. The grinders are
+  the sharks. The rake is your licence fee. And the disaster is slow, quiet, and completely invisible
+  on a normal revenue dashboard — <b>because revenue looks great right up until the moment it collapses</b>.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 340" role="img" aria-label="The death spiral: casual players lose money fast, quit, the game gets harder, more casual players quit">
+      <defs>
+        <marker id="sp" markerWidth="10" markerHeight="10" refX="8" refY="3.2" orient="auto">
+          <path d="M0,0 L0,6.4 L8,3.2 z" fill="#DB4A40"/>
+        </marker>
+      </defs>
+      <circle cx="360" cy="170" r="126" fill="none" stroke="#DB4A40" stroke-width="1.4" stroke-dasharray="4 6" opacity=".5"/>
+
+      <!-- node 1 top -->
+      <rect x="256" y="14" width="208" height="52" rx="12" fill="#FFFFFF" stroke="#DB4A40" stroke-width="1.5"/>
+      <text x="360" y="36" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#C0392E">Grinders extract too fast</text>
+      <text x="360" y="53" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">12 tables each, all day, every day</text>
+
+      <!-- node 2 right -->
+      <rect x="500" y="140" width="204" height="52" rx="12" fill="#FFFFFF" stroke="#DB4A40" stroke-width="1.5"/>
+      <text x="602" y="162" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#C0392E">Casual player goes broke</text>
+      <text x="602" y="179" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">in days, not months</text>
+
+      <!-- node 3 bottom -->
+      <rect x="256" y="274" width="208" height="52" rx="12" fill="#FFFFFF" stroke="#DB4A40" stroke-width="1.5"/>
+      <text x="360" y="296" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#C0392E">They quit and never return</text>
+      <text x="360" y="313" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">no complaint, no warning</text>
+
+      <!-- node 4 left -->
+      <rect x="16" y="140" width="204" height="52" rx="12" fill="#FFFFFF" stroke="#DB4A40" stroke-width="1.5"/>
+      <text x="118" y="162" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#C0392E">Games get even harder</text>
+      <text x="118" y="179" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">higher ratio of sharks to fish</text>
+
+      <!-- arrows around the loop -->
+      <path d="M470 52 Q 540 76 566 134" stroke="#DB4A40" stroke-width="2.2" fill="none" marker-end="url(#sp)"/>
+      <path d="M566 198 Q 540 262 470 292" stroke="#DB4A40" stroke-width="2.2" fill="none" marker-end="url(#sp)"/>
+      <path d="M250 292 Q 180 262 154 198" stroke="#DB4A40" stroke-width="2.2" fill="none" marker-end="url(#sp)"/>
+      <path d="M154 134 Q 180 76 250 52" stroke="#DB4A40" stroke-width="2.2" fill="none" marker-end="url(#sp)"/>
+
+      <text x="360" y="164" text-anchor="middle" font-family="Georgia,serif" font-size="19" font-style="italic" font-weight="600" fill="#14263C">the death spiral</text>
+      <text x="360" y="188" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#7E92A8">each lap makes the next lap faster</text>
+    </svg>
+    <div class="cap">A <b>reinforcing feedback loop</b> — the exact thing Big Data is supposed to catch
+    early. By the time it shows up in monthly revenue, it is far too late to fix.</div>
+  </div>
+
+  <h3>So what are we actually asked to solve?</h3>
+  <p>The project guidelines say the team must answer three executive questions. Here they are, answered
+  for this project:</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:32%">The question</th><th>Our answer</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>What business problem are we solving?</b></td>
+        <td>Our most valuable customers — recreational players — are being drained by a small group of
+        professional players, and we cannot see it happening until they have already gone. We need an
+        early-warning system.</td>
+      </tr>
+      <tr>
+        <td><b>How did we engineer the pipeline to solve it at scale?</b></td>
+        <td>We ingest 21.6 million raw hand-history records, explode them into roughly
+        <b>229 million individual player actions</b>, and use distributed computing to turn that into
+        one clean row per player with ~25 engineered behaviour columns.</td>
+      </tr>
+      <tr>
+        <td><b>What should management do?</b></td>
+        <td>Four specific, costed interventions: table caps, seating rules, targeted retention offers,
+        and a restructured loyalty scheme — each aimed at a segment the model identifies.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box take">
+    <span class="lab">Takeaway</span>
+    This is a <b>customer-retention and ecosystem-health problem</b> that happens to be set in a poker
+    company. Swap "poker room" for "marketplace" and "grinder" for "power seller who undercuts everyone",
+    and it is the same problem Amazon, Uber and Zomato all have. That is why it interviews well.
+  </div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section id="s3">
+  <div class="sec-eyebrow"><span class="num">03</span> Act I · Justifying the "Big" in Big Data</div>
+  <h2>Why a spreadsheet genuinely cannot do this</h2>
+
+  <p class="lead">The guidelines demand a problem <b>"where spreadsheet-based analysis is no longer
+  practical."</b> Most student projects just assert that. We can <b>prove</b> it with arithmetic.</p>
+
+  <p>Here is the key insight that makes this project big: <b>one hand of poker is not one row of data.</b>
+  A single hand contains a whole sequence of decisions — every player's fold, check, call, bet and
+  raise, on each of four betting rounds. To analyse behaviour you need every one of those decisions as
+  its own row.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 260" role="img" aria-label="One hand expands into 6 player rows and 10.6 action rows">
+      <defs>
+        <marker id="fan" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#2E8BC0"/>
+        </marker>
+      </defs>
+      <!-- one hand -->
+      <rect x="20" y="98" width="150" height="62" rx="12" fill="#FFFFFF" stroke="#2E8BC0" stroke-width="1.8"/>
+      <text x="95" y="123" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#176390">1 hand</text>
+      <text x="95" y="142" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10.5" fill="#546A82">hand = 59937794410</text>
+
+      <path d="M174 129 L232 129" stroke="#2E8BC0" stroke-width="2" fill="none" marker-end="url(#fan)"/>
+
+      <!-- players -->
+      <rect x="238" y="70" width="164" height="118" rx="12" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.8"/>
+      <text x="320" y="94" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#8A5E17">6.16 players</text>
+      <text x="320" y="111" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">on average, per hand</text>
+      <g fill="#C08A2E" opacity=".8">
+        <rect x="256" y="126" width="128" height="8" rx="4"/>
+        <rect x="256" y="140" width="128" height="8" rx="4"/>
+        <rect x="256" y="154" width="128" height="8" rx="4"/>
+        <rect x="256" y="168" width="128" height="8" rx="4"/>
+      </g>
+
+      <path d="M406 129 L464 129" stroke="#2E8BC0" stroke-width="2" fill="none" marker-end="url(#fan)"/>
+
+      <!-- actions -->
+      <rect x="470" y="42" width="230" height="176" rx="12" fill="#FFFFFF" stroke="#2AA277" stroke-width="1.8"/>
+      <text x="585" y="68" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#1C8560">10.6 decisions</text>
+      <text x="585" y="85" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">fold / call / raise / show</text>
+      <g font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#2B3D52">
+        <text x="492" y="108">p3 f</text>
+        <text x="492" y="126">p4 cbr 0.75</text>
+        <text x="492" y="144">p1 f</text>
+        <text x="492" y="162">p2 cc</text>
+        <text x="492" y="180">p2 cc</text>
+        <text x="492" y="198">p4 sm ????</text>
+        <text x="614" y="108" fill="#7E92A8">fold</text>
+        <text x="614" y="126" fill="#7E92A8">raise to $0.75</text>
+        <text x="614" y="144" fill="#7E92A8">fold</text>
+        <text x="614" y="162" fill="#7E92A8">call</text>
+        <text x="614" y="180" fill="#7E92A8">check</text>
+        <text x="614" y="198" fill="#7E92A8">show cards</text>
+      </g>
+      <text x="360" y="242" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" fill="#176390" font-weight="600">
+        21,605,687 hands  ×  10.6 decisions  ≈  229,000,000 rows
+      </text>
+    </svg>
+    <div class="cap">The <b>fan-out</b>. This multiplication is what turns a manageable file into a
+    genuine distributed-computing problem. Both averages were measured from the real data.</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="v">21.6M</div><div class="k">real-money hands in the dataset</div></div>
+    <div class="stat"><div class="v g">10.6</div><div class="k">player decisions per hand <i>(measured)</i></div></div>
+    <div class="stat"><div class="v gr">229M</div><div class="k">action rows after we explode it</div></div>
+    <div class="stat"><div class="v r">218×</div><div class="k">bigger than Excel's hard row limit</div></div>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — the slide that wins the argument</span>
+    Microsoft Excel stops at <b>1,048,576 rows</b>. That is a hard technical ceiling, not a preference.
+    Our action-level table is roughly <b>229 million rows — about 218 times over the limit.</b>
+    We could not open 1/200th of our data in a spreadsheet.
+    <span class="sub">And it is not just size. To compute one player's statistics you must scan every
+    action they ever took, scattered across thousands of files. That is a <b>group-by across the entire
+    dataset</b> — exactly the operation Spark exists for.</span>
+  </div>
+
+  <p>There is a second, subtler reason this needs distributed computing. Our most powerful feature —
+  <b>how many tables was this player sitting at simultaneously?</b> — cannot be read off any single row.
+  It requires taking every hand, grouping by player <i>and</i> by minute, and counting distinct tables.
+  That is a shuffle across the whole dataset. On one laptop it is hopeless; on a cluster it is routine.</p>
+
+  <div class="box take">
+    <span class="lab">Takeaway</span>
+    Our "why Big Data" answer is not <i>"the file is large"</i>. It is <b>"the unit of analysis is a
+    decision, there are 229 million of them, and the feature that matters most can only be computed by
+    reshuffling all of them at once."</b> That sentence alone is worth marks.
+  </div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section id="s4">
+  <div class="sec-eyebrow"><span class="num">04</span> Act II · The data</div>
+  <h2>Where the data comes from — and it is real</h2>
+
+  <p class="lead">This is the question that kills most project ideas. For this one, the answer is
+  unusually good: <b>a properly published, openly licensed, academically citable dataset of real
+  money games.</b></p>
+
+  <h3>The source</h3>
+  <p>The dataset is <b>"A Dataset of Poker Hand Histories"</b>, maintained by the
+  <b>Computer Poker Research Group at the University of Toronto</b>. It is published two ways —
+  on GitHub for browsing, and on Zenodo (an academic data repository run by CERN) with a permanent
+  DOI for citing.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:30%">Detail</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>GitHub repository</td><td><code>github.com/uoftcprg/phh-dataset</code></td></tr>
+      <tr><td>Permanent archive</td><td>Zenodo — DOI <code>10.5281/zenodo.17136841</code> (version 3, 16 Sept 2025)</td></tr>
+      <tr><td>Full download size</td><td>20.3 GB (<code>poker-hand-histories.zip</code>)</td></tr>
+      <tr><td>Licence</td><td>MIT (code/repo) · <b>CC BY 4.0</b> (Zenodo archive) — free to use, just cite it</td></tr>
+      <tr><td>Academic citation</td><td>Kim, Juho. <i>"Recording and Describing Poker Hands."</i> IEEE Conference on Games (CoG), 2024. DOI <code>10.1109/CoG60054.2024.10645611</code></td></tr>
+      <tr><td>File format</td><td><b>PHH</b> — Poker Hand History, a documented open standard</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — use only ONE part of it</span>
+    The 20.3 GB archive contains two very different things. <b>Take the second, ignore the first.</b>
+    <ul>
+      <li><b>619 million hands from the Annual Computer Poker Competition</b> — these are <b>computer
+      programs playing each other</b>. Enormous, but there are no customers, no money and no churn.
+      <b>Useless for a business project.</b></li>
+      <li><b>21,605,687 hands of real-money online poker</b> — real human beings, real stakes, six real
+      commercial platforms. <b>This is our dataset.</b></li>
+    </ul>
+  </div>
+
+  <h3>What is inside the real-money portion</h3>
+  <p>These are anonymised hand histories collected from six commercial poker sites between
+  <b>1 July and 23 July 2009</b>, at stakes from 25NL (25¢ big blind — casual money) up to
+  1000NL ($10 big blind — serious money). They were originally published by a company called HandHQ
+  and have been converted into the standard PHH format.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Platform</th><th>Code in folder names</th><th class="num">Hands</th></tr></thead>
+    <tbody>
+      <tr><td>PartyPoker</td><td><code>PTY</code></td><td class="num">8,298,718</td></tr>
+      <tr><td>iPoker Network</td><td><code>IPN</code></td><td class="num">5,996,345</td></tr>
+      <tr><td>PokerStars</td><td><code>PS</code></td><td class="num">3,092,698</td></tr>
+      <tr><td>Ongame Network</td><td><code>ONG</code></td><td class="num">1,647,765</td></tr>
+      <tr><td>Full Tilt Poker</td><td><code>FTP</code></td><td class="num">1,299,503</td></tr>
+      <tr><td>Absolute Poker</td><td><code>ABS</code></td><td class="num">1,270,658</td></tr>
+      <tr class="tot"><td>Total</td><td><code>data/handhq/</code></td><td class="num">21,605,687</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>How the files are organised</h3>
+  <p>The folders are named in a fixed pattern, so a script can walk them and read the platform, date
+  range and stake straight out of the path — that becomes free metadata for our tables.</p>
+
+  <div class="tree">data/handhq/
+├── <span class="dir">PS-2009-07-01_2009-07-23_25NLH_OBFU/</span>   <span class="note">← site, dates, stake, "obfuscated"</span>
+│   └── <span class="dir">0.25/</span>                              <span class="note">← the big blind, in dollars</span>
+│       ├── ps NLH handhq_1-OBFUSCATED.phhs   <span class="note">≈ 991 hands, ≈ 831 KB</span>
+│       ├── ps NLH handhq_2-OBFUSCATED.phhs
+│       └── … <span class="rep">≈ 1,000 files in this one folder alone</span>
+├── <span class="dir">PTY-2009-07-01_2009-07-23_25NLH_OBFU/</span>
+├── <span class="dir">IPN-2009-07-01_2009-07-23_400NLH_OBFU/</span>
+└── … <span class="note">28+ site × stake folders</span></div>
+
+  <div class="box take">
+    <span class="lab">Takeaway</span>
+    You do <b>not</b> have to download 20.3 GB on day one. Start with <b>one folder</b> — PokerStars
+    25NL is about <b>831 MB</b> and roughly a million hands. That is already big enough to build and
+    test the entire pipeline. Scale up to all six platforms only once it works.
+  </div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section id="s5">
+  <div class="sec-eyebrow"><span class="num">05</span> Act II · The raw material</div>
+  <h2>What one hand actually looks like</h2>
+
+  <p class="lead">This is a real, unedited record from the dataset — I downloaded this file today.
+  Once you can read this, you understand the whole project.</p>
+
+  <div class="ground">
+    <div class="ghead">
+      <span class="gtag">Verified — real file, downloaded 1 Aug 2026</span>
+      <span class="gfile">PS-2009-07-01_..._25NLH_OBFU/0.25/ps NLH handhq_1-OBFUSCATED.phhs</span>
+    </div>
+    <div class="gbody">
+      <div class="code">
+        <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+          <span class="cname">hand #1 of 991 in this file</span><span class="cbadge">PHH format</span></div>
+<pre><span class="fn">[1]</span>
+<span class="kw">variant</span> = <span class="st">'NT'</span>
+<span class="kw">ante_trimming_status</span> = false
+<span class="kw">antes</span> = [0, 0, 0, 0]
+<span class="kw">blinds_or_straddles</span> = [0.10, 0.25, 0, 0]
+<span class="kw">min_bet</span> = 0.25
+<span class="kw">starting_stacks</span> = [25, 54.75, 16.35, 24.65]
+<span class="kw">actions</span> = [<span class="st">'d dh p1 ????'</span>, <span class="st">'d dh p2 ????'</span>, <span class="st">'d dh p3 ????'</span>, <span class="st">'d dh p4 ????'</span>,
+           <span class="st">'p3 f'</span>, <span class="st">'p4 cbr 0.75'</span>, <span class="st">'p1 f'</span>, <span class="st">'p2 cc'</span>,
+           <span class="st">'d db 4dQs4s'</span>, <span class="st">'p2 cc'</span>, <span class="st">'p4 cc'</span>,
+           <span class="st">'d db 9h'</span>, <span class="st">'p2 cc'</span>, <span class="st">'p4 cc'</span>,
+           <span class="st">'d db Ad'</span>, <span class="st">'p2 cc'</span>, <span class="st">'p4 cc'</span>,
+           <span class="st">'p2 sm 8sAh'</span>, <span class="st">'p4 sm ????'</span>]
+<span class="kw">venue</span> = <span class="st">'PokerStars'</span>
+<span class="kw">time</span> = 00:00:00
+<span class="kw">day</span> = 1
+<span class="kw">month</span> = 7
+<span class="kw">year</span> = 2009
+<span class="kw">hand</span> = 59937794410
+<span class="kw">seats</span> = [2, 4, 5, 6]
+<span class="kw">seat_count</span> = 6
+<span class="kw">table</span> = <span class="st">'vgLbwVmy1dOb81ICg4y5+Q'</span>
+<span class="kw">players</span> = [<span class="st">'vjkMgvG+N1YrdituSQFzbQ'</span>, <span class="st">'C79eKghuAVSmzDgIazSFCg'</span>,
+           <span class="st">'32YL2ZEp8NT4JB2RVM9euQ'</span>, <span class="st">'xRkU4+naLuz7dEZFbOn9cw'</span>]
+<span class="kw">currency_symbol</span> = <span class="st">'$'</span>
+<span class="kw">time_zone_abbreviation</span> = <span class="st">'ET'</span></pre>
+      </div>
+
+      <p style="margin-top:18px"><b>Line by line — what each field gives us:</b></p>
+
+      <div class="walk">
+        <div class="w"><div class="wc">variant = 'NT'</div><div class="wt">No-limit Texas hold'em — the standard game. Every hand in our subset is this, so we can ignore it.</div></div>
+        <div class="w"><div class="wc">blinds_or_straddles
+= [0.10, 0.25, 0, 0]</div><div class="wt">The forced bets. The <b>big blind is $0.25</b>, so this is a 25NL table. <b>This is the number we divide all money by</b> to make cheap and expensive tables comparable.</div></div>
+        <div class="w"><div class="wc">starting_stacks
+= [25, 54.75, ...]</div><div class="wt">How much money each player sat down with. Useful: casual players often buy in for an odd, small amount; professionals almost always buy in for the exact maximum.</div></div>
+        <div class="w"><div class="wc">'d dh p1 ????'</div><div class="wt"><b>d</b> = dealer, <b>dh</b> = deal hole cards, to player 1. The <code>????</code> means <b>we cannot see their cards</b> — they never showed them. This happens in most hands.</div></div>
+        <div class="w"><div class="wc">'p3 f'</div><div class="wt">Player 3 <b>folds</b> — gives up the hand. This is the single most common action in poker.</div></div>
+        <div class="w"><div class="wc">'p4 cbr 0.75'</div><div class="wt"><b>cbr</b> = complete / bet / raise. Player 4 raises to $0.75. In big blinds, that is 3bb — a standard opening raise.</div></div>
+        <div class="w"><div class="wc">'p2 cc'</div><div class="wt"><b>cc</b> = check or call. Either "I'll match that bet" or "I bet nothing but stay in".</div></div>
+        <div class="w"><div class="wc">'d db 4dQs4s'</div><div class="wt"><b>db</b> = deal board. The three shared cards are turned over: four of diamonds, queen of spades, four of spades.</div></div>
+        <div class="w"><div class="wc">'p2 sm 8sAh'</div><div class="wt"><b>sm</b> = show. Player 2 reveals eight of spades, ace of hearts. <b>Only now do we learn what someone held.</b></div></div>
+        <div class="w"><div class="wc">time = 00:00:00
+day = 1</div><div class="wt">A real timestamp, down to the second. <b>This is what makes churn analysis and multi-tabling detection possible.</b></div></div>
+        <div class="w"><div class="wc">table = 'vgLbwV…'</div><div class="wt">Which virtual table. Combined with the timestamp, this lets us detect a player sitting at eight tables in the same minute.</div></div>
+        <div class="w"><div class="wc">players = ['vjkMgvG+…', …]</div><div class="wt">The players, <b>anonymised into a scrambled code</b>. The critical question is whether the same person always gets the same code. <b>They do</b> — see the next section.</div></div>
+      </div>
+
+      <div class="box brk" style="margin-bottom:0">
+        <span class="lab">Where it breaks — notice what is missing</span>
+        This particular hand has <b>no <code>winnings</code> line</b>. Most hands in the file do have one
+        (a list showing how much each player collected), but a fifth of them do not. That is a real
+        data-quality problem you will have to solve in Phase 2 — not a hypothetical one.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section id="s6">
+  <div class="sec-eyebrow"><span class="num">06</span> Act II · Due diligence</div>
+  <h2>What I checked myself — before you commit</h2>
+
+  <p class="lead">A dataset can look perfect and still be unusable. I downloaded three real files and
+  tested the four things that would have killed this project. <b>All four passed.</b></p>
+
+  <div class="ground">
+    <div class="ghead">
+      <span class="gtag">Verified</span>
+      <span class="gfile">3 files · 2,986 hands · parsed 1 Aug 2026</span>
+    </div>
+    <div class="gbody">
+
+      <h4>Test 1 — Is the same player always given the same code? <span style="color:#1C8560">✓ PASS</span></h4>
+      <p style="margin-bottom:10px">This was the make-or-break test. If the scrambling were done per-file,
+      a player would look like a brand-new stranger in every file, and <b>player-level analysis would be
+      impossible</b> — no churn, no segmentation, no project.</p>
+      <p style="margin-bottom:10px">I took the set of player codes in file 1 and the set in file 2, and
+      counted the overlap:</p>
+      <div class="stats" style="margin:14px 0">
+        <div class="stat"><div class="v gr">91.7%</div><div class="k">of file 1's players reappear in file 2</div></div>
+        <div class="stat"><div class="v gr">1,080</div><div class="k">player codes shared across the two files</div></div>
+        <div class="stat"><div class="v gr">327</div><div class="k">table codes shared too — tables are stable as well</div></div>
+      </div>
+      <p><b>Verdict:</b> codes are stable across files. The same human keeps the same identity throughout
+      the 23 days. Everything downstream works.</p>
+
+      <h4>Test 2 — Are the timestamps real, or all zero? <span style="color:#1C8560">✓ PASS</span></h4>
+      <p style="margin-bottom:10px">The first hand shows <code>time = 00:00:00</code>, which looks
+      suspiciously like a placeholder. It is not — it is genuinely the first hand of the day. The files
+      turn out to be <b>consecutive slices of wall-clock time</b>:</p>
+      <div class="tw" style="margin:14px 0">
+        <table>
+          <thead><tr><th>File</th><th class="num">Hands</th><th>Time window covered</th><th class="num">Distinct tables</th></tr></thead>
+          <tbody>
+            <tr><td><code>handhq_1</code></td><td class="num">991</td><td><code>00:00:00 → 00:02:17</code></td><td class="num">337</td></tr>
+            <tr><td><code>handhq_2</code></td><td class="num">998</td><td><code>00:02:17 → 00:04:33</code></td><td class="num">332</td></tr>
+            <tr><td><code>handhq_3</code></td><td class="num">997</td><td><code>00:04:33 → 00:06:55</code></td><td class="num">328</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Second-level precision, perfectly continuous. Around <b>330 tables running at once</b>, producing
+      <b>1,000 hands every ~2¼ minutes</b> — from one site at one stake level.</p>
+
+      <h4>Test 3 — How much is missing? <span style="color:#8A5E17">✓ PASS, with work to do</span></h4>
+      <div class="tw" style="margin:14px 0">
+        <table>
+          <thead><tr><th>What</th><th class="num">Measured</th><th>What it means for us</th></tr></thead>
+          <tbody>
+            <tr><td>Hands with no <code>winnings</code> field</td><td class="num">21.3%</td><td>Cannot directly see who won. Must be handled or excluded — and justified.</td></tr>
+            <tr><td>Hands reaching showdown</td><td class="num">22.4%</td><td>So <b>77.6% of the time we never learn what cards a player held.</b></td></tr>
+            <tr><td>Hands missing <code>seat_count</code></td><td class="num">4.3%</td><td>Minor. Can be recovered by counting the players list.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box board">
+        <span class="lab">Key idea — the missing cards are a gift, not a problem</span>
+        The guidelines award <b>3 marks</b> for "handle missing values… justify each engineering decision."
+        Here you have missing data that is <b>missing for a structural reason</b> — players only reveal
+        cards when forced to at showdown. It is not random, and it is not sloppiness. Explaining that,
+        and choosing to build features from <b>betting behaviour rather than cards</b>, is a genuinely
+        sophisticated analytical decision. Most student projects have nothing this interesting to say
+        about missing data.
+      </div>
+
+      <h4>Test 4 — Is the fan-out really that big? <span style="color:#1C8560">✓ PASS</span></h4>
+      <div class="tw" style="margin:14px 0">
+        <table>
+          <thead><tr><th>Measure</th><th class="num">Value</th></tr></thead>
+          <tbody>
+            <tr><td>Player decisions per hand — mean</td><td class="num">10.6</td></tr>
+            <tr><td>Player decisions per hand — median / max</td><td class="num">10 / 28</td></tr>
+            <tr><td>Players per hand — mean</td><td class="num">6.16</td></tr>
+            <tr><td>Folds observed</td><td class="num">4,882</td></tr>
+            <tr><td>Checks &amp; calls observed</td><td class="num">3,386</td></tr>
+            <tr><td>Bets &amp; raises observed</td><td class="num">1,566</td></tr>
+            <tr><td>Showdowns observed</td><td class="num">632</td></tr>
+            <tr class="tot"><td>Projected action rows at full scale</td><td class="num">≈ 229,000,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-bottom:0">Notice the mix: <b>folding is roughly half of everything that happens.</b>
+      How <i>often</i> a player folds, versus raises, is precisely the signal that separates a cautious
+      professional from a casual player who wants to see every flop.</p>
+    </div>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Where it breaks — the two things I could NOT verify</span>
+    Be honest about these in your report:
+    <ul>
+      <li><b>Rake is not a column.</b> The company's actual revenue per hand is not stored. You will
+      have to <i>estimate</i> it — most likely as (total money put into the pot) − (total money paid out),
+      which should equal what the house removed. <b>Test this on a sample before you build on it</b>, and
+      state it as an assumption in the report.</li>
+      <li><b>I sampled 3 files out of ~1,000, from one site at one stake.</b> PartyPoker or iPoker files
+      may have slightly different fields or quirks. Check one file from each of the six platforms before
+      writing the parser.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section id="s7">
+  <div class="sec-eyebrow"><span class="num">07</span> Act III · The build</div>
+  <h2>The architecture, in three layers</h2>
+
+  <p class="lead">The guidelines want a diagram that goes
+  <b>Business Problem → Data Sources → Ingestion → Storage → Engineering → Features → ML → Insights →
+  Recommendations</b>. Here is ours, using the standard industry pattern.</p>
+
+  <p>Professional data teams almost always use a three-layer design nicknamed <b>medallion
+  architecture</b> — Bronze, Silver, Gold. The idea is simple: <b>never destroy the original, and never
+  let the messy version touch the model.</b> Each layer is cleaner and smaller than the last.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 760 420" role="img" aria-label="Medallion architecture: bronze raw files, silver parsed tables, gold player features, then models">
+      <defs>
+        <marker id="dn" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#546A82"/>
+        </marker>
+      </defs>
+
+      <!-- source -->
+      <rect x="250" y="10" width="260" height="46" rx="11" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.5"/>
+      <text x="380" y="30" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#14263C">Zenodo / GitHub · phh-dataset</text>
+      <text x="380" y="46" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#546A82">20.3 GB · .phhs text files</text>
+      <path d="M380 58 L380 76" stroke="#546A82" stroke-width="1.8" marker-end="url(#dn)"/>
+
+      <!-- bronze -->
+      <rect x="60" y="82" width="640" height="72" rx="13" fill="rgba(192,138,46,.10)" stroke="#C08A2E" stroke-width="1.7"/>
+      <text x="86" y="106" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="#8A5E17">BRONZE</text>
+      <text x="86" y="124" font-family="-apple-system,sans-serif" font-size="11.5" fill="#2B3D52">Raw files, landed exactly as downloaded. Nothing changed, nothing deleted.</text>
+      <text x="86" y="142" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#546A82">/bronze/handhq/{venue}/{stake}/*.phhs  — the permanent record you can always re-run from</text>
+      <path d="M380 156 L380 174" stroke="#546A82" stroke-width="1.8" marker-end="url(#dn)"/>
+      <text x="396" y="170" font-family="-apple-system,sans-serif" font-size="10.5" fill="#7E92A8" font-style="italic">parse PHH · explode actions</text>
+
+      <!-- silver -->
+      <rect x="60" y="180" width="640" height="96" rx="13" fill="rgba(46,139,192,.10)" stroke="#2E8BC0" stroke-width="1.7"/>
+      <text x="86" y="204" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="#176390">SILVER</text>
+      <text x="86" y="221" font-family="-apple-system,sans-serif" font-size="11.5" fill="#2B3D52">Three clean tables in Parquet, partitioned by venue and day.</text>
+      <g font-family="ui-monospace,Menlo,monospace" font-size="9.5">
+        <rect x="86" y="230" width="188" height="34" rx="7" fill="#FFFFFF" stroke="#C6D4E4"/>
+        <text x="180" y="245" text-anchor="middle" fill="#176390" font-weight="700">hands</text>
+        <text x="180" y="258" text-anchor="middle" fill="#546A82">21.6M rows</text>
+        <rect x="286" y="230" width="188" height="34" rx="7" fill="#FFFFFF" stroke="#C6D4E4"/>
+        <text x="380" y="245" text-anchor="middle" fill="#176390" font-weight="700">hand_players</text>
+        <text x="380" y="258" text-anchor="middle" fill="#546A82">≈133M rows</text>
+        <rect x="486" y="230" width="188" height="34" rx="7" fill="#FFFFFF" stroke="#C6D4E4"/>
+        <text x="580" y="245" text-anchor="middle" fill="#176390" font-weight="700">actions</text>
+        <text x="580" y="258" text-anchor="middle" fill="#546A82">≈229M rows</text>
+      </g>
+      <path d="M380 278 L380 296" stroke="#546A82" stroke-width="1.8" marker-end="url(#dn)"/>
+      <text x="396" y="292" font-family="-apple-system,sans-serif" font-size="10.5" fill="#7E92A8" font-style="italic">group by player · build 25 features</text>
+
+      <!-- gold -->
+      <rect x="60" y="302" width="640" height="66" rx="13" fill="rgba(42,162,119,.11)" stroke="#2AA277" stroke-width="1.7"/>
+      <text x="86" y="326" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="#1C8560">GOLD</text>
+      <text x="86" y="344" font-family="-apple-system,sans-serif" font-size="11.5" fill="#2B3D52">One row per player. ~25 behaviour columns. Small enough to fit in memory.</text>
+      <text x="86" y="360" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#546A82">player_features — this is what the machine-learning models actually read</text>
+
+      <!-- models -->
+      <g>
+        <rect x="60" y="384" width="200" height="28" rx="8" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.4"/>
+        <text x="160" y="403" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#8A5E17">K-Means — who is who</text>
+        <rect x="280" y="384" width="200" height="28" rx="8" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.4"/>
+        <text x="380" y="403" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#8A5E17">Classifier — who will leave</text>
+        <rect x="500" y="384" width="200" height="28" rx="8" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.4"/>
+        <text x="600" y="403" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#8A5E17">Regressor — what they're worth</text>
+      </g>
+    </svg>
+    <div class="cap">Data shrinks as it rises: <b>20 GB of text → 229M structured rows → a few hundred
+    thousand player rows.</b> Only the top layer touches the models.</div>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — why keep Bronze at all?</span>
+    Because <b>you will get the parser wrong the first time.</b> If you overwrite the raw files while
+    "cleaning" them, a bug means re-downloading 20 GB. Keeping Bronze untouched means every mistake
+    costs a re-run, not a re-download. Say this in the report — it is exactly the kind of engineering
+    judgement the 4-mark "Data Engineering &amp; Architecture" criterion is looking for.
+  </div>
+
+  <h3>Where it all runs</h3>
+  <p>The guidelines specify <b>Databricks and PySpark</b> for Phases 2 and 3. Note one practical thing:
+  the old free "Databricks Community Edition" <b>was retired on 1 January 2026</b>. The replacement is
+  <b>Databricks Free Edition</b> — still free, and it no longer requires an AWS or Azure account to
+  sign up. Confirm with the professor which one the course expects.</p>
+  <div class="chips">
+    <span class="chip">Databricks Free Edition</span>
+    <span class="chip">PySpark</span>
+    <span class="chip">Spark SQL</span>
+    <span class="chip gr">Parquet</span>
+    <span class="chip g">MLlib</span>
+    <span class="chip">GitHub</span>
+  </div>
+</section>
+
+<!-- ===================== 8 ===================== -->
+<section id="s8">
+  <div class="sec-eyebrow"><span class="num">08</span> Phase 1 · Sessions 1–9</div>
+  <h2>Getting the data in and storing it properly</h2>
+
+  <p class="lead">Phase 1 is about <b>acquisition and storage</b> — and the marks come from
+  <i>explaining your choices</i>, not from the download itself.</p>
+
+  <ol class="steps">
+    <li><b>Acquire.</b> Pull the archive from Zenodo (DOI <code>10.5281/zenodo.17136841</code>). Start
+    with a single site-and-stake folder to develop against; add the rest once the parser is stable.</li>
+    <li><b>Land it as Bronze.</b> Copy the <code>.phhs</code> files, untouched, into distributed storage.
+    Folder path carries the metadata: <code>/bronze/handhq/venue=PS/stake=0.25/</code>.</li>
+    <li><b>Partition deliberately.</b> Split by <b>venue</b> and <b>day</b>. This means a query about
+    PokerStars on 3 July reads only that slice instead of scanning 20 GB — the storage equivalent of
+    a good index.</li>
+    <li><b>Convert to Parquet at the Silver layer.</b> Parquet is columnar: it stores each column
+    separately, so a query that needs only <code>player_id</code> and <code>action</code> never reads
+    the card columns. Typically both far smaller and far faster than raw text.</li>
+    <li><b>Document the scalability story.</b> Explain what would change at 100× the data — more
+    partitions, more worker nodes, and (if this were live) Kafka streaming the actions in real time
+    instead of a nightly batch.</li>
+  </ol>
+
+  <div class="box take">
+    <span class="lab">Takeaway — how to earn the Phase 1 marks</span>
+    Do not just write "we stored the data in HDFS". Write <b>why</b>: why Bronze/Silver/Gold, why
+    partition by venue and day, why Parquet instead of CSV, and what you would add if this were a live
+    system rather than a 23-day archive. <b>Three sentences of justification beat three screenshots.</b>
+  </div>
+
+  <div class="box discuss">
+    <span class="lab">Worth raising with the professor</span>
+    The course teaches an <i>HDFS simulation</i> (the <code>cluster/</code> folder from Session 1 and 4).
+    Ask whether Phase 1 should demonstrate real distributed storage on Databricks, or whether replicating
+    the taught simulation on this dataset is expected. This is a good, specific question for your
+    10:00 AM slot — it shows you have already read the guidelines.
+  </div>
+</section>
+
+<!-- ===================== 9 ===================== -->
+<section id="s9">
+  <div class="sec-eyebrow"><span class="num">09</span> Phase 2 · Sessions 10–13</div>
+  <h2>Cleaning it, and inventing the columns that matter</h2>
+
+  <p class="lead">This is the heart of the project. The raw data contains <b>almost nothing you can
+  model directly</b> — every useful column has to be built. That is the point.</p>
+
+  <h3>Step 1 — Parse and explode</h3>
+  <p>Each <code>.phhs</code> file holds around a thousand hands stacked one after another. A parser
+  reads each block and writes out three tables:</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Table</th><th>One row per…</th><th>Key columns</th></tr></thead>
+    <tbody>
+      <tr><td><code>hands</code></td><td>hand</td><td>hand_id, venue, table_id, timestamp, big_blind, seat_count, pot_size, estimated_rake</td></tr>
+      <tr><td><code>hand_players</code></td><td>player <i>in</i> a hand</td><td>hand_id, player_id, seat, starting_stack, amount_invested, winnings, net_result</td></tr>
+      <tr><td><code>actions</code></td><td>single decision</td><td>hand_id, player_id, street, action_type, amount, action_order</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Step 2 — Clean, and justify every choice</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:34%">Problem (measured)</th><th>How to handle it — and the justification you write down</th></tr></thead>
+    <tbody>
+      <tr><td><b>21.3%</b> of hands have no <code>winnings</code></td><td>Keep them for <i>behavioural</i> features (folds and raises are still visible) but exclude them from <i>money</i> features. Document the split — do not silently drop a fifth of the data.</td></tr>
+      <tr><td><b>77.6%</b> of hands never reveal cards</td><td>Do not try to impute cards. Build the entire feature set from <b>betting behaviour</b> instead. This is a deliberate design decision and a strong talking point.</td></tr>
+      <tr><td>Different stakes mixed together</td><td><b>Divide every money amount by the big blind.</b> Without this, a $50 swing at 25NL and at 1000NL look identical to the model, which is nonsense.</td></tr>
+      <tr><td>Players with very few hands</td><td>A player with 12 hands has a meaningless "fold percentage". Set a <b>minimum-hands threshold</b> (e.g. 100) and state it. Report how many players that excludes.</td></tr>
+      <tr><td>Extreme outliers</td><td>All-in for a whole stack, or a disconnection. Cap at a sensible percentile rather than deleting, and say why.</td></tr>
+      <tr><td><b>4.3%</b> missing <code>seat_count</code></td><td>Recover it by counting the <code>players</code> list — a cheap, exact fix.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Step 3 — Build the features (this is where the marks are)</h3>
+  <p>These are the real statistics that professional poker analysts use. Each one is a group-by across
+  hundreds of millions of rows. <b>Each also has an obvious business meaning</b> — which is what makes
+  the model interpretable to management later.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:20%">Feature</th><th style="width:36%">What it means in plain English</th><th>What a high value tells the business</th></tr></thead>
+    <tbody>
+      <tr><td><b>VPIP</b><br><span style="font-size:11.5px;color:#7E92A8">voluntarily put $ in pot</span></td><td>Out of every 100 hands dealt to them, how many did they choose to play instead of folding?</td><td><b>High = casual.</b> Fun-seekers play lots of hands. Professionals fold most of them.</td></tr>
+      <tr><td><b>PFR</b><br><span style="font-size:11.5px;color:#7E92A8">pre-flop raise %</span></td><td>How often they raise first, rather than just calling along.</td><td><b>High = aggressive/skilled.</b> Passive calling is the classic beginner pattern.</td></tr>
+      <tr><td><b>AF</b><br><span style="font-size:11.5px;color:#7E92A8">aggression factor</span></td><td>(bets + raises) ÷ calls. Are they pushing or following?</td><td>Separates confident players from passive ones.</td></tr>
+      <tr><td><b>Tables at once</b></td><td>Max distinct tables the same player appears on within one minute.</td><td><b>The strongest single signal.</b> Casuals play 1–2. Professionals play 8–24. Nobody plays 16 tables for fun.</td></tr>
+      <tr><td><b>bb/100</b><br><span style="font-size:11.5px;color:#7E92A8">win rate</span></td><td>Big blinds won per 100 hands. The universal poker scorecard.</td><td>Positive = taking money out of the ecosystem. Negative = putting money in.</td></tr>
+      <tr><td><b>Hands per active day</b></td><td>Volume. Are they grinding or dipping in?</td><td>High volume + positive win rate = professional extractor.</td></tr>
+      <tr><td><b>Session length &amp; hour of day</b></td><td>How long they sit, and when. Evenings vs all day.</td><td>Evening-only, short sessions = the recreational profile.</td></tr>
+      <tr><td><b>Buy-in behaviour</b></td><td>Do they sit down with exactly the maximum, every time?</td><td>Always-max is a professional habit; odd amounts suggest casual play.</td></tr>
+      <tr><td><b>Days active / gaps</b></td><td>How many of the 23 days they appeared, and their longest gap.</td><td>Directly feeds the churn model.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — the multi-tabling feature is your showpiece</span>
+    Every other feature is a simple count. <b>"How many tables was this player on at the same moment?"</b>
+    is not — it requires joining a player's actions to themselves across tables, bucketed by time. It is
+    the one feature that genuinely needs a distributed engine, it is the single best casual-vs-professional
+    signal, and <b>a non-technical audience understands it instantly.</b> Put it on a slide.
+  </div>
+
+  <h3>Step 4 — Encode and scale</h3>
+  <p>Two final mechanical steps the guidelines explicitly ask for. Text columns like
+  <code>venue</code> become numbers (<code>StringIndexer</code> then <code>OneHotEncoder</code>). And
+  every numeric feature gets <b>standardised</b> — rescaled so they are all on a comparable range.</p>
+  <p><b>Why scaling is not optional here:</b> K-Means measures straight-line distance between players.
+  If "hands played" runs 0–50,000 and "VPIP" runs 0–1, the distance calculation is entirely dominated by
+  hands played and VPIP is effectively ignored. Scaling puts them on equal footing. <b>That sentence is
+  a mark.</b></p>
+</section>
+
+<!-- ===================== 10 ===================== -->
+<section id="s10">
+  <div class="sec-eyebrow"><span class="num">10</span> Phase 3 · Sessions 14–18</div>
+  <h2>The three models</h2>
+
+  <p class="lead">The guidelines require <b>at least two</b> analytical approaches from PySpark MLlib.
+  We propose three, which map onto three genuine business questions.</p>
+
+  <h3>Model 1 — Who is who? <span style="font-weight:600;color:#546A82">(Clustering · K-Means)</span></h3>
+  <p>We do not have labels saying "this one is a professional". We have to <b>discover</b> the groups
+  from behaviour. K-Means takes every player's feature row and sorts them into <i>k</i> groups such that
+  players inside a group behave similarly.</p>
+  <p>Choose <i>k</i> using the <b>silhouette score</b> (a number saying how cleanly separated the groups
+  are) plus the elbow method, and — crucially — <b>whether the groups make sense to a human</b>.</p>
+
+  <div class="demo">
+    <div class="dhead">
+      <div class="t">What we expect the clusters to look like</div>
+      <div class="s">Click a segment. Each dot is a player: across = how many hands they play, up = how aggressive they are.</div>
+    </div>
+    <div class="stage">
+      <svg viewBox="0 0 640 340" id="scatter" role="img" aria-label="Scatter plot of player types by how loose and how aggressive they play">
+        <!-- axes -->
+        <line x1="70" y1="290" x2="600" y2="290" stroke="#C6D4E4" stroke-width="1.5"/>
+        <line x1="70" y1="30" x2="70" y2="290" stroke="#C6D4E4" stroke-width="1.5"/>
+        <text x="335" y="322" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" fill="#546A82">VPIP — how many hands they choose to play →</text>
+        <text x="24" y="160" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" fill="#546A82" transform="rotate(-90 24 160)">PFR — how often they raise →</text>
+        <text x="70" y="308" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7E92A8">0%</text>
+        <text x="335" y="308" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7E92A8">35%</text>
+        <text x="600" y="308" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7E92A8">70%</text>
+
+        <!-- hulls -->
+        <ellipse id="h-nit"  class="hull" cx="152" cy="238" rx="58" ry="42" stroke="#546A82"/>
+        <ellipse id="h-reg"  class="hull" cx="248" cy="168" rx="66" ry="52" stroke="#C08A2E"/>
+        <ellipse id="h-rec"  class="hull" cx="424" cy="246" rx="86" ry="46" stroke="#2E8BC0"/>
+        <ellipse id="h-man"  class="hull" cx="520" cy="112" rx="66" ry="50" stroke="#DB4A40"/>
+
+        <g id="pts"></g>
+      </svg>
+    </div>
+    <div class="status" id="segStatus">
+      <b>Four groups we expect the model to find.</b> These are <i>hypotheses drawn from how poker actually
+      works</i> — not results. The real clusters come out of the data, and part of the analysis is checking
+      whether they match this picture.
+      <span class="sm">Tip: the two axes shown are only 2 of ~25 features. The real model clusters in all of them at once.</span>
+    </div>
+    <div class="ctrl">
+      <button id="b-rec" onclick="seg('rec')">The Recreational</button>
+      <button id="b-reg" onclick="seg('reg')">The Grinder</button>
+      <button id="b-nit" onclick="seg('nit')">The Nit</button>
+      <button id="b-man" onclick="seg('man')">The Gambler</button>
+      <button class="ghost" onclick="seg(null)">Reset</button>
+    </div>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Where it breaks — do not oversell this</span>
+    Those four names are <b>what the poker world expects</b>, not what your model has found. When you
+    run it, some clusters will be messier, and you may get five or three instead of four. <b>Report what
+    actually comes out</b>, including any cluster you cannot explain. Examiners reward honesty about a
+    messy cluster far more than a suspiciously tidy story.
+  </div>
+
+  <h3>Model 2 — Who is about to leave? <span style="font-weight:600;color:#546A82">(Classification)</span></h3>
+  <p>Now the money question. Here is the neat part: <b>we do not need anyone to label the data for us</b> —
+  the answer is already sitting in the timestamps. We split the 23 days in two:</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 700 170" role="img" aria-label="Days 1 to 14 build features, days 15 to 23 decide whether the player returned">
+      <rect x="40" y="52" width="366" height="56" rx="10" fill="rgba(46,139,192,.12)" stroke="#2E8BC0" stroke-width="1.6"/>
+      <text x="223" y="76" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#176390">Days 1–14 · what we know</text>
+      <text x="223" y="95" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">build all ~25 features from this window only</text>
+
+      <rect x="420" y="52" width="240" height="56" rx="10" fill="rgba(192,138,46,.14)" stroke="#C08A2E" stroke-width="1.6"/>
+      <text x="540" y="76" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#8A5E17">Days 15–23 · the answer</text>
+      <text x="540" y="95" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">did they play even one hand?</text>
+
+      <line x1="40" y1="130" x2="660" y2="130" stroke="#C6D4E4" stroke-width="1.4"/>
+      <text x="40" y="148" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7E92A8">1 Jul</text>
+      <text x="406" y="148" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7E92A8">14 Jul</text>
+      <text x="660" y="148" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7E92A8">23 Jul</text>
+      <line x1="413" y1="122" x2="413" y2="138" stroke="#DB4A40" stroke-width="2"/>
+      <text x="350" y="34" font-family="-apple-system,sans-serif" font-size="11.5" fill="#C0392E" font-weight="650">no peeking across this line</text>
+      <path d="M413 40 L413 48" stroke="#DB4A40" stroke-width="1.6"/>
+    </svg>
+    <div class="cap">Features come from the first window; the label comes from the second. <b>The label is
+    free and honest</b> — nobody had to guess it.</div>
+  </div>
+
+  <p>Then train and compare, exactly as the guidelines ask:</p>
+  <ul class="pts">
+    <li><b>Logistic Regression</b> — the simple, explainable baseline. Always start here.</li>
+    <li><b>Random Forest</b> — usually more accurate; also gives feature importances, so you can tell
+    management <i>which behaviours predict leaving</i>.</li>
+    <li><b>Gradient Boosted Trees</b> — often the strongest, but hardest to explain.</li>
+  </ul>
+  <p>Judge them on <b>AUC</b>, precision, recall and a confusion matrix — <b>not accuracy</b>. If 80%
+  of players churn, a model that predicts "everyone churns" is 80% accurate and completely worthless.
+  Saying this out loud earns the "Model Evaluation &amp; Interpretation" marks.</p>
+
+  <div class="box board">
+    <span class="lab">Key idea — pick the metric that matches the money</span>
+    A false alarm costs you one unnecessary bonus offer. A miss costs you a customer forever. Those are
+    not equal, so <b>recall matters more than precision here</b>, and you should say so and choose your
+    decision threshold accordingly. That is analytics translated into a business decision — which is
+    exactly the skill being marked.
+  </div>
+
+  <h3>Model 3 — What is a player worth? <span style="font-weight:600;color:#546A82">(Regression)</span></h3>
+  <p>Predict how much rake a player will generate in the outcome window, using Linear Regression versus
+  a Random Forest Regressor, judged on RMSE and R². Combined with Model 2 you get the number management
+  actually wants: <b>expected revenue at risk</b> = probability of leaving × their value.</p>
+
+  <div class="box take">
+    <span class="lab">Takeaway</span>
+    Two models satisfy the requirement; three tell a complete story — <b>who they are, whether they are
+    leaving, and how much that costs.</b> If time runs short, drop Model 3 and keep 1 and 2.
+  </div>
+</section>
+
+<!-- ===================== 11 ===================== -->
+<section id="s11">
+  <div class="sec-eyebrow"><span class="num">11</span> Act IV · The payoff</div>
+  <h2>What management actually does on Monday morning</h2>
+
+  <p class="lead">Models do not earn marks. <b>Decisions</b> do. The rubric gives 2 marks for
+  recommendations and 3 for executive storytelling — that is a quarter of the grade riding on this
+  section alone.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:26%">Finding</th><th style="width:37%">Recommendation</th><th>Why it works</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>A small group of players sits at 12+ tables and wins steadily</b></td>
+        <td><b>Cap simultaneous tables</b> (e.g. 6) and ban automatic seating scripts.</td>
+        <td>Slows extraction without banning anyone. Real operators have done exactly this.</td>
+      </tr>
+      <tr>
+        <td><b>Some tables are 5 grinders and 1 recreational</b></td>
+        <td><b>Change seating rules</b> so recreational players are not seated into ambushes.</td>
+        <td>Directly extends the life of your most valuable customers.</td>
+      </tr>
+      <tr>
+        <td><b>The model flags casual players at high risk of leaving</b></td>
+        <td><b>Trigger a retention offer</b> — a deposit match or a free tournament ticket — before they go.</td>
+        <td>Cheaper to keep a player than acquire one. The model tells you exactly who to spend on.</td>
+      </tr>
+      <tr>
+        <td><b>Loyalty rewards flow to the biggest extractors</b></td>
+        <td><b>Restructure the scheme</b> to reward frequency and loyalty, not volume alone.</td>
+        <td>Stops the business from subsidising the very behaviour that is killing it.</td>
+      </tr>
+      <tr>
+        <td><b>A cluster shows very long sessions and rising losses</b></td>
+        <td><b>Responsible-gaming intervention</b> — session reminders, deposit-limit prompts.</td>
+        <td>Ethically right, increasingly a regulatory requirement, and it protects long-term revenue.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — quantify at least one of them</span>
+    Do not stop at "we recommend capping tables". Compute the number: <b>"the top 5% of players by
+    extraction rate take X big blinds per day out of the recreational pool; if the churn model is right,
+    that costs roughly Y% of monthly rake."</b> One real number, computed from your own pipeline, is
+    worth more than five well-phrased suggestions.
+  </div>
+
+  <div class="box discuss">
+    <span class="lab">The framing to lead with</span>
+    Present this as <b>protecting customers and the long-term health of the business</b>, not as
+    extracting more from gamblers. It is both the honest reading and the stronger one — and it makes
+    the responsible-gaming recommendation land as a genuine strategic insight rather than a
+    box-ticking afterthought.
+  </div>
+</section>
+
+<!-- ===================== 12 ===================== -->
+<section id="s12">
+  <div class="sec-eyebrow"><span class="num">12</span> Honesty section</div>
+  <h2>Every weak spot, and what to say about it</h2>
+
+  <p class="lead">Examiners find these anyway. <b>Naming them first turns a weakness into evidence of
+  rigour</b> — and the guidelines explicitly ask for a "Risks" slide.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:28%">Risk</th><th style="width:36%">Honest assessment</th><th>What to do</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>The data is from July 2009</b></td>
+        <td>It is 17 years old. Games were softer then and the industry has changed.</td>
+        <td>State it on the dataset slide. Argue that the <b>method</b> is what transfers, and the ecosystem dynamic is unchanged. Do not hide the date.</td>
+      </tr>
+      <tr>
+        <td><b>Rake is not in the data</b></td>
+        <td>The company's actual revenue per hand was never recorded.</td>
+        <td>Derive it as money-in minus money-out, <b>validate on a sample</b>, and label it clearly as an estimate throughout.</td>
+      </tr>
+      <tr>
+        <td><b>Only 23 days</b></td>
+        <td>Real churn is measured over months. Ours is a 9-day window.</td>
+        <td>Call it <b>"short-horizon lapse"</b>, not "churn". Precision in wording is itself a mark.</td>
+      </tr>
+      <tr>
+        <td><b>No ground truth for bots</b></td>
+        <td>Nobody labelled which accounts were cheating, so supervised bot detection is impossible.</td>
+        <td><b>This is why we chose churn as the label.</b> If you want a bot angle, frame it as unsupervised anomaly detection and claim nothing more.</td>
+      </tr>
+      <tr>
+        <td><b>Players appear on one site only</b></td>
+        <td>Someone playing on both PokerStars and PartyPoker looks like two different people.</td>
+        <td>Analyse each platform separately. Never merge player IDs across venues.</td>
+      </tr>
+      <tr>
+        <td><b>Free-tier compute limits</b></td>
+        <td>229M rows on a free Databricks cluster will be slow.</td>
+        <td>Develop on one site + one stake. Run the full set once, at the end, and screenshot it.</td>
+      </tr>
+      <tr>
+        <td><b>Everyone will use Kaggle</b></td>
+        <td>Not really a risk — an advantage.</td>
+        <td>A Zenodo DOI, a real licence and an IEEE citation make your data section look like research, not a download.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Where it breaks — the one that could sink you</span>
+    <b>Check the professor is comfortable with a gambling-industry topic before you invest three weeks.</b>
+    The guidelines list open domains and do not exclude it, and the responsible-gaming angle is a strong
+    defence — but this is a 30-second question at an office-hours slot, and the answer changes everything.
+    <b>Ask on day one.</b>
+  </div>
+</section>
+
+<!-- ===================== 13 ===================== -->
+<section id="s13">
+  <div class="sec-eyebrow"><span class="num">13</span> Delivery</div>
+  <h2>Five weeks, and who does what</h2>
+
+  <p class="lead">Submission is <b>8 September</b>; presentations 11–12 September. That is about
+  five and a half weeks from today.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 300" role="img" aria-label="Project timeline from 1 August to 12 September">
+      <line x1="60" y1="42" x2="690" y2="42" stroke="#C6D4E4" stroke-width="1.4"/>
+      <g font-family="ui-monospace,Menlo,monospace" font-size="9.5" fill="#7E92A8">
+        <text x="60" y="32">1 Aug</text><text x="185" y="32">10 Aug</text><text x="310" y="32">18 Aug</text>
+        <text x="435" y="32">26 Aug</text><text x="545" y="32">3 Sep</text><text x="690" y="32" text-anchor="end">12 Sep</text>
+      </g>
+      <g stroke="#C6D4E4" stroke-width="1"><line x1="60" y1="36" x2="60" y2="48"/><line x1="185" y1="36" x2="185" y2="48"/><line x1="310" y1="36" x2="310" y2="48"/><line x1="435" y1="36" x2="435" y2="48"/><line x1="545" y1="36" x2="545" y2="48"/><line x1="690" y1="36" x2="690" y2="48"/></g>
+
+      <!-- bars -->
+      <rect x="60" y="62" width="128" height="30" rx="7" fill="rgba(219,74,64,.16)" stroke="#DB4A40" stroke-width="1.3"/>
+      <text x="70" y="82" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#C0392E">Approve topic · get data · repo</text>
+
+      <rect x="150" y="100" width="170" height="30" rx="7" fill="rgba(192,138,46,.16)" stroke="#C08A2E" stroke-width="1.3"/>
+      <text x="160" y="120" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#8A5E17">Phase 1 · parser + Bronze/Silver</text>
+
+      <rect x="285" y="138" width="180" height="30" rx="7" fill="rgba(46,139,192,.16)" stroke="#2E8BC0" stroke-width="1.3"/>
+      <text x="295" y="158" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#176390">Phase 2 · clean + 25 features</text>
+
+      <rect x="420" y="176" width="165" height="30" rx="7" fill="rgba(42,162,119,.16)" stroke="#2AA277" stroke-width="1.3"/>
+      <text x="430" y="196" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#1C8560">Phase 3 · three models</text>
+
+      <rect x="545" y="214" width="145" height="30" rx="7" fill="rgba(46,139,192,.16)" stroke="#2E8BC0" stroke-width="1.3"/>
+      <text x="555" y="234" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#176390">Report · deck · rehearse</text>
+
+      <line x1="628" y1="56" x2="628" y2="266" stroke="#DB4A40" stroke-width="1.6" stroke-dasharray="4 4"/>
+      <text x="622" y="264" text-anchor="end" font-family="-apple-system,sans-serif" font-size="10.5" font-weight="700" fill="#C0392E">8 Sep — submit</text>
+
+      <text x="60" y="288" font-family="-apple-system,sans-serif" font-size="10.5" fill="#7E92A8" font-style="italic">Bars overlap on purpose — start writing the report in week 2, not week 5.</text>
+    </svg>
+    <div class="cap">The commonest failure is leaving the report and deck to the final week. <b>Write as
+    you go.</b></div>
+  </div>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:16%">Week</th><th style="width:26%">Dates</th><th>Goal</th></tr></thead>
+    <tbody>
+      <tr><td><b>Week 0</b></td><td>1–10 Aug</td><td>Submit topic <b>today</b>. Book an office-hours slot via the CR. Create the GitHub repo with the required folder structure and <b>start committing immediately</b> — the rubric asks for commit history across the trimester. Download one site+stake folder and get the parser reading it.</td></tr>
+      <tr><td><b>Week 1</b></td><td>11–17 Aug</td><td>Phase 1 complete: Bronze landed, PHH parser working, Silver tables written as Parquet, partitioning justified in writing.</td></tr>
+      <tr><td><b>Week 2</b></td><td>18–24 Aug</td><td>Phase 2 complete: cleaning rules applied and documented, all ~25 features built, Gold table produced. <b>Start the report now.</b></td></tr>
+      <tr><td><b>Week 3</b></td><td>25–31 Aug</td><td>Phase 3: K-Means with silhouette-based <i>k</i>, three churn classifiers compared, regression if time allows.</td></tr>
+      <tr><td><b>Week 4</b></td><td>1–7 Sep</td><td>Insights, recommendations, quantified impact. Finish the consulting report, build the 10-slide deck, clean the notebook so it runs top-to-bottom, write the README.</td></tr>
+      <tr><td><b>Submit</b></td><td>8 Sep</td><td>Report PDF + repo + deck. Presentations 11–12 Sep.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Splitting the work across six people</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:24%">Role</th><th>Owns</th></tr></thead>
+    <tbody>
+      <tr><td><b>Data engineer ×2</b></td><td>The PHH parser, Bronze/Silver layers, partitioning, Parquet conversion. Hardest and most fiddly job — give it two people.</td></tr>
+      <tr><td><b>Feature engineer</b></td><td>The ~25 poker statistics, cleaning rules, and the written justification for each.</td></tr>
+      <tr><td><b>ML lead</b></td><td>K-Means, the classifiers, metric comparison, feature importances.</td></tr>
+      <tr><td><b>Business analyst</b></td><td>Industry research, translating model output into the five recommendations, quantifying impact.</td></tr>
+      <tr><td><b>Report &amp; deck owner</b></td><td>The consulting PDF, the 10-slide deck, README, AI-usage disclosure, contributions appendix. Also the <b>team lead</b> who talks to the professor.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="font-size:14.5px;color:#546A82">Everyone commits to the repo under their own account — the
+  rubric explicitly looks for evidence of individual contribution.</p>
+</section>
+
+<!-- ===================== 14 ===================== -->
+<section id="s14">
+  <div class="sec-eyebrow"><span class="num">14</span> Delivery</div>
+  <h2>How this earns each of the 20 marks</h2>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:34%">Rubric criterion</th><th class="num" style="width:10%">Marks</th><th>What we hand in for it</th></tr></thead>
+    <tbody>
+      <tr><td>Business Problem Definition &amp; Executive Storytelling</td><td class="num"><b>3</b></td><td>The ecosystem death spiral, the fishing-lake analogy, and the 218×-Excel proof that this needs Big Data.</td></tr>
+      <tr><td><b>Data Engineering &amp; Architecture</b></td><td class="num"><b>4</b></td><td>Bronze/Silver/Gold on Databricks, PHH parser, partition-by-venue-and-day, Parquet, and a written justification for each choice.</td></tr>
+      <tr><td>Feature Engineering &amp; Data Preparation</td><td class="num"><b>3</b></td><td>~25 engineered poker statistics; big-blind normalisation; the structurally-missing-cards decision; minimum-hands threshold; scaling before K-Means.</td></tr>
+      <tr><td><b>Machine Learning Implementation</b></td><td class="num"><b>4</b></td><td>Three MLlib approaches — clustering, classification, regression — with a clean train/outcome window split.</td></tr>
+      <tr><td>Model Evaluation &amp; Interpretation</td><td class="num"><b>2</b></td><td>Silhouette for <i>k</i>; AUC/precision/recall over accuracy; the false-alarm-vs-miss cost argument; feature importances.</td></tr>
+      <tr><td>Business Recommendations &amp; Strategic Value</td><td class="num"><b>2</b></td><td>Five specific interventions, at least one quantified in rake terms, plus the responsible-gaming angle.</td></tr>
+      <tr><td>Professionalism, Documentation &amp; Presentation</td><td class="num"><b>2</b></td><td>GitHub repo with real commit history, PEP 8, full README, 10-slide deck, consulting PDF, AI-usage disclosure.</td></tr>
+      <tr class="tot"><td>Total</td><td class="num"><b>20</b></td><td>Every criterion has something concrete pointed at it.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>The three required deliverables</h3>
+  <ul class="pts">
+    <li><b>Executive presentation — max 10 slides including title and thank-you.</b> That is 8 content
+    slides: problem · industry · dataset · architecture · findings · model performance · recommendations
+    · risks &amp; roadmap. One idea per slide.</li>
+    <li><b>Technical notebook</b> — must run top to bottom without errors. Test this on a fresh cluster
+    before submitting; a notebook that only works in your session is the classic own-goal.</li>
+    <li><b>Consulting report PDF</b> — Executive Summary, Business Context, Data Understanding (the 5 Vs),
+    Enterprise Architecture, Data Engineering, Machine Learning, Business Insights, Strategic
+    Recommendations, Appendix. <b>Do not forget the AI usage disclosure and team contributions</b> —
+    they are named in the guidelines.</li>
+  </ul>
+
+  <div class="box board">
+    <span class="lab">Key idea — the 5 Vs section writes itself</span>
+    <b>Volume:</b> 229M action rows, 218× Excel. <b>Velocity:</b> 1,000 hands every 2¼ minutes from one
+    site at one stake; fraud and churn signals must be caught live. <b>Variety:</b> structured results,
+    semi-structured nested action logs, unstructured table chat. <b>Veracity:</b> 77.6% of hands never
+    reveal cards and 21.3% lack a winnings field. <b>Value:</b> rake — the entire revenue line.
+    Every one of those numbers is measured, not asserted.
+  </div>
+</section>
+
+<!-- ===================== 15 ===================== -->
+<section id="s15">
+  <div class="sec-eyebrow"><span class="num">15</span> Right now</div>
+  <h2>What to do today</h2>
+
+  <p class="lead">Topic submission is due <b>1 August</b> — today. Approval closes 10 August.</p>
+
+  <div class="box take">
+    <span class="lab">Draft topic submission — edit and send</span>
+    <b>Title:</b> Protecting the Player Ecosystem — A Big Data Approach to Customer Retention and Game
+    Integrity in Online Gaming
+    <span class="sub">
+    <b>Domain:</b> Online Gaming / E-Commerce Marketplace analytics.<br><br>
+    <b>Problem:</b> An online poker operator earns revenue as a small commission on each hand played.
+    Its revenue therefore depends entirely on retaining recreational players — who are steadily depleted
+    by a small population of high-volume professional players. This erosion is invisible on standard
+    revenue dashboards until customers have already left.<br><br>
+    <b>Dataset:</b> "A Dataset of Poker Hand Histories", University of Toronto Computer Poker Research
+    Group — 21,605,687 anonymised real-money hand histories across six commercial platforms
+    (1–23 July 2009), published on Zenodo under CC BY 4.0, DOI 10.5281/zenodo.17136841. Expands to
+    approximately 229 million player-action records.<br><br>
+    <b>Approach:</b> Bronze/Silver/Gold pipeline on Databricks with PySpark; ~25 engineered behavioural
+    features; PySpark MLlib K-Means segmentation, churn classification (Logistic Regression / Random
+    Forest / GBT) and value regression.<br><br>
+    <b>Outcome:</b> A player-segmentation and early-warning system, with quantified recommendations on
+    table caps, seating policy, targeted retention spend and responsible-gaming intervention.
+    </span>
+  </div>
+
+  <h3>Then, in this order</h3>
+  <ol class="steps">
+    <li><b>Ask the professor two questions</b> at an office-hours slot (Mon/Wed/Fri, 10:00–10:30, booked
+    through the CR): <i>is a gambling-industry dataset acceptable?</i> and <i>which Databricks tier does
+    the course use?</i> Both are 30-second questions that de-risk everything.</li>
+    <li><b>Create the GitHub repo today</b> and commit a README. The rubric wants commit history "throughout
+    the trimester" — an empty repo until September is a visible red flag.</li>
+    <li><b>Download one folder</b> — <code>PS-2009-07-01_2009-07-23_25NLH_OBFU</code>, roughly 831 MB —
+    and open one file. Confirm it looks like the example in section 05.</li>
+    <li><b>Write the parser for a single hand block first.</b> Everything else depends on it. Get one
+    hand into a clean row before you think about 21 million.</li>
+    <li><b>Validate the rake estimate</b> — money in minus money out — on 100 hands, by hand if necessary.
+    If it does not hold, you need to know in week 1, not week 4.</li>
+  </ol>
+
+  <div class="closer">
+    <div class="quote">The company never plays a hand.<br><span class="a">It only needs the game to keep going.</span></div>
+    <p style="margin-top:18px;margin-bottom:0;color:#546A82">
+      That single sentence is your whole project. Every feature you build, every cluster you find and
+      every recommendation you make exists to answer one question: <b>who is about to stop playing, and
+      what is that going to cost us?</b>
+    </p>
+    <a class="next" href="#s6">
+      <span class="arw">↑</span>
+      <span>
+        <span class="nl">Before you commit</span>
+        <span class="nt">Re-read section 06 — the due-diligence tests</span>
+        <span class="nd">Four checks passed, two things still need verifying by you</span>
+      </span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <b>Sources — all verified 1 August 2026.</b><br>
+  Project brief: <code>Github folder/nmims_analytics/sessions/Big_Data_Analytics_Project_Guidelines.pdf</code><br>
+  Dataset: <a href="https://github.com/uoftcprg/phh-dataset">github.com/uoftcprg/phh-dataset</a> ·
+  <a href="https://zenodo.org/records/17136841">Zenodo DOI 10.5281/zenodo.17136841</a> (CC BY 4.0, v3, 16 Sep 2025, 20.3 GB)<br>
+  Format spec: <a href="https://github.com/uoftcprg/phh-std">PHH File Format Specification</a> (MIT) ·
+  parser library <a href="https://github.com/uoftcprg/pokerkit">PokerKit</a><br>
+  Citation: Kim, Juho. "Recording and Describing Poker Hands." <i>IEEE Conference on Games (CoG)</i>, 2024. DOI 10.1109/CoG60054.2024.10645611<br>
+  Platform: <a href="https://www.databricks.com/learn/free-edition">Databricks Free Edition</a> — replaced Community Edition, retired 1 Jan 2026<br>
+  <br>
+  <b>Measured directly</b> by downloading and parsing 3 files (2,986 hands) from
+  <code>data/handhq/PS-2009-07-01_2009-07-23_25NLH_OBFU/0.25/</code>:
+  player-ID stability (91.7% cross-file overlap), timestamps, 10.6 actions/hand, 6.16 players/hand,
+  22.4% showdown rate, 21.3% missing winnings, 4.3% missing seat_count.<br>
+  <b>Estimated</b> (clearly flagged as such in the text): the ~229M action-row projection, and the
+  rake-derivation method — both still to be validated by the team.
+</footer>
+
+</main>
+</div>
+
+<script>
+/* ---------- reading progress ---------- */
+const prog = document.getElementById('progress');
+function onScroll(){
+  const h = document.documentElement;
+  const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  prog.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+document.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+/* ---------- scroll-spy rail ---------- */
+const links = [...document.querySelectorAll('.rail a')];
+const map = {};
+links.forEach(a => map[a.getAttribute('href').slice(1)] = a);
+const sections = [...document.querySelectorAll('section')];
+let spyActive = null;
+function setActive(){
+  const line = 150;
+  let current = sections[0];
+  for(const s of sections){
+    if(s.getBoundingClientRect().top <= line) current = s;
+  }
+  if(current.id === spyActive) return;
+  spyActive = current.id;
+  links.forEach(l=>l.classList.remove('on'));
+  const a = map[current.id];
+  if(a) a.classList.add('on');
+}
+document.addEventListener('scroll', setActive, {passive:true});
+window.addEventListener('resize', setActive, {passive:true});
+setActive();
+
+/* ---------- reveal on scroll (scroll-driven, never stuck hidden) ---------- */
+const rvEls = [...document.querySelectorAll('.rv')];
+function revealInView(){
+  const vh = window.innerHeight;
+  for(const el of rvEls){
+    if(el.classList.contains('in')) continue;
+    if(el.getBoundingClientRect().top < vh * 0.92) el.classList.add('in');
+  }
+}
+document.addEventListener('scroll', revealInView, {passive:true});
+window.addEventListener('resize', revealInView, {passive:true});
+window.addEventListener('hashchange', ()=>{ [80,300,600].forEach(t=>setTimeout(revealInView, t)); });
+revealInView();
+
+/* ---------- player-segment explorer ---------- */
+const SEGS = {
+  rec:{name:'The Recreational', color:'#2E8BC0', cx:424, cy:246, sx:74, sy:34, n:46,
+       stat:'VPIP ≈ 45% · PFR ≈ 8% · 1–2 tables · ~40 hands/day · losing slowly',
+       body:'Plays lots of hands, rarely raises, one table, evenings only. <b>This is the customer.</b> Every rupee in the ecosystem originates here.',
+       act:'<b>Action:</b> protect at all costs. Flag for retention the moment the churn model fires.'},
+  reg:{name:'The Grinder', color:'#C08A2E', cx:248, cy:168, sx:56, sy:42, n:34,
+       stat:'VPIP ≈ 22% · PFR ≈ 18% · 8–16 tables · ~900 hands/day · winning steadily',
+       body:'Folds most hands, raises when they play, and does it on a dozen tables at once for hours. A professional. <b>Not a villain — but the extraction rate is the problem.</b>',
+       act:'<b>Action:</b> cap simultaneous tables, ban seating scripts, stop rewarding raw volume.'},
+  nit:{name:'The Nit', color:'#546A82', cx:152, cy:238, sx:48, sy:34, n:26,
+       stat:'VPIP ≈ 12% · PFR ≈ 9% · 3–5 tables · ~300 hands/day · barely winning',
+       body:'Extremely cautious. Folds almost everything and waits for certainty. Wins a little, but generates very little action for anyone.',
+       act:'<b>Action:</b> low priority. Contributes little rake and little entertainment.'},
+  man:{name:'The Gambler', color:'#DB4A40', cx:520, cy:112, sx:56, sy:40, n:22,
+       stat:'VPIP ≈ 60% · PFR ≈ 35% · 1 table · ~120 hands/day · losing fast',
+       body:'Plays almost everything and raises wildly. Generates enormous rake in the short run — and <b>burns through their balance in days</b>. Shortest lifespan of any segment.',
+       act:'<b>Action:</b> the responsible-gaming flag. Session reminders and deposit-limit prompts. Short-term revenue here is long-term customer loss.'}
+};
+
+/* deterministic pseudo-random so the picture is stable */
+let _s = 12345;
+function rnd(){ _s = (_s * 1103515245 + 12345) & 0x7fffffff; return _s / 0x7fffffff; }
+function gauss(){ return (rnd()+rnd()+rnd()-1.5)/1.5; }
+
+const ptsG = document.getElementById('pts');
+const allPts = [];
+Object.entries(SEGS).forEach(([key,s])=>{
+  for(let i=0;i<s.n;i++){
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', (s.cx + gauss()*s.sx).toFixed(1));
+    c.setAttribute('cy', (s.cy + gauss()*s.sy).toFixed(1));
+    c.setAttribute('r', 4.2);
+    c.setAttribute('class','pt');
+    c.dataset.seg = key;
+    ptsG.appendChild(c);
+    allPts.push(c);
+  }
+});
+
+const DEFAULT_MSG = '<b>Four groups we expect the model to find.</b> These are <i>hypotheses drawn from how poker actually works</i> — not results. The real clusters come out of the data, and part of the analysis is checking whether they match this picture.<span class="sm">Tip: the two axes shown are only 2 of ~25 features. The real model clusters in all of them at once.</span>';
+
+function seg(key){
+  ['rec','reg','nit','man'].forEach(k=>{
+    document.getElementById('b-'+k).classList.toggle('on', k===key);
+    document.getElementById('h-'+k).classList.toggle('show', k===key);
+  });
+  const st = document.getElementById('segStatus');
+  /* NOTE: set fill via inline style, NOT setAttribute('fill') — the `.demo .pt{fill:…}`
+     CSS rule beats a presentation attribute, so attribute writes are silently ignored. */
+  if(!key){
+    allPts.forEach(p=>{ p.style.fill=''; p.classList.remove('lit'); p.setAttribute('r',4.2); });
+    st.innerHTML = DEFAULT_MSG;
+    return;
+  }
+  const s = SEGS[key];
+  allPts.forEach(p=>{
+    const on = p.dataset.seg === key;
+    p.style.fill = on ? s.color : '#DCE5EF';
+    p.classList.toggle('lit', on);
+    p.setAttribute('r', on ? 5.4 : 3.6);
+  });
+  st.innerHTML = '<span class="name">'+s.name+'</span> — '+s.body+
+                 '<span class="sm">'+s.stat+'</span>'+
+                 '<span class="sm" style="color:#2B3D52">'+s.act+'</span>';
+}
+seg(null);
+</script>
+</body>
+</html>

@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Working with 20 GB · Companion 02 — BDA Group Project</title>
+<style>
+  :root{
+    --bg:#EDF2F8; --paper:#FFFFFF; --panel:#FFFFFF; --panel2:#E9F0F8; --line:#D5E0ED; --line2:#C6D4E4;
+    --cyan:#2E8BC0; --cyan-lt:#176390;
+    --gold:#C08A2E; --gold-lt:#8A5E17;
+    --red:#DB4A40;  --red-lt:#C0392E;
+    --green:#2AA277; --green-lt:#1C8560;
+    --ink:#14263C; --body:#2B3D52; --soft:#546A82; --dim:#7E92A8;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+    --maxw:64ch;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    background:
+      radial-gradient(1100px 650px at 80% -10%, rgba(46,139,192,.10) 0%, rgba(237,242,248,0) 55%),
+      var(--bg);
+    color:var(--ink); font-family:var(--sans); line-height:1.6;
+    font-size:17px; -webkit-font-smoothing:antialiased;
+  }
+
+  .progress{position:fixed;top:0;left:0;height:3px;width:0%;z-index:60;
+    background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .12s linear}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:50;
+    display:flex;align-items:center;gap:14px;padding:0 20px;
+    background:rgba(237,242,248,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);font-size:12.5px}
+  .topbar .course{color:var(--cyan-lt);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .topbar .sep{color:var(--dim)}
+  .topbar .sess{color:var(--gold-lt);font-weight:700}
+  .topbar .right{margin-left:auto;color:var(--soft)}
+
+  .shell{display:grid;grid-template-columns:238px minmax(0,1fr);gap:0;
+    max-width:1180px;margin:0 auto;padding-top:52px}
+  .rail{position:sticky;top:52px;align-self:start;height:calc(100vh - 52px);
+    padding:30px 18px 30px 24px;overflow-y:auto}
+  .rail .rlabel{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dim);font-weight:800;margin:0 0 14px 8px}
+  .rail a{display:block;text-decoration:none;color:var(--soft);font-size:13px;
+    padding:6px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0;
+    transition:.18s;line-height:1.35}
+  .rail a .act{display:block;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:1px}
+  .rail a:hover{color:var(--ink);background:rgba(46,139,192,.09)}
+  .rail a.on{color:var(--cyan-lt);border-left-color:var(--cyan);background:rgba(46,139,192,.12);font-weight:700}
+  .rail a.on .act{color:var(--gold-lt)}
+
+  main{padding:0 clamp(20px,5vw,64px) 120px;min-width:0}
+
+  .hero{padding:56px 0 30px}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;
+    color:var(--cyan-lt);margin-bottom:20px}
+  .eyebrow .n{color:var(--gold-lt)}
+  .hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(38px,6.4vw,68px);
+    line-height:1.02;letter-spacing:-.01em;color:var(--ink);margin-bottom:22px}
+  .hero h1 em{font-style:italic;color:var(--gold-lt)}
+  .hero .deck{font-size:19.5px;color:var(--soft);max-width:60ch;line-height:1.5}
+  .hero .deck b{color:var(--ink);font-weight:600}
+  .herofig{margin:38px 0 6px}
+  .grounded-note{margin-top:26px;font-size:13px;color:var(--dim);
+    border-top:1px solid var(--line);padding-top:16px;line-height:1.7}
+  .grounded-note code{font-family:var(--mono);color:var(--cyan-lt);font-size:12px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:22px;
+    padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .legend .li{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--soft)}
+  .legend .dot{width:11px;height:11px;border-radius:3px;flex:none}
+  .legend b{color:var(--ink);font-weight:650}
+
+  section{padding:52px 0;border-top:1px solid var(--line);scroll-margin-top:64px}
+  .sec-eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+    color:var(--gold-lt);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .sec-eyebrow .num{font-family:var(--mono);color:var(--cyan);font-size:12px}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(27px,3.8vw,40px);
+    line-height:1.08;letter-spacing:-.01em;color:var(--ink);margin-bottom:18px}
+  h3{font-size:19px;font-weight:750;color:var(--cyan-lt);margin:30px 0 10px}
+  h4{font-size:15.5px;font-weight:750;color:var(--ink);margin:22px 0 8px}
+  p{max-width:var(--maxw);margin-bottom:16px;color:var(--body)}
+  p b{color:var(--ink);font-weight:650}
+  p .hl{color:var(--gold-lt);font-weight:650}
+  ul.pts{list-style:none;max-width:var(--maxw);margin:6px 0 18px}
+  ul.pts li{position:relative;padding-left:26px;margin-bottom:11px;color:var(--body)}
+  ul.pts li::before{content:"";position:absolute;left:3px;top:9px;width:9px;height:9px;
+    border-radius:2px;background:var(--cyan);transform:rotate(45deg)}
+  ul.pts li b{color:var(--ink);font-weight:650}
+  ol.steps{list-style:none;counter-reset:st;max-width:var(--maxw);margin:6px 0 18px}
+  ol.steps li{position:relative;padding-left:36px;margin-bottom:13px;color:var(--body)}
+  ol.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;
+    width:24px;height:24px;border-radius:7px;background:rgba(46,139,192,.14);color:var(--cyan-lt);
+    font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+  ol.steps li b{color:var(--ink);font-weight:650}
+  .lead{font-size:20px;color:var(--soft);max-width:58ch;line-height:1.5;margin-bottom:20px}
+  .lead b{color:var(--ink)}
+
+  .fig{margin:26px 0;padding:22px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;display:flex;flex-direction:column;align-items:center;
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .fig svg{width:100%;height:auto;max-width:620px}
+  .fig.wide svg{max-width:760px}
+  .fig .cap{margin-top:14px;font-size:12.5px;color:var(--soft);text-align:center;max-width:56ch}
+  .fig .cap b{color:var(--ink);font-weight:650}
+
+  .box{margin:24px 0;border-radius:14px;padding:18px 20px;font-size:16px;line-height:1.5;
+    border-left:4px solid var(--line);background:var(--panel);color:var(--body)}
+  .box .lab{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:800;margin-bottom:8px}
+  .box b{color:var(--ink);font-weight:650}
+  .box.take{border-left-color:var(--cyan);background:rgba(46,139,192,.08)}
+  .box.take .lab{color:var(--cyan-lt)}
+  .box.board{border-left-color:var(--gold);background:rgba(192,138,46,.11)}
+  .box.board .lab{color:var(--gold-lt)}
+  .box.brk{border-left-color:var(--red);background:rgba(219,74,64,.08)}
+  .box.brk .lab{color:var(--red-lt)}
+  .box.discuss{border-left-color:var(--gold);background:rgba(192,138,46,.07);border-left-style:dashed}
+  .box.discuss .lab{color:var(--gold-lt)}
+  .box .sub{display:block;margin-top:10px;font-size:14px;color:var(--soft);font-weight:400}
+  .box ul{margin:8px 0 0 0;list-style:none}
+  .box ul li{position:relative;padding-left:20px;margin-bottom:7px;font-size:15px}
+  .box ul li::before{content:"—";position:absolute;left:0;color:var(--dim)}
+
+  .term{color:var(--gold-lt);font-weight:650;border-bottom:1px dotted var(--gold);cursor:help}
+
+  .ground{margin:30px 0;border:1px solid var(--green);border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(42,162,119,.07),rgba(42,162,119,.02));
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .ground .ghead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:13px 18px;background:rgba(42,162,119,.12);border-bottom:1px solid rgba(42,162,119,.30)}
+  .ground .gtag{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;
+    color:var(--green-lt)}
+  .ground .gtag::before{content:"◆ ";color:var(--green)}
+  .ground .gfile{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);
+    background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+  .ground .gbody{padding:18px 20px}
+  .ground .gbody > p:first-child{margin-top:0}
+
+  .code{background:#F5F8FC;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+  .code .chead{display:flex;align-items:center;gap:8px;padding:8px 14px;
+    background:#E8F0F8;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+  .code .chead .dotrow{display:flex;gap:6px;margin-right:6px}
+  .code .chead .cdot{width:10px;height:10px;border-radius:50%;background:#C6D4E4}
+  .code .chead .cname{color:var(--cyan-lt)}
+  .code .chead .cbadge{margin-left:auto;color:var(--dim)}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.65;color:#2A3B4E}
+  .code pre .cm{color:#8496AC;font-style:italic}
+  .code pre .kw{color:#9A6B15}
+  .code pre .fn{color:#176390}
+  .code pre .st{color:#1C8560}
+  .code pre .warnln{background:rgba(219,74,64,.12);display:inline-block;width:100%}
+
+  .walk{margin:16px 0;border-left:2px solid var(--line);padding-left:0}
+  .walk .w{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line2)}
+  .walk .w:last-child{border-bottom:0}
+  .walk .wc{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);background:#EBF1F8;
+    border:1px solid var(--line);border-radius:6px;padding:6px 9px;height:fit-content;white-space:pre-wrap;
+    max-width:280px;overflow-x:auto}
+  .walk .wt{color:var(--body);font-size:14.5px;line-height:1.5}
+  .walk .wt b{color:var(--ink)}
+  .walk .wt .warn{color:var(--red-lt);font-weight:650}
+  @media(max-width:640px){.walk .w{grid-template-columns:1fr}.walk .wc{max-width:100%}}
+
+  .tree{font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--soft);white-space:pre;
+    background:#F5F8FC;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0;overflow-x:auto}
+  .tree .dir{color:var(--cyan-lt);font-weight:600}
+  .tree .gone{color:var(--red-lt);text-decoration:line-through;opacity:.8}
+  .tree .rep{color:var(--gold-lt);font-weight:600}
+  .tree .note{color:var(--dim)}
+
+  /* tables */
+  .tw{overflow-x:auto;margin:20px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+  th{background:var(--panel2);color:var(--ink);font-weight:750;text-align:left;
+    padding:11px 14px;border-bottom:1px solid var(--line);font-size:12.5px;
+    letter-spacing:.03em;text-transform:uppercase}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td b{color:var(--ink)}
+  td code,th code{font-family:var(--mono);font-size:12px;color:var(--cyan-lt)}
+  .num{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .tot td{background:rgba(46,139,192,.07);font-weight:750;color:var(--ink)}
+
+  /* stat strip */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .stat .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--cyan-lt);line-height:1.1}
+  .stat .v.g{color:var(--gold-lt)} .stat .v.r{color:var(--red-lt)} .stat .v.gr{color:var(--green-lt)}
+  .stat .k{font-size:12px;color:var(--soft);margin-top:6px;line-height:1.35}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .chip{font-family:var(--mono);font-size:11.5px;padding:5px 10px;border-radius:7px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--cyan-lt)}
+  .chip.g{background:rgba(192,138,46,.12);border-color:rgba(192,138,46,.35);color:var(--gold-lt)}
+  .chip.gr{background:rgba(42,162,119,.12);border-color:rgba(42,162,119,.35);color:var(--green-lt)}
+  .chip.r{background:rgba(219,74,64,.10);border-color:rgba(219,74,64,.33);color:var(--red-lt)}
+
+  /* interactive demo */
+  .demo{margin:28px 0;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .demo .dhead{padding:14px 18px 4px}
+  .demo .dhead .t{font-weight:750;color:var(--cyan-lt);font-size:15px}
+  .demo .dhead .s{font-size:13px;color:var(--soft);margin-top:3px}
+  .demo .stage{padding:6px 18px 0}
+  .demo svg{width:100%;height:auto;max-width:640px;display:block;margin:0 auto}
+  .demo .status{margin:6px 18px 4px;min-height:96px;padding:13px 15px;border-radius:10px;
+    background:#F5F8FC;border:1px solid var(--line);font-size:14px;
+    color:var(--body);line-height:1.55;transition:.2s}
+  .demo .status .ok{color:var(--green-lt);font-weight:650}
+  .demo .status .bad{color:var(--red-lt);font-weight:650}
+  .demo .status .name{color:var(--gold-lt);font-weight:700}
+  .demo .status .sm{display:block;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--soft)}
+  .demo .ctrl{display:flex;flex-wrap:wrap;gap:10px;padding:12px 18px 18px}
+  .demo button{font-family:var(--sans);font-size:13px;font-weight:650;cursor:pointer;
+    border-radius:9px;padding:9px 14px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);transition:.15s}
+  .demo button:hover{border-color:var(--cyan);color:var(--cyan-lt)}
+  .demo button.on{border-color:var(--cyan);background:rgba(46,139,192,.14);color:var(--cyan-lt)}
+  .demo button.ghost{background:transparent;color:var(--soft)}
+  /* explicit base styles so transitions never fall back to black */
+  .demo .pt{fill:#C6D4E4;stroke:#FFFFFF;stroke-width:1.2;transition:fill .3s, r .3s, opacity .3s;opacity:.75}
+  .demo .pt.lit{opacity:1;stroke-width:1.6}
+  .demo .hull{fill:none;stroke:#C6D4E4;stroke-width:2;stroke-dasharray:6 5;opacity:0;transition:opacity .3s}
+  .demo .hull.show{opacity:1}
+
+  .quote{font-family:var(--serif);font-size:clamp(24px,3.6vw,36px);line-height:1.25;
+    color:var(--ink);font-weight:600;max-width:24ch;margin:8px 0}
+  .quote .a{color:var(--gold-lt);font-style:italic}
+  .closer{margin-top:20px;padding:34px 30px;border-radius:18px;
+    background:linear-gradient(140deg,#E8F1FB,#F6FAFD);border:1px solid var(--line)}
+  .next{display:flex;align-items:center;gap:14px;margin-top:26px;padding:16px 20px;
+    border:1px solid var(--line);border-radius:14px;background:var(--panel);text-decoration:none;color:inherit;transition:.18s;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .next:hover{border-color:var(--cyan)}
+  .next .arw{font-size:24px;color:var(--cyan)}
+  .next .nl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .next .nt{color:var(--cyan-lt);font-weight:700;font-size:16px;margin-top:2px}
+  .next .nd{font-size:13px;color:var(--soft);margin-top:2px}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 10px;margin-top:40px;font-size:12.5px;color:var(--dim);line-height:1.9}
+  footer b{color:var(--soft)}
+  footer code{font-family:var(--mono);color:var(--cyan-lt);font-size:11.5px}
+  footer a{color:var(--cyan-lt);text-decoration:none;border-bottom:1px dotted var(--line2)}
+  footer a:hover{border-bottom-style:solid}
+
+  .rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  @media(max-width:1000px){
+    .shell{grid-template-columns:1fr}
+    .rail{display:none}
+    main{padding:0 22px 90px}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="topbar">
+  <span class="course">Big Data Analytics</span>
+  <span class="sep">·</span>
+  <span class="sess">Companion 2 — Working with the 20 GB</span>
+  <span class="right">MacBook Air M4 · 16 GB</span>
+</div>
+
+<div class="shell">
+<nav class="rail">
+  <div class="rlabel">The pipeline</div>
+  <a href="#s1"><span class="act">Reality</span>What 20 GB actually means</a>
+  <a href="#s2"><span class="act">Concepts</span>Spark from what you know</a>
+  <a href="#s3"><span class="act">Concepts</span>The five words</a>
+  <a href="#s4"><span class="act">Step 0</span>Set up your Mac</a>
+  <a href="#s5"><span class="act">Step 1</span>Get the data</a>
+  <a href="#s6"><span class="act">Step 2</span>Look at one file</a>
+  <a href="#s7"><span class="act">Step 3</span>Write the parser</a>
+  <a href="#s8"><span class="act">Step 4</span>One folder → Parquet</a>
+  <a href="#s9"><span class="act">Step 5</span>Scale it with Spark</a>
+  <a href="#s10"><span class="act">Step 6</span>Build the features</a>
+  <a href="#s11"><span class="act">Step 7</span>Tuning for 16 GB</a>
+  <a href="#s12"><span class="act">Step 8</span>Hand off to Databricks</a>
+  <a href="#s13"><span class="act">Rescue</span>When it breaks</a>
+  <a href="#s14"><span class="act">Plan</span>The five-week runbook</a>
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="eyebrow">Project companion <span class="n">· 02 of 02</span> · assumes no Spark experience</div>
+  <h1>Working with <em>20 GB</em></h1>
+  <p class="deck">
+    Concepts first, then the exact commands. By the end of this page you will understand what Spark is
+    doing and why, and you will have <b>a tested parser that turns raw poker hand histories into clean
+    tables</b> — every line of code here has been run against the real files.
+  </p>
+
+  <div class="legend">
+    <div class="li"><span class="dot" style="background:#2E8BC0"></span><b>Takeaway</b> — the point in one line</div>
+    <div class="li"><span class="dot" style="background:#C08A2E"></span><b>Key idea</b> — worth memorising</div>
+    <div class="li"><span class="dot" style="background:#DB4A40"></span><b>Careful</b> — this will break your job</div>
+    <div class="li"><span class="dot" style="background:#2AA277"></span><b>Verified</b> — tested on this machine</div>
+  </div>
+
+  <div class="grounded-note">
+    Checked on your machine on <b>2 Aug 2026</b>: <code>Apple M4 · 10 cores (4P/6E) · 16 GB RAM ·
+    272 GB free · OpenJDK 17 installed · Homebrew present · Python 3.13 &amp; 3.14</code>.
+    The commands below are written for exactly that setup.
+  </div>
+</header>
+
+<!-- ============ 1 ============ -->
+<section id="s1">
+  <div class="sec-eyebrow"><span class="num">01</span> Reality check</div>
+  <h2>What "20 GB" actually means here</h2>
+
+  <p class="lead">The single most useful thing to understand up front: <b>the data shrinks
+  dramatically as it moves through your pipeline.</b> Only the first stage is big.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 300" role="img" aria-label="Data shrinking through the pipeline from 20GB to 200MB">
+      <defs>
+        <marker id="sh" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#546A82"/>
+        </marker>
+      </defs>
+      <!-- bar 1 -->
+      <text x="20" y="40" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#8A5E17">Zenodo archive (compressed)</text>
+      <rect x="20" y="50" width="660" height="34" rx="7" fill="rgba(192,138,46,.22)" stroke="#C08A2E" stroke-width="1.4"/>
+      <text x="36" y="72" font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="700" fill="#8A5E17">20.29 GB</text>
+      <text x="200" y="72" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">— but most of it is 619M bot-vs-bot hands you do not want</text>
+
+      <!-- bar 2 -->
+      <text x="20" y="112" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#176390">The part you need — real-money text files</text>
+      <rect x="20" y="122" width="586" height="34" rx="7" fill="rgba(46,139,192,.20)" stroke="#2E8BC0" stroke-width="1.4"/>
+      <text x="36" y="144" font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="700" fill="#176390">≈ 18 GB</text>
+      <text x="200" y="144" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">21.6M hands · uncompressed · estimated at 835 bytes/hand</text>
+
+      <!-- bar 3 -->
+      <text x="20" y="184" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#1C8560">After parsing to Parquet</text>
+      <rect x="20" y="194" width="96" height="34" rx="7" fill="rgba(42,162,119,.22)" stroke="#2AA277" stroke-width="1.4"/>
+      <text x="36" y="216" font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="700" fill="#1C8560">2–4 GB</text>
+      <text x="200" y="216" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">columnar + compressed · everything downstream is fast from here</text>
+
+      <!-- bar 4 -->
+      <text x="20" y="256" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#14263C">The table your models actually read</text>
+      <rect x="20" y="266" width="16" height="24" rx="5" fill="#2AA277"/>
+      <text x="48" y="284" font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="700" fill="#1C8560">~200 MB</text>
+      <text x="200" y="284" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">one row per player · fits in memory a hundred times over</text>
+    </svg>
+    <div class="cap">Bars to scale. <b>Machine learning never touches the big data.</b> By Phase 3 you
+    are working with something smaller than a photo library.</div>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — you have a disk problem, not a memory problem</span>
+    With 272 GB free, disk is comfortable <b>as long as you extract selectively</b>. The 20.29 GB zip
+    is compressed; extracting all of it would produce something on the order of 100 GB, almost all of
+    it bot hands with no business meaning. <b>Extract only <code>data/handhq/</code>.</b>
+  </div>
+
+  <div class="box take">
+    <span class="lab">Takeaway — and this changes your whole plan</span>
+    <b>The GitHub copy of the dataset is only 1.71 GB</b> (we checked the API). It is a subset, not the
+    full 21.6 million hands — but it is more than enough to build, debug and demo the entire pipeline.
+    <b>Start there. Only reach for the 20 GB Zenodo archive at the very end</b>, when you want the
+    headline numbers.
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="s2">
+  <div class="sec-eyebrow"><span class="num">02</span> Concepts</div>
+  <h2>Spark, built from three things you already know</h2>
+
+  <p class="lead">You have already met every idea in Spark. They were just wearing different clothes.
+  Here they are, mapped one to one onto your own course notes.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 330" role="img" aria-label="Mapping course concepts onto Spark concepts">
+      <defs>
+        <marker id="mp" markerWidth="10" markerHeight="10" refX="8" refY="3.2" orient="auto">
+          <path d="M0,0 L0,6.4 L8,3.2 z" fill="#2AA277"/>
+        </marker>
+      </defs>
+      <text x="150" y="24" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="800" fill="#176390">YOU ALREADY LEARNED</text>
+      <text x="570" y="24" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="800" fill="#8A5E17">IN SPARK IT'S CALLED</text>
+
+      <g>
+        <rect x="20" y="42" width="260" height="72" rx="11" fill="rgba(46,139,192,.10)" stroke="#2E8BC0" stroke-width="1.5"/>
+        <text x="40" y="66" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#176390">HDFS blocks</text>
+        <text x="40" y="85" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">Session 1 &amp; 4 — the cluster/ sim.</text>
+        <text x="40" y="102" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">A big file split across machines.</text>
+        <path d="M288 78 L432 78" stroke="#2AA277" stroke-width="2" marker-end="url(#mp)"/>
+        <rect x="440" y="42" width="260" height="72" rx="11" fill="rgba(192,138,46,.11)" stroke="#C08A2E" stroke-width="1.5"/>
+        <text x="460" y="66" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#8A5E17">Partitions</text>
+        <text x="460" y="85" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">Identical idea. A chunk of rows that</text>
+        <text x="460" y="102" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">one core works on independently.</text>
+      </g>
+
+      <g>
+        <rect x="20" y="126" width="260" height="72" rx="11" fill="rgba(46,139,192,.10)" stroke="#2E8BC0" stroke-width="1.5"/>
+        <text x="40" y="150" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#176390">Map &amp; Reduce</text>
+        <text x="40" y="169" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">Session 2 &amp; 4 — count per chunk,</text>
+        <text x="40" y="186" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">then combine the counts.</text>
+        <path d="M288 162 L432 162" stroke="#2AA277" stroke-width="2" marker-end="url(#mp)"/>
+        <rect x="440" y="126" width="260" height="72" rx="11" fill="rgba(192,138,46,.11)" stroke="#C08A2E" stroke-width="1.5"/>
+        <text x="460" y="150" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#8A5E17">groupBy / agg</text>
+        <text x="460" y="169" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">Same two phases, written as one</text>
+        <text x="460" y="186" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">line. Spark writes the plumbing.</text>
+      </g>
+
+      <g>
+        <rect x="20" y="210" width="260" height="72" rx="11" fill="rgba(46,139,192,.10)" stroke="#2E8BC0" stroke-width="1.5"/>
+        <text x="40" y="234" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#176390">Polars lazy mode</text>
+        <text x="40" y="253" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">Sessions 3, 7 &amp; 8 — build a plan,</text>
+        <text x="40" y="270" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">nothing runs until .collect().</text>
+        <path d="M288 246 L432 246" stroke="#2AA277" stroke-width="2" marker-end="url(#mp)"/>
+        <rect x="440" y="210" width="260" height="72" rx="11" fill="rgba(192,138,46,.11)" stroke="#C08A2E" stroke-width="1.5"/>
+        <text x="460" y="234" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#8A5E17">Lazy evaluation</text>
+        <text x="460" y="253" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">Exactly the same. Nothing runs</text>
+        <text x="460" y="270" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">until you call .show() or .write().</text>
+      </g>
+
+      <text x="360" y="312" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#1C8560">
+        Spark = HDFS's storage idea + MapReduce's compute idea + Polars' laziness, in one tool.
+      </text>
+    </svg>
+    <div class="cap">You are not learning a new paradigm. <b>You are learning new vocabulary for three
+    things your course already taught you.</b></div>
+  </div>
+
+  <div class="box take">
+    <span class="lab">Takeaway</span>
+    The one genuinely new idea is that Spark does all this <b>across many machines at once, and
+    survives one of them dying</b> — which is precisely the fault-tolerance story from your Session 1
+    HDFS note. On your laptop, "many machines" just means your 10 cores.
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="s3">
+  <div class="sec-eyebrow"><span class="num">03</span> Concepts</div>
+  <h2>The five words you need</h2>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:20%">Word</th><th>What it means, plainly</th></tr></thead>
+    <tbody>
+      <tr><td><b>Partition</b></td><td>A chunk of your rows. Spark splits the data into partitions and gives each one to a core. <b>10 cores means about 10 chunks being worked on at once.</b> Same concept as an HDFS block.</td></tr>
+      <tr><td><b>Transformation</b></td><td>An instruction like "filter these rows" or "add this column". <b>It does not run.</b> Spark just writes it down. Exactly like building a Polars lazy query.</td></tr>
+      <tr><td><b>Action</b></td><td>A command that forces everything to actually execute — <code>.show()</code>, <code>.count()</code>, <code>.write()</code>. Polars' <code>.collect()</code>.</td></tr>
+      <tr><td><b>Shuffle</b></td><td><b>The expensive one.</b> When Spark must move rows between partitions so that all rows for the same player end up together. Grouping by player means shuffling everything. This is where your 16 GB gets used.</td></tr>
+      <tr><td><b>Driver / executor</b></td><td>The driver is the boss process holding your plan; executors are the workers. On a laptop they all live in one process — which is why <b>pulling data back to the driver is so dangerous</b>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 250" role="img" aria-label="Why a shuffle is expensive">
+      <text x="150" y="24" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="750" fill="#546A82">BEFORE — rows scattered</text>
+      <text x="570" y="24" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="750" fill="#546A82">AFTER — one player per partition</text>
+
+      <g font-family="ui-monospace,Menlo,monospace" font-size="10">
+        <rect x="24" y="40" width="112" height="76" rx="8" fill="#FFFFFF" stroke="#C6D4E4"/>
+        <text x="80" y="56" text-anchor="middle" fill="#7E92A8">partition 1</text>
+        <circle cx="48" cy="76" r="7" fill="#2E8BC0"/><circle cx="72" cy="76" r="7" fill="#C08A2E"/>
+        <circle cx="96" cy="76" r="7" fill="#2AA277"/><circle cx="60" cy="98" r="7" fill="#C08A2E"/>
+        <circle cx="88" cy="98" r="7" fill="#2E8BC0"/>
+
+        <rect x="24" y="128" width="112" height="76" rx="8" fill="#FFFFFF" stroke="#C6D4E4"/>
+        <text x="80" y="144" text-anchor="middle" fill="#7E92A8">partition 2</text>
+        <circle cx="48" cy="164" r="7" fill="#2AA277"/><circle cx="72" cy="164" r="7" fill="#2E8BC0"/>
+        <circle cx="96" cy="164" r="7" fill="#C08A2E"/><circle cx="60" cy="186" r="7" fill="#2AA277"/>
+        <circle cx="88" cy="186" r="7" fill="#2E8BC0"/>
+      </g>
+
+      <g stroke="#DB4A40" stroke-width="1.1" opacity=".5" fill="none">
+        <path d="M150 76 L432 68"/><path d="M150 88 L432 130"/><path d="M150 100 L432 186"/>
+        <path d="M150 164 L432 76"/><path d="M150 176 L432 140"/><path d="M150 190 L432 194"/>
+      </g>
+      <text x="290" y="120" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" font-weight="750" fill="#C0392E">every row moves</text>
+      <text x="290" y="136" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#C0392E">across the network / to disk</text>
+
+      <g font-family="ui-monospace,Menlo,monospace" font-size="10">
+        <rect x="440" y="40" width="112" height="76" rx="8" fill="rgba(46,139,192,.10)" stroke="#2E8BC0"/>
+        <text x="496" y="56" text-anchor="middle" fill="#176390">player A</text>
+        <circle cx="466" cy="80" r="7" fill="#2E8BC0"/><circle cx="490" cy="80" r="7" fill="#2E8BC0"/>
+        <circle cx="514" cy="80" r="7" fill="#2E8BC0"/><circle cx="490" cy="100" r="7" fill="#2E8BC0"/>
+
+        <rect x="568" y="40" width="112" height="76" rx="8" fill="rgba(192,138,46,.12)" stroke="#C08A2E"/>
+        <text x="624" y="56" text-anchor="middle" fill="#8A5E17">player B</text>
+        <circle cx="596" cy="80" r="7" fill="#C08A2E"/><circle cx="620" cy="80" r="7" fill="#C08A2E"/>
+        <circle cx="644" cy="80" r="7" fill="#C08A2E"/>
+
+        <rect x="504" y="128" width="112" height="76" rx="8" fill="rgba(42,162,119,.12)" stroke="#2AA277"/>
+        <text x="560" y="144" text-anchor="middle" fill="#1C8560">player C</text>
+        <circle cx="534" cy="168" r="7" fill="#2AA277"/><circle cx="558" cy="168" r="7" fill="#2AA277"/>
+        <circle cx="582" cy="168" r="7" fill="#2AA277"/>
+      </g>
+      <text x="360" y="238" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">
+        Only once every player's rows sit together can Spark compute that player's VPIP.
+      </text>
+    </svg>
+    <div class="cap">This is the one operation that makes the project genuinely "big data" — and the
+    one that will make your laptop's fans spin.</div>
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="s4">
+  <div class="sec-eyebrow"><span class="num">04</span> Step 0</div>
+  <h2>Set up your Mac</h2>
+
+  <p class="lead">Java is already installed, which is the awkward part done. This takes about five
+  minutes.</p>
+
+  <div class="code">
+    <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+      <span class="cname">Terminal</span><span class="cbadge">step 0</span></div>
+<pre><span class="cm"># 1 — make a project folder and a virtual environment</span>
+<span class="fn">mkdir</span> -p ~/bda-poker &amp;&amp; <span class="fn">cd</span> ~/bda-poker
+<span class="fn">python3</span> -m venv .venv
+<span class="fn">source</span> .venv/bin/activate
+
+<span class="cm"># 2 — install what you need</span>
+<span class="fn">pip</span> install --upgrade pip
+<span class="fn">pip</span> install pyspark polars pyarrow pandas
+
+<span class="cm"># 3 — confirm Java is visible to Spark (you already have OpenJDK 17)</span>
+<span class="fn">java</span> -version
+<span class="fn">export</span> JAVA_HOME=$(/usr/libexec/java_home -v 17)
+
+<span class="cm"># 4 — smoke-test Spark. If this prints a number, you are ready.</span>
+<span class="fn">python</span> -c <span class="st">"from pyspark.sql import SparkSession; \
+s=SparkSession.builder.master('local[*]').getOrCreate(); \
+print('spark ok:', s.range(1000).count()); s.stop()"</span></pre>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Careful — the Python version trap</span>
+    You have Python <b>3.13 and 3.14</b>. PySpark's officially supported Python versions usually lag
+    the newest releases, so <code>pip install pyspark</code> may install but then fail at runtime.
+    <b>If the smoke test in step 4 errors, fall back to an older Python</b>:
+    <span class="sub">
+    <code style="font-family:var(--mono);font-size:12.5px">brew install python@3.12</code><br>
+    <code style="font-family:var(--mono);font-size:12.5px">rm -rf .venv &amp;&amp; /opt/homebrew/bin/python3.12 -m venv .venv &amp;&amp; source .venv/bin/activate</code><br>
+    then repeat step 2. Your pure-Python parser works on any version 3.11+, because
+    <code>tomllib</code> has been built in since 3.11 — so only Spark is fussy.
+    </span>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="s5">
+  <div class="sec-eyebrow"><span class="num">05</span> Step 1</div>
+  <h2>Get the data — the smart way</h2>
+
+  <p class="lead">Two routes. <b>Take route A now and route B only in September</b>, if at all.</p>
+
+  <h3>Route A — the GitHub subset (1.71 GB) · do this today</h3>
+  <p>Git can download <b>one folder</b> instead of the whole repository. That is what
+  <code>sparse-checkout</code> does.</p>
+
+  <div class="code">
+    <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+      <span class="cname">Terminal · route A</span><span class="cbadge">≈1.71 GB total repo</span></div>
+<pre><span class="fn">cd</span> ~/bda-poker
+
+<span class="cm"># clone the structure without downloading file contents yet</span>
+<span class="fn">git</span> clone --filter=blob:none --sparse https://github.com/uoftcprg/phh-dataset.git
+<span class="fn">cd</span> phh-dataset
+
+<span class="cm"># now pull down ONLY the real-money hand histories</span>
+<span class="fn">git</span> sparse-checkout set data/handhq
+
+<span class="cm"># see what you got</span>
+<span class="fn">du</span> -sh data/handhq
+<span class="fn">ls</span> data/handhq</pre>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — why this is the right first move</span>
+    You get real data from real platforms, in the exact format you will use in September, <b>without a
+    20 GB download and without touching the 619 million bot hands.</b> Everything in this guide was
+    developed and tested against files fetched this way.
+  </div>
+
+  <h3>Route B — the full Zenodo archive (20.29 GB) · only when you need scale</h3>
+  <div class="code">
+    <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+      <span class="cname">Terminal · route B</span><span class="cbadge">verified: HTTP 200, 20,289,230,983 bytes</span></div>
+<pre><span class="cm"># -C lets you resume if your connection drops. It will take a while.</span>
+<span class="fn">curl</span> -L -C - -o poker-hand-histories.zip \
+  <span class="st">"https://zenodo.org/records/17136841/files/poker-hand-histories.zip?download=1"</span>
+
+<span class="cm"># LOOK before you extract — never unzip this blind</span>
+<span class="fn">unzip</span> -l poker-hand-histories.zip | head -40
+
+<span class="warnln"><span class="cm"># extract ONLY the real-money folder. Do NOT omit the pattern.</span></span>
+<span class="fn">unzip</span> poker-hand-histories.zip <span class="st">'*/data/handhq/*'</span> -d ~/bda-poker/full</pre>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Careful — the mistake that eats your disk</span>
+    Running <code>unzip poker-hand-histories.zip</code> with no pattern will try to extract everything,
+    including the 619 million Annual Computer Poker Competition hands. Compressed they are ~16 GB;
+    uncompressed they are plausibly <b>100 GB or more</b>. You have 272 GB free, so it will not quite
+    kill you — but it will waste hours and produce nothing you can use. <b>Always pass the pattern.</b>
+  </div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="s6">
+  <div class="sec-eyebrow"><span class="num">06</span> Step 2</div>
+  <h2>Look at one file before you write any code</h2>
+
+  <p class="lead">Never write a parser for data you have not read with your own eyes.</p>
+
+  <div class="code">
+    <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+      <span class="cname">Terminal</span><span class="cbadge">step 2</span></div>
+<pre><span class="cm"># the folder naming carries free metadata: SITE-dates-STAKE-OBFU</span>
+<span class="fn">ls</span> data/handhq/ | head
+
+<span class="cm"># pick one and look at the first hand</span>
+<span class="fn">head</span> -25 <span class="st">"data/handhq/PS-2009-07-01_2009-07-23_25NLH_OBFU/0.25/ps NLH handhq_1-OBFUSCATED.phhs"</span>
+
+<span class="cm"># how many files, how big?</span>
+<span class="fn">ls</span> <span class="st">"data/handhq/PS-2009-07-01_2009-07-23_25NLH_OBFU/0.25/"</span> | wc -l
+<span class="fn">du</span> -sh <span class="st">"data/handhq/PS-2009-07-01_2009-07-23_25NLH_OBFU/0.25/"</span></pre>
+  </div>
+
+  <div class="ground">
+    <div class="ghead">
+      <span class="gtag">Verified — the discovery that saves you a week</span>
+      <span class="gfile">tested with Python 3.13 on this machine</span>
+    </div>
+    <div class="gbody">
+      <p><b>These files are valid TOML.</b> TOML is a standard configuration format, and Python has
+      had a reader for it <b>built into the standard library since version 3.11</b>. So you do not
+      need to write a text parser at all:</p>
+      <div class="code">
+        <div class="chead"><span class="cname">python</span><span class="cbadge">this genuinely works</span></div>
+<pre><span class="kw">import</span> tomllib
+
+<span class="kw">with</span> <span class="fn">open</span>(path, <span class="st">"rb"</span>) <span class="kw">as</span> f:      <span class="cm"># note: binary mode, tomllib requires it</span>
+    hands = tomllib.<span class="fn">load</span>(f)
+
+<span class="fn">print</span>(<span class="fn">len</span>(hands))                <span class="cm"># 991</span>
+<span class="fn">print</span>(hands[<span class="st">"1"</span>][<span class="st">"venue"</span>])       <span class="cm"># 'PokerStars'</span>
+<span class="fn">print</span>(hands[<span class="st">"1"</span>][<span class="st">"time"</span>])        <span class="cm"># datetime.time(0, 0) - already a real time object</span>
+<span class="fn">print</span>(hands[<span class="st">"1"</span>][<span class="st">"actions"</span>][:<span class="kw">4</span>])</pre>
+      </div>
+      <p style="margin-bottom:0">Each hand comes back as a dictionary with properly typed fields —
+      numbers as numbers, the timestamp as a <code>datetime.time</code>. <b>No regular expressions.
+      No string slicing. No edge cases.</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="s7">
+  <div class="sec-eyebrow"><span class="num">07</span> Step 3</div>
+  <h2>The parser — tested, and yours to use</h2>
+
+  <p class="lead">This is the heart of the project. It turns one file of raw hands into <b>three flat
+  tables</b>. Every line below has been run against real data.</p>
+
+  <p>The tricky part is not reading the file — TOML does that. The tricky part is <b>replaying the
+  betting</b>, so you can tell a check from a call, work out what each player put in, and know when a
+  new betting round starts. Here is the logic in plain English before the code:</p>
+
+  <ol class="steps">
+    <li><b>Start the pot</b> with the forced blinds. Mark them as <i>not</i> voluntary.</li>
+    <li><b>Walk the action list in order.</b> A <code>d db</code> line means a new street began — reset
+    the per-street bet tracking.</li>
+    <li>For <code>cbr</code>, the number is the player's <b>new total for that street</b>, so the money
+    added is that total minus what they already had in.</li>
+    <li>For <code>cc</code>, compare the highest bet on the street to what the player has in. <b>If the
+    difference is zero it was a check; if positive it was a call</b> — and only a call counts as
+    voluntary.</li>
+    <li>At the end, <b>give back the uncalled part of the final bet</b> before computing the pot.
+    Skipping this is what produced a nonsensical 40% rake on our first attempt.</li>
+  </ol>
+
+  <div class="code">
+    <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+      <span class="cname">parse_phh.py</span><span class="cbadge">tested · 989 hands parsed</span></div>
+<pre><span class="st">"""Parse PHH (.phhs) poker hand-history files into flat tables."""</span>
+<span class="kw">import</span> tomllib
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+
+STREETS = [<span class="st">"preflop"</span>, <span class="st">"flop"</span>, <span class="st">"turn"</span>, <span class="st">"river"</span>]
+
+
+<span class="kw">def</span> <span class="fn">parse_file</span>(path):
+    <span class="st">"""Return (hands, hand_players, actions) as lists of dicts."""</span>
+    path = <span class="fn">Path</span>(path)
+    venue_dir = path.parent.parent.name    <span class="cm"># PS-2009-07-01_..._25NLH_OBFU</span>
+    stake     = path.parent.name           <span class="cm"># 0.25</span>
+    <span class="kw">with</span> <span class="fn">open</span>(path, <span class="st">"rb"</span>) <span class="kw">as</span> f:
+        raw = tomllib.<span class="fn">load</span>(f)
+
+    hands, hand_players, actions = [], [], []
+
+    <span class="kw">for</span> local_id, h <span class="kw">in</span> raw.<span class="fn">items</span>():
+        players = h[<span class="st">"players"</span>]
+        n       = <span class="fn">len</span>(players)
+        blinds  = h.<span class="fn">get</span>(<span class="st">"blinds_or_straddles"</span>, [])
+        bb      = blinds[<span class="kw">1</span>] <span class="kw">if</span> <span class="fn">len</span>(blinds) &gt; <span class="kw">1</span> <span class="kw">else</span> <span class="kw">None</span>
+        <span class="kw">if not</span> bb:
+            <span class="kw">continue</span>                       <span class="cm"># no big blind = cannot normalise money</span>
+
+        committed  = [<span class="kw">0.0</span>] * n              <span class="cm"># total put in, whole hand</span>
+        street_bet = [<span class="kw">0.0</span>] * n              <span class="cm"># put in on THIS street</span>
+        vol        = [<span class="kw">False</span>] * n            <span class="cm"># did they CHOOSE to invest?</span>
+        raised_pf  = [<span class="kw">False</span>] * n
+        n_bets     = [<span class="kw">0</span>] * n                <span class="cm"># postflop bets/raises</span>
+        n_calls    = [<span class="kw">0</span>] * n                <span class="cm"># postflop calls</span>
+        showed     = [<span class="kw">False</span>] * n
+        folded     = [<span class="kw">False</span>] * n
+
+        <span class="kw">for</span> i, a <span class="kw">in</span> <span class="fn">enumerate</span>(h.<span class="fn">get</span>(<span class="st">"antes"</span>, [])):
+            <span class="kw">if</span> i &lt; n: committed[i] += a
+        <span class="kw">for</span> i, b <span class="kw">in</span> <span class="fn">enumerate</span>(blinds):       <span class="cm"># forced money: NOT voluntary</span>
+            <span class="kw">if</span> i &lt; n:
+                committed[i] += b
+                street_bet[i] = b
+
+        street = <span class="kw">0</span>
+        order  = <span class="kw">0</span>
+        <span class="kw">for</span> act <span class="kw">in</span> h[<span class="st">"actions"</span>]:
+            parts = act.<span class="fn">split</span>()
+            <span class="kw">if</span> parts[<span class="kw">0</span>] == <span class="st">"d"</span>:                <span class="cm"># dealer, not a player</span>
+                <span class="kw">if</span> parts[<span class="kw">1</span>] == <span class="st">"db"</span>:            <span class="cm"># board dealt -&gt; new street</span>
+                    street += <span class="kw">1</span>
+                    street_bet = [<span class="kw">0.0</span>] * n
+                <span class="kw">continue</span>
+
+            idx    = <span class="fn">int</span>(parts[<span class="kw">0</span>][<span class="kw">1</span>:]) - <span class="kw">1</span>
+            verb   = parts[<span class="kw">1</span>]
+            amount = <span class="kw">0.0</span>
+            kind   = verb
+
+            <span class="kw">if</span> verb == <span class="st">"cbr"</span>:                <span class="cm"># bet/raise TO a street total</span>
+                target = <span class="fn">float</span>(parts[<span class="kw">2</span>])
+                amount = target - street_bet[idx]
+                committed[idx] += amount
+                street_bet[idx] = target
+                vol[idx] = <span class="kw">True</span>
+                kind = <span class="st">"bet"</span> <span class="kw">if</span> <span class="fn">sum</span>(<span class="kw">1</span> <span class="kw">for</span> x <span class="kw">in</span> street_bet <span class="kw">if</span> x &gt; <span class="kw">0</span>) &lt;= <span class="kw">1</span> <span class="kw">else</span> <span class="st">"raise"</span>
+                <span class="kw">if</span> street == <span class="kw">0</span>: raised_pf[idx] = <span class="kw">True</span>
+                <span class="kw">else</span>:            n_bets[idx] += <span class="kw">1</span>
+
+            <span class="warnln"><span class="kw">elif</span> verb == <span class="st">"cc"</span>:                 <span class="cm"># CHECK or CALL - disambiguate!</span></span>
+                target = <span class="fn">max</span>(street_bet)
+                amount = target - street_bet[idx]
+                <span class="kw">if</span> amount &gt; <span class="kw">0</span>:               <span class="cm"># money moved =&gt; it was a CALL</span>
+                    committed[idx] += amount
+                    street_bet[idx] = target
+                    vol[idx] = <span class="kw">True</span>
+                    kind = <span class="st">"call"</span>
+                    <span class="kw">if</span> street &gt; <span class="kw">0</span>: n_calls[idx] += <span class="kw">1</span>
+                <span class="kw">else</span>:                          <span class="cm"># free =&gt; it was a CHECK</span>
+                    kind = <span class="st">"check"</span>
+
+            <span class="kw">elif</span> verb == <span class="st">"f"</span>:
+                kind = <span class="st">"fold"</span>; folded[idx] = <span class="kw">True</span>
+            <span class="kw">elif</span> verb == <span class="st">"sm"</span>:
+                kind = <span class="st">"show"</span>; showed[idx] = <span class="kw">True</span>
+
+            order += <span class="kw">1</span>
+            actions.<span class="fn">append</span>({
+                <span class="st">"hand_id"</span>: h[<span class="st">"hand"</span>], <span class="st">"player_id"</span>: players[idx],
+                <span class="st">"street"</span>: STREETS[<span class="fn">min</span>(street, <span class="kw">3</span>)], <span class="st">"action"</span>: kind,
+                <span class="st">"amount"</span>: <span class="fn">round</span>(amount, <span class="kw">4</span>), <span class="st">"amount_bb"</span>: <span class="fn">round</span>(amount / bb, <span class="kw">4</span>),
+                <span class="st">"action_order"</span>: order,
+            })
+
+        <span class="warnln"><span class="cm"># the uncalled part of the last bet goes back to its owner</span></span>
+        s        = <span class="fn">sorted</span>(committed, reverse=<span class="kw">True</span>)
+        uncalled = (s[<span class="kw">0</span>] - s[<span class="kw">1</span>]) <span class="kw">if</span> n &gt; <span class="kw">1</span> <span class="kw">else</span> <span class="kw">0.0</span>
+        pot      = <span class="fn">sum</span>(committed) - uncalled
+
+        w, rake = h.<span class="fn">get</span>(<span class="st">"winnings"</span>), <span class="kw">None</span>
+        <span class="kw">if</span> w <span class="kw">and</span> <span class="fn">sum</span>(w) &gt; <span class="kw">0</span>:
+            r = <span class="fn">round</span>(pot - <span class="fn">sum</span>(w), <span class="kw">4</span>)
+            <span class="kw">if</span> -<span class="kw">0.005</span> &lt;= r &lt;= <span class="fn">max</span>(pot * <span class="kw">0.15</span>, <span class="kw">0.02</span>):   <span class="cm"># sanity gate</span>
+                rake = <span class="fn">max</span>(r, <span class="kw">0.0</span>)
+
+        hands.<span class="fn">append</span>({
+            <span class="st">"hand_id"</span>: h[<span class="st">"hand"</span>], <span class="st">"venue"</span>: h.<span class="fn">get</span>(<span class="st">"venue"</span>), <span class="st">"venue_dir"</span>: venue_dir,
+            <span class="st">"stake"</span>: stake, <span class="st">"big_blind"</span>: bb, <span class="st">"table_id"</span>: h.<span class="fn">get</span>(<span class="st">"table"</span>),
+            <span class="st">"year"</span>: h.<span class="fn">get</span>(<span class="st">"year"</span>), <span class="st">"month"</span>: h.<span class="fn">get</span>(<span class="st">"month"</span>), <span class="st">"day"</span>: h.<span class="fn">get</span>(<span class="st">"day"</span>),
+            <span class="st">"time"</span>: <span class="fn">str</span>(h.<span class="fn">get</span>(<span class="st">"time"</span>)), <span class="st">"n_players"</span>: n,
+            <span class="st">"seat_count"</span>: h.<span class="fn">get</span>(<span class="st">"seat_count"</span>) <span class="kw">or</span> n,
+            <span class="st">"saw_flop"</span>: street &gt;= <span class="kw">1</span>, <span class="st">"showdown"</span>: <span class="fn">any</span>(showed),
+            <span class="st">"pot"</span>: <span class="fn">round</span>(pot, <span class="kw">4</span>), <span class="st">"pot_bb"</span>: <span class="fn">round</span>(pot / bb, <span class="kw">4</span>),
+            <span class="st">"rake"</span>: rake,
+            <span class="st">"rake_bb"</span>: <span class="fn">round</span>(rake / bb, <span class="kw">4</span>) <span class="kw">if</span> rake <span class="kw">is not</span> <span class="kw">None</span> <span class="kw">else</span> <span class="kw">None</span>,
+        })
+
+        <span class="kw">for</span> i, pid <span class="kw">in</span> <span class="fn">enumerate</span>(players):
+            won = w[i] <span class="kw">if</span> w <span class="kw">and</span> i &lt; <span class="fn">len</span>(w) <span class="kw">else</span> <span class="kw">None</span>
+            hand_players.<span class="fn">append</span>({
+                <span class="st">"hand_id"</span>: h[<span class="st">"hand"</span>], <span class="st">"player_id"</span>: pid,
+                <span class="st">"position_idx"</span>: i + <span class="kw">1</span>,          <span class="cm"># p1=SB, p2=BB, pN=button</span>
+                <span class="st">"is_sb"</span>: i == <span class="kw">0</span>, <span class="st">"is_bb"</span>: i == <span class="kw">1</span>, <span class="st">"is_button"</span>: i == n - <span class="kw">1</span>,
+                <span class="st">"starting_stack"</span>: h[<span class="st">"starting_stacks"</span>][i],
+                <span class="st">"invested"</span>: <span class="fn">round</span>(committed[i], <span class="kw">4</span>),
+                <span class="st">"invested_bb"</span>: <span class="fn">round</span>(committed[i] / bb, <span class="kw">4</span>),
+                <span class="st">"winnings"</span>: won,
+                <span class="st">"net_bb"</span>: <span class="fn">round</span>((won - committed[i]) / bb, <span class="kw">4</span>) <span class="kw">if</span> won <span class="kw">is not</span> <span class="kw">None</span> <span class="kw">else</span> <span class="kw">None</span>,
+                <span class="st">"vpip"</span>: vol[i], <span class="st">"pfr"</span>: raised_pf[i], <span class="st">"folded"</span>: folded[i],
+                <span class="st">"showed"</span>: showed[i],
+                <span class="st">"postflop_bets"</span>: n_bets[i], <span class="st">"postflop_calls"</span>: n_calls[i],
+            })
+
+    <span class="kw">return</span> hands, hand_players, actions</pre>
+  </div>
+
+  <div class="ground">
+    <div class="ghead">
+      <span class="gtag">Verified — actual output from running this</span>
+      <span class="gfile">python3 src/parse_phh.py "ps NLH handhq_1-OBFUSCATED.phhs"</span>
+    </div>
+    <div class="gbody">
+      <div class="code">
+        <div class="chead"><span class="cname">console</span><span class="cbadge">real output</span></div>
+<pre>hands=989  hand_players=6098  actions=10440
+actions per hand = 10.56   players per hand = 6.17
+action mix: [('fold', 4874), ('check', 1849), ('call', 1531),
+             ('bet', 791), ('raise', 769), ('show', 626)]
+reconciled rake on 288 hands  (preflop-only 109, flop 179)
+  preflop rake values: [0.0]
+  flop rake median = 0.05  median % = 3.70%
+pooled VPIP = 27.9%   pooled PFR = 10.2%
+big blinds who 'vpip'd = 27.4%  &lt;- should NOT be ~100%</pre>
+      </div>
+      <p style="margin-bottom:0"><b>That last line is your correctness test.</b> The big blind can check
+      for free pre-flop. If your parser wrongly treats that check as a call, big-blind VPIP shoots to
+      nearly 100% and every statistic in the project is silently wrong. <b>27.4% means the
+      disambiguation is working.</b> Run this check every time you touch the parser.</p>
+    </div>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — two hands are skipped, and that is correct</span>
+    The file holds 991 hands but the parser returns 989. Two have no big blind recorded, so money
+    cannot be normalised and they are dropped deliberately. <b>Count and report your drops</b> — silent
+    data loss is exactly what the "justify each engineering decision" mark is testing.
+  </div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="s8">
+  <div class="sec-eyebrow"><span class="num">08</span> Step 4</div>
+  <h2>One folder → Parquet</h2>
+
+  <p class="lead">Before Spark, prove it works on a thousand files with plain Python. <b>Your Mac has
+  10 cores; use them.</b></p>
+
+  <div class="code">
+    <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+      <span class="cname">build_silver.py</span><span class="cbadge">plain Python, no Spark</span></div>
+<pre><span class="kw">from</span> multiprocessing <span class="kw">import</span> Pool
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">import</span> polars <span class="kw">as</span> pl
+<span class="kw">from</span> parse_phh <span class="kw">import</span> parse_file
+
+SRC = <span class="fn">Path</span>(<span class="st">"phh-dataset/data/handhq"</span>)
+OUT = <span class="fn">Path</span>(<span class="st">"silver"</span>); OUT.<span class="fn">mkdir</span>(exist_ok=<span class="kw">True</span>)
+
+<span class="kw">def</span> <span class="fn">safe</span>(p):
+    <span class="kw">try</span>:
+        <span class="kw">return</span> <span class="fn">parse_file</span>(p)
+    <span class="kw">except</span> <span class="fn">Exception</span> <span class="kw">as</span> e:
+        <span class="fn">print</span>(<span class="st">"SKIP"</span>, p.name, e)      <span class="cm"># never let one bad file kill the run</span>
+        <span class="kw">return</span> [], [], []
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    files = <span class="fn">sorted</span>(SRC.<span class="fn">rglob</span>(<span class="st">"*.phhs"</span>))
+    <span class="fn">print</span>(<span class="fn">len</span>(files), <span class="st">"files"</span>)
+
+    <span class="kw">with</span> <span class="fn">Pool</span>(<span class="kw">8</span>) <span class="kw">as</span> pool:              <span class="cm"># 8 of your 10 cores</span>
+        results = pool.<span class="fn">map</span>(safe, files, chunksize=<span class="kw">8</span>)
+
+    <span class="kw">for</span> i, name <span class="kw">in</span> <span class="fn">enumerate</span>([<span class="st">"hands"</span>, <span class="st">"hand_players"</span>, <span class="st">"actions"</span>]):
+        rows = [r <span class="kw">for</span> res <span class="kw">in</span> results <span class="kw">for</span> r <span class="kw">in</span> res[i]]
+        pl.<span class="fn">DataFrame</span>(rows).<span class="fn">write_parquet</span>(OUT / <span class="st">f"{name}.parquet"</span>)
+        <span class="fn">print</span>(name, <span class="fn">len</span>(rows), <span class="st">"rows"</span>)</pre>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — why not Spark for this bit?</span>
+    Parsing files is <b>embarrassingly parallel</b> — a thousand files, none of which needs to know
+    about any other. No shuffle, no coordination. Plain <code>multiprocessing</code> does it with less
+    overhead and far less to go wrong. <b>Bring Spark in when you need to group across the whole
+    dataset</b>, which is the next step.
+    <span class="sub">Your report should say exactly this. Choosing the simpler tool where it fits, and
+    explaining why, reads as engineering judgement rather than tool-worship.</span>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Careful — do not accumulate everything in memory at full scale</span>
+    The code above collects all rows before writing. That is fine for the 1.71 GB subset. For the full
+    18 GB it would blow past 16 GB of RAM. <b>At full scale, write one Parquet file per source folder
+    inside the loop</b> rather than one giant list at the end — then point Spark at the folder.
+  </div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="s9">
+  <div class="sec-eyebrow"><span class="num">09</span> Step 5</div>
+  <h2>Now bring in Spark</h2>
+
+  <p class="lead">From here on you are working with Parquet, which Spark reads natively and fast.</p>
+
+  <div class="code">
+    <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+      <span class="cname">features.py</span><span class="cbadge">PySpark</span></div>
+<pre><span class="kw">from</span> pyspark.sql <span class="kw">import</span> SparkSession, functions <span class="kw">as</span> F, Window
+
+spark = (SparkSession.builder
+    .<span class="fn">appName</span>(<span class="st">"quickstack-poker"</span>)
+    .<span class="fn">master</span>(<span class="st">"local[8]"</span>)                          <span class="cm"># 8 of your 10 cores</span>
+    .<span class="fn">config</span>(<span class="st">"spark.driver.memory"</span>, <span class="st">"9g"</span>)          <span class="cm"># leave RAM for macOS</span>
+    .<span class="fn">config</span>(<span class="st">"spark.sql.shuffle.partitions"</span>, <span class="st">"48"</span>) <span class="cm"># default 200 is far too many locally</span>
+    .<span class="fn">config</span>(<span class="st">"spark.local.dir"</span>, <span class="st">"/tmp/spark-scratch"</span>) <span class="cm"># spill space on your fast SSD</span>
+    .<span class="fn">getOrCreate</span>())
+
+hp      = spark.<span class="fn">read</span>.<span class="fn">parquet</span>(<span class="st">"silver/hand_players.parquet"</span>)
+hands   = spark.<span class="fn">read</span>.<span class="fn">parquet</span>(<span class="st">"silver/hands.parquet"</span>)
+
+<span class="cm"># nothing has run yet - these are just instructions (lazy, exactly like Polars)</span>
+joined = hp.<span class="fn">join</span>(hands.<span class="fn">select</span>(<span class="st">"hand_id"</span>, <span class="st">"venue"</span>, <span class="st">"day"</span>, <span class="st">"time"</span>,
+                            <span class="st">"table_id"</span>, <span class="st">"saw_flop"</span>), <span class="st">"hand_id"</span>)
+
+joined.<span class="fn">explain</span>()          <span class="cm"># see the plan WITHOUT running it - like Polars .explain()</span>
+<span class="fn">print</span>(joined.<span class="fn">count</span>())     <span class="cm"># THIS is the action that finally executes everything</span></pre>
+  </div>
+
+  <div class="box take">
+    <span class="lab">Takeaway</span>
+    If you have used Polars' lazy mode, you already know this feeling: you build up a query, call
+    <code>.explain()</code> to inspect the plan, and only <code>.count()</code> or <code>.write()</code>
+    makes it actually happen. <b>Spark is the same idea, spread across cores instead of one process.</b>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="s10">
+  <div class="sec-eyebrow"><span class="num">10</span> Step 6</div>
+  <h2>Build the features — the real group-by</h2>
+
+  <p class="lead">This is the Gold table. <b>One row per player</b>, and the moment the project becomes
+  small again.</p>
+
+  <div class="code">
+    <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+      <span class="cname">features.py — continued</span><span class="cbadge">the shuffle happens here</span></div>
+<pre><span class="cm"># ---- the core behavioural features: one row per player ----</span>
+core = (joined
+    .<span class="fn">groupBy</span>(<span class="st">"venue"</span>, <span class="st">"player_id"</span>)
+    .<span class="fn">agg</span>(
+        F.<span class="fn">count</span>(<span class="st">"*"</span>).<span class="fn">alias</span>(<span class="st">"hands_played"</span>),
+        F.<span class="fn">avg</span>(F.<span class="fn">col</span>(<span class="st">"vpip"</span>).<span class="fn">cast</span>(<span class="st">"int"</span>)).<span class="fn">alias</span>(<span class="st">"vpip"</span>),
+        F.<span class="fn">avg</span>(F.<span class="fn">col</span>(<span class="st">"pfr"</span>).<span class="fn">cast</span>(<span class="st">"int"</span>)).<span class="fn">alias</span>(<span class="st">"pfr"</span>),
+        F.<span class="fn">sum</span>(<span class="st">"postflop_bets"</span>).<span class="fn">alias</span>(<span class="st">"bets"</span>),
+        F.<span class="fn">sum</span>(<span class="st">"postflop_calls"</span>).<span class="fn">alias</span>(<span class="st">"calls"</span>),
+        F.<span class="fn">avg</span>(F.<span class="fn">col</span>(<span class="st">"showed"</span>).<span class="fn">cast</span>(<span class="st">"int"</span>)).<span class="fn">alias</span>(<span class="st">"wtsd"</span>),
+        F.<span class="fn">avg</span>(<span class="st">"net_bb"</span>).<span class="fn">alias</span>(<span class="st">"avg_net_bb"</span>),      <span class="cm"># null-safe: ignores missing</span>
+        F.<span class="fn">countDistinct</span>(<span class="st">"day"</span>).<span class="fn">alias</span>(<span class="st">"days_active"</span>),
+        F.<span class="fn">countDistinct</span>(<span class="st">"table_id"</span>).<span class="fn">alias</span>(<span class="st">"distinct_tables"</span>),
+    )
+    .<span class="fn">withColumn</span>(<span class="st">"vpip_pfr_gap"</span>, F.<span class="fn">col</span>(<span class="st">"vpip"</span>) - F.<span class="fn">col</span>(<span class="st">"pfr"</span>))
+    .<span class="fn">withColumn</span>(<span class="st">"aggression_factor"</span>,
+                F.<span class="fn">col</span>(<span class="st">"bets"</span>) / F.<span class="fn">greatest</span>(F.<span class="fn">col</span>(<span class="st">"calls"</span>), F.<span class="fn">lit</span>(<span class="kw">1</span>)))
+    .<span class="fn">withColumn</span>(<span class="st">"bb_per_100"</span>, F.<span class="fn">col</span>(<span class="st">"avg_net_bb"</span>) * <span class="kw">100</span>)
+)
+
+<span class="cm"># ---- the showpiece: how many tables at once? ----</span>
+<span class="cm"># bucket every action into its minute, then count distinct tables per player-minute</span>
+multi = (joined
+    .<span class="fn">withColumn</span>(<span class="st">"minute"</span>, F.<span class="fn">concat_ws</span>(<span class="st">":"</span>, <span class="st">"day"</span>, F.<span class="fn">substring</span>(<span class="st">"time"</span>, <span class="kw">1</span>, <span class="kw">5</span>)))
+    .<span class="fn">groupBy</span>(<span class="st">"venue"</span>, <span class="st">"player_id"</span>, <span class="st">"minute"</span>)
+    .<span class="fn">agg</span>(F.<span class="fn">countDistinct</span>(<span class="st">"table_id"</span>).<span class="fn">alias</span>(<span class="st">"tables_this_minute"</span>))
+    .<span class="fn">groupBy</span>(<span class="st">"venue"</span>, <span class="st">"player_id"</span>)
+    .<span class="fn">agg</span>(F.<span class="fn">max</span>(<span class="st">"tables_this_minute"</span>).<span class="fn">alias</span>(<span class="st">"max_tables"</span>),
+         F.<span class="fn">avg</span>(<span class="st">"tables_this_minute"</span>).<span class="fn">alias</span>(<span class="st">"avg_tables"</span>))
+)
+
+gold = (core.<span class="fn">join</span>(multi, [<span class="st">"venue"</span>, <span class="st">"player_id"</span>], <span class="st">"left"</span>)
+            <span class="warnln">.<span class="fn">filter</span>(F.<span class="fn">col</span>(<span class="st">"hands_played"</span>) &gt;= <span class="kw">100</span>))   <span class="cm"># minimum-hands threshold</span>
+
+gold.<span class="fn">write</span>.<span class="fn">mode</span>(<span class="st">"overwrite"</span>).<span class="fn">parquet</span>(<span class="st">"gold/player_features.parquet"</span>)
+<span class="fn">print</span>(<span class="st">"players in gold table:"</span>, gold.<span class="fn">count</span>())</pre>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — the 100-hand threshold is a decision you must defend</span>
+    A player with 12 hands might show a VPIP of 100% purely by chance. That is noise, and K-Means will
+    happily build a whole cluster out of it. Filtering to players with at least 100 hands makes the
+    statistics meaningful — but it <b>throws away real people</b>, so you must report how many.
+    <span class="sub">In our sample file, most players appeared in fewer than 12 hands, because one
+    file covers only ~2¼ minutes. Across the full 23 days the picture is completely different — which
+    is exactly why you must run this on many files before judging the threshold.</span>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Careful — the one line that will crash your laptop</span>
+    Never call <code>.toPandas()</code> or <code>.collect()</code> on <code>joined</code>,
+    <code>hp</code> or the actions table. Those commands drag <b>every row into the driver process</b>,
+    which on a laptop is the same 16 GB you are already using. It is the most common way students kill
+    a local Spark job.
+    <span class="sub"><b>Only</b> call it on <code>gold</code>, which is one small row per player:
+    <code>pdf = gold.toPandas()</code> is completely safe.</span>
+  </div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="s11">
+  <div class="sec-eyebrow"><span class="num">11</span> Step 7</div>
+  <h2>Tuning for exactly 16 GB</h2>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:34%">Setting</th><th style="width:14%">Use</th><th>Why for your machine</th></tr></thead>
+    <tbody>
+      <tr><td><code>spark.driver.memory</code></td><td><b>9g</b></td><td>macOS and your browser need the rest. Going higher causes swapping, which is slower than spilling.</td></tr>
+      <tr><td><code>master("local[N]")</code></td><td><b>local[8]</b></td><td>You have 4 performance + 6 efficiency cores. Leave two free or the machine becomes unusable while it runs.</td></tr>
+      <tr><td><code>spark.sql.shuffle.partitions</code></td><td><b>48</b></td><td>The default is 200, tuned for real clusters. On 8 local cores that is 200 tiny tasks and pure overhead. Roughly 4–6× your core count is a good starting point.</td></tr>
+      <tr><td><code>spark.local.dir</code></td><td><b>/tmp/spark-scratch</b></td><td>Where Spark spills when RAM runs out. Your SSD is very fast, which is why 16 GB is workable at all.</td></tr>
+      <tr><td><code>spark.sql.files.maxPartitionBytes</code></td><td><b>64m</b></td><td>Smaller input partitions = less memory per task. Useful if you hit out-of-memory errors.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box take">
+    <span class="lab">Takeaway — spilling is not failure</span>
+    When Spark says it is spilling to disk, that is the system <b>working as designed</b>, not
+    breaking. It means a shuffle did not fit in RAM so it used the SSD instead. It gets slower; it does
+    not get wrong. <b>The only true failure is <code>OutOfMemoryError</code> in the driver</b>, which
+    almost always means you called <code>.collect()</code> on something huge.
+  </div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section id="s12">
+  <div class="sec-eyebrow"><span class="num">12</span> Step 8</div>
+  <h2>Handing off to Databricks</h2>
+
+  <p class="lead">The guidelines require Databricks for Phases 2 and 3. <b>You do not have to upload
+  18 GB to satisfy that.</b></p>
+
+  <ol class="steps">
+    <li><b>Do the heavy parsing locally</b> on your Mac — Bronze to Silver. This is the slow,
+    fiddly part and your machine is genuinely good at it.</li>
+    <li><b>Upload the Silver Parquet</b> (2–4 GB) or, if that is painful,
+    <b>just the Gold table</b> (~200 MB). Both are small enough to move easily.</li>
+    <li><b>Do Phase 2's final feature steps and all of Phase 3 on Databricks</b>, in PySpark, so the
+    graded notebook demonstrates exactly what the guidelines ask for.</li>
+    <li><b>Also run the parser on a sample inside Databricks</b> so the notebook shows the full pipeline
+    end to end, even though the bulk ran locally.</li>
+    <li><b>Document the split honestly</b> in your report. Choosing where to run each stage is a real
+    engineering decision, and explaining it is worth more than pretending everything ran in the cloud.</li>
+  </ol>
+
+  <div class="box brk">
+    <span class="lab">Careful — the platform changed this year</span>
+    <b>Databricks Community Edition was retired on 1 January 2026.</b> The replacement is
+    <b>Databricks Free Edition</b>, which no longer needs an AWS or Azure account to sign up.
+    Confirm with your professor which the course expects — it is a 30-second question and it affects
+    everyone in your team.
+  </div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section id="s13">
+  <div class="sec-eyebrow"><span class="num">13</span> Rescue</div>
+  <h2>When it breaks — the errors you will actually hit</h2>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:32%">Symptom</th><th>What it means and how to fix it</th></tr></thead>
+    <tbody>
+      <tr><td><code>JAVA_HOME is not set</code></td><td>Spark cannot find Java. Run <code>export JAVA_HOME=$(/usr/libexec/java_home -v 17)</code> and add it to your <code>~/.zshrc</code> so it survives a new terminal.</td></tr>
+      <tr><td><code>OutOfMemoryError</code> in the driver</td><td>Almost always <code>.collect()</code> or <code>.toPandas()</code> on something huge. Find it and remove it. Only ever collect the Gold table.</td></tr>
+      <tr><td>Job runs forever on a <code>groupBy</code></td><td><code>shuffle.partitions</code> is probably still 200. Drop it to 48. Also check you filtered before grouping, not after.</td></tr>
+      <tr><td><code>TypeError</code> from tomllib</td><td>You opened the file in text mode. It must be binary: <code>open(path, "rb")</code>.</td></tr>
+      <tr><td>PySpark import or runtime errors</td><td>Python version mismatch. Rebuild the venv on Python 3.12 (section 04).</td></tr>
+      <tr><td>Big-blind VPIP near 100%</td><td>The check/call bug. Your <code>cc</code> handling is treating free checks as voluntary calls. Re-read step 3.</td></tr>
+      <tr><td>Rake comes out ~40%</td><td>You forgot to return the uncalled portion of the final bet. See the sanity gate in the parser.</td></tr>
+      <tr><td>Mac becomes unusable while running</td><td><code>local[*]</code> grabbed all 10 cores. Use <code>local[8]</code>.</td></tr>
+      <tr><td>Disk filling up fast</td><td>You extracted the whole Zenodo zip. Delete the ACPC folders — you need only <code>data/handhq/</code>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============ 14 ============ -->
+<section id="s14">
+  <div class="sec-eyebrow"><span class="num">14</span> Plan</div>
+  <h2>The five-week runbook</h2>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:16%">When</th><th style="width:30%">Do this</th><th>Done when</th></tr></thead>
+    <tbody>
+      <tr><td><b>This week</b><br>2–10 Aug</td><td>Sections 04–07. Set up the venv, sparse-checkout the 1.71 GB subset, get the parser running on one file.</td><td>You see the console output from section 07, including the 27.4% big-blind VPIP check.</td></tr>
+      <tr><td><b>Week 1</b><br>11–17 Aug</td><td>Section 08. Parse a whole site+stake folder to Parquet. Count your dropped hands.</td><td>Three Parquet files exist and the row counts look sane.</td></tr>
+      <tr><td><b>Week 2</b><br>18–24 Aug</td><td>Sections 09–10. Spark joins and the feature group-by, including multi-tabling. <b>Start writing the report.</b></td><td>A Gold table with one row per player and ~25 columns.</td></tr>
+      <tr><td><b>Week 3</b><br>25–31 Aug</td><td>Phase 3 on Databricks: K-Means, churn classifiers, metric comparison.</td><td>Clusters you can name and a model with a defensible AUC.</td></tr>
+      <tr><td><b>Week 4</b><br>1–7 Sep</td><td>Run the full dataset once for the headline numbers. Finish report, deck, README.</td><td>Notebook runs top to bottom on a fresh cluster.</td></tr>
+      <tr><td><b>8 Sep</b></td><td>Submit.</td><td>Report PDF · repo · 10-slide deck.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="closer">
+    <div class="quote">Big data is not big<br><span class="a">once you have grouped it.</span></div>
+    <p style="margin-top:18px;margin-bottom:0;color:#546A82">
+      Everything hard about this project lives in the first two steps — turning messy text into clean
+      rows, and getting all of one player's rows into the same place. <b>Do those two things properly
+      and the machine learning is the easy part.</b>
+    </p>
+    <a class="next" href="poker-explained.html">
+      <span class="arw">←</span>
+      <span>
+        <span class="nl">Companion 01</span>
+        <span class="nt">Poker, from zero</span>
+        <span class="nd">The game, the terms, and how each one becomes a column</span>
+      </span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <b>Companion 02 of 02 · Big Data Analytics group project.</b><br>
+  <b>Verified on this machine, 2 Aug 2026:</b> Apple M4 · 10 cores · 16 GB RAM · 272 GB free ·
+  OpenJDK 17.0.19 · Python 3.13/3.14 · Homebrew present.<br>
+  <b>Verified about the data:</b> Zenodo archive returns HTTP 200 at exactly 20,289,230,983 bytes ·
+  the GitHub repository is 1.71 GB (a subset) · <code>.phhs</code> files parse with stdlib
+  <code>tomllib</code> · the parser above produced 989 hands / 6,098 hand-players / 10,440 actions from
+  one real file, with rake $0.00 on all 109 pre-flop-only hands and 3.7% median on flop hands.<br>
+  <b>Estimated, not measured</b> (flagged in the text): the ~18 GB uncompressed figure for
+  <code>data/handhq/</code>, the 2–4 GB Parquet figure, the ~200 MB Gold-table figure, and the
+  ~100 GB full-extraction warning.<br>
+  <br>
+  Dataset: <a href="https://github.com/uoftcprg/phh-dataset">github.com/uoftcprg/phh-dataset</a> ·
+  <a href="https://zenodo.org/records/17136841">Zenodo DOI 10.5281/zenodo.17136841</a> (CC BY 4.0)<br>
+  Also in this folder: <a href="poker-project-plan.html">The Ecosystem Engine — project plan</a> ·
+  <a href="poker-explained.html">Companion 01 — Poker from zero</a>
+</footer>
+
+</main>
+</div>
+
+<script>
+const prog = document.getElementById('progress');
+function onScroll(){
+  const h = document.documentElement;
+  const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  prog.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+document.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+const links = [...document.querySelectorAll('.rail a')];
+const map = {};
+links.forEach(a => map[a.getAttribute('href').slice(1)] = a);
+const sections = [...document.querySelectorAll('section')];
+let spyActive = null;
+function setActive(){
+  const line = 150;
+  let current = sections[0];
+  for(const s of sections){ if(s.getBoundingClientRect().top <= line) current = s; }
+  if(current.id === spyActive) return;
+  spyActive = current.id;
+  links.forEach(l=>l.classList.remove('on'));
+  const a = map[current.id];
+  if(a) a.classList.add('on');
+}
+document.addEventListener('scroll', setActive, {passive:true});
+window.addEventListener('resize', setActive, {passive:true});
+setActive();
+
+const rvEls = [...document.querySelectorAll('.rv')];
+function revealInView(){
+  const vh = window.innerHeight;
+  for(const el of rvEls){
+    if(el.classList.contains('in')) continue;
+    if(el.getBoundingClientRect().top < vh * 0.92) el.classList.add('in');
+  }
+}
+document.addEventListener('scroll', revealInView, {passive:true});
+window.addEventListener('resize', revealInView, {passive:true});
+window.addEventListener('hashchange', ()=>{ [80,300,600].forEach(t=>setTimeout(revealInView, t)); });
+revealInView();
+</script>
+</body>
+</html>

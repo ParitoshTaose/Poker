@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poker from zero · Companion 01 — BDA Group Project</title>
+<style>
+  :root{
+    --bg:#EDF2F8; --paper:#FFFFFF; --panel:#FFFFFF; --panel2:#E9F0F8; --line:#D5E0ED; --line2:#C6D4E4;
+    --cyan:#2E8BC0; --cyan-lt:#176390;
+    --gold:#C08A2E; --gold-lt:#8A5E17;
+    --red:#DB4A40;  --red-lt:#C0392E;
+    --green:#2AA277; --green-lt:#1C8560;
+    --ink:#14263C; --body:#2B3D52; --soft:#546A82; --dim:#7E92A8;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+    --maxw:64ch;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    background:
+      radial-gradient(1100px 650px at 80% -10%, rgba(46,139,192,.10) 0%, rgba(237,242,248,0) 55%),
+      var(--bg);
+    color:var(--ink); font-family:var(--sans); line-height:1.6;
+    font-size:17px; -webkit-font-smoothing:antialiased;
+  }
+
+  .progress{position:fixed;top:0;left:0;height:3px;width:0%;z-index:60;
+    background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .12s linear}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:50;
+    display:flex;align-items:center;gap:14px;padding:0 20px;
+    background:rgba(237,242,248,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);font-size:12.5px}
+  .topbar .course{color:var(--cyan-lt);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .topbar .sep{color:var(--dim)}
+  .topbar .sess{color:var(--gold-lt);font-weight:700}
+  .topbar .right{margin-left:auto;color:var(--soft)}
+
+  .shell{display:grid;grid-template-columns:238px minmax(0,1fr);gap:0;
+    max-width:1180px;margin:0 auto;padding-top:52px}
+  .rail{position:sticky;top:52px;align-self:start;height:calc(100vh - 52px);
+    padding:30px 18px 30px 24px;overflow-y:auto}
+  .rail .rlabel{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dim);font-weight:800;margin:0 0 14px 8px}
+  .rail a{display:block;text-decoration:none;color:var(--soft);font-size:13px;
+    padding:6px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0;
+    transition:.18s;line-height:1.35}
+  .rail a .act{display:block;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:1px}
+  .rail a:hover{color:var(--ink);background:rgba(46,139,192,.09)}
+  .rail a.on{color:var(--cyan-lt);border-left-color:var(--cyan);background:rgba(46,139,192,.12);font-weight:700}
+  .rail a.on .act{color:var(--gold-lt)}
+
+  main{padding:0 clamp(20px,5vw,64px) 120px;min-width:0}
+
+  .hero{padding:56px 0 30px}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;
+    color:var(--cyan-lt);margin-bottom:20px}
+  .eyebrow .n{color:var(--gold-lt)}
+  .hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(38px,6.4vw,68px);
+    line-height:1.02;letter-spacing:-.01em;color:var(--ink);margin-bottom:22px}
+  .hero h1 em{font-style:italic;color:var(--gold-lt)}
+  .hero .deck{font-size:19.5px;color:var(--soft);max-width:60ch;line-height:1.5}
+  .hero .deck b{color:var(--ink);font-weight:600}
+  .herofig{margin:38px 0 6px}
+  .grounded-note{margin-top:26px;font-size:13px;color:var(--dim);
+    border-top:1px solid var(--line);padding-top:16px;line-height:1.7}
+  .grounded-note code{font-family:var(--mono);color:var(--cyan-lt);font-size:12px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:22px;
+    padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .legend .li{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--soft)}
+  .legend .dot{width:11px;height:11px;border-radius:3px;flex:none}
+  .legend b{color:var(--ink);font-weight:650}
+
+  section{padding:52px 0;border-top:1px solid var(--line);scroll-margin-top:64px}
+  .sec-eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+    color:var(--gold-lt);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .sec-eyebrow .num{font-family:var(--mono);color:var(--cyan);font-size:12px}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(27px,3.8vw,40px);
+    line-height:1.08;letter-spacing:-.01em;color:var(--ink);margin-bottom:18px}
+  h3{font-size:19px;font-weight:750;color:var(--cyan-lt);margin:30px 0 10px}
+  h4{font-size:15.5px;font-weight:750;color:var(--ink);margin:22px 0 8px}
+  p{max-width:var(--maxw);margin-bottom:16px;color:var(--body)}
+  p b{color:var(--ink);font-weight:650}
+  p .hl{color:var(--gold-lt);font-weight:650}
+  ul.pts{list-style:none;max-width:var(--maxw);margin:6px 0 18px}
+  ul.pts li{position:relative;padding-left:26px;margin-bottom:11px;color:var(--body)}
+  ul.pts li::before{content:"";position:absolute;left:3px;top:9px;width:9px;height:9px;
+    border-radius:2px;background:var(--cyan);transform:rotate(45deg)}
+  ul.pts li b{color:var(--ink);font-weight:650}
+  ol.steps{list-style:none;counter-reset:st;max-width:var(--maxw);margin:6px 0 18px}
+  ol.steps li{position:relative;padding-left:36px;margin-bottom:13px;color:var(--body)}
+  ol.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;
+    width:24px;height:24px;border-radius:7px;background:rgba(46,139,192,.14);color:var(--cyan-lt);
+    font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+  ol.steps li b{color:var(--ink);font-weight:650}
+  .lead{font-size:20px;color:var(--soft);max-width:58ch;line-height:1.5;margin-bottom:20px}
+  .lead b{color:var(--ink)}
+
+  .fig{margin:26px 0;padding:22px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;display:flex;flex-direction:column;align-items:center;
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .fig svg{width:100%;height:auto;max-width:620px}
+  .fig.wide svg{max-width:760px}
+  .fig .cap{margin-top:14px;font-size:12.5px;color:var(--soft);text-align:center;max-width:56ch}
+  .fig .cap b{color:var(--ink);font-weight:650}
+
+  .box{margin:24px 0;border-radius:14px;padding:18px 20px;font-size:16px;line-height:1.5;
+    border-left:4px solid var(--line);background:var(--panel);color:var(--body)}
+  .box .lab{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:800;margin-bottom:8px}
+  .box b{color:var(--ink);font-weight:650}
+  .box.take{border-left-color:var(--cyan);background:rgba(46,139,192,.08)}
+  .box.take .lab{color:var(--cyan-lt)}
+  .box.board{border-left-color:var(--gold);background:rgba(192,138,46,.11)}
+  .box.board .lab{color:var(--gold-lt)}
+  .box.brk{border-left-color:var(--red);background:rgba(219,74,64,.08)}
+  .box.brk .lab{color:var(--red-lt)}
+  .box.discuss{border-left-color:var(--gold);background:rgba(192,138,46,.07);border-left-style:dashed}
+  .box.discuss .lab{color:var(--gold-lt)}
+  .box .sub{display:block;margin-top:10px;font-size:14px;color:var(--soft);font-weight:400}
+  .box ul{margin:8px 0 0 0;list-style:none}
+  .box ul li{position:relative;padding-left:20px;margin-bottom:7px;font-size:15px}
+  .box ul li::before{content:"—";position:absolute;left:0;color:var(--dim)}
+
+  .term{color:var(--gold-lt);font-weight:650;border-bottom:1px dotted var(--gold);cursor:help}
+
+  .ground{margin:30px 0;border:1px solid var(--green);border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(42,162,119,.07),rgba(42,162,119,.02));
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .ground .ghead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:13px 18px;background:rgba(42,162,119,.12);border-bottom:1px solid rgba(42,162,119,.30)}
+  .ground .gtag{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;
+    color:var(--green-lt)}
+  .ground .gtag::before{content:"◆ ";color:var(--green)}
+  .ground .gfile{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);
+    background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+  .ground .gbody{padding:18px 20px}
+  .ground .gbody > p:first-child{margin-top:0}
+
+  .code{background:#F5F8FC;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+  .code .chead{display:flex;align-items:center;gap:8px;padding:8px 14px;
+    background:#E8F0F8;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+  .code .chead .dotrow{display:flex;gap:6px;margin-right:6px}
+  .code .chead .cdot{width:10px;height:10px;border-radius:50%;background:#C6D4E4}
+  .code .chead .cname{color:var(--cyan-lt)}
+  .code .chead .cbadge{margin-left:auto;color:var(--dim)}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.65;color:#2A3B4E}
+  .code pre .cm{color:#8496AC;font-style:italic}
+  .code pre .kw{color:#9A6B15}
+  .code pre .fn{color:#176390}
+  .code pre .st{color:#1C8560}
+  .code pre .warnln{background:rgba(219,74,64,.12);display:inline-block;width:100%}
+
+  .walk{margin:16px 0;border-left:2px solid var(--line);padding-left:0}
+  .walk .w{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line2)}
+  .walk .w:last-child{border-bottom:0}
+  .walk .wc{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);background:#EBF1F8;
+    border:1px solid var(--line);border-radius:6px;padding:6px 9px;height:fit-content;white-space:pre-wrap;
+    max-width:280px;overflow-x:auto}
+  .walk .wt{color:var(--body);font-size:14.5px;line-height:1.5}
+  .walk .wt b{color:var(--ink)}
+  .walk .wt .warn{color:var(--red-lt);font-weight:650}
+  @media(max-width:640px){.walk .w{grid-template-columns:1fr}.walk .wc{max-width:100%}}
+
+  .tree{font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--soft);white-space:pre;
+    background:#F5F8FC;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0;overflow-x:auto}
+  .tree .dir{color:var(--cyan-lt);font-weight:600}
+  .tree .gone{color:var(--red-lt);text-decoration:line-through;opacity:.8}
+  .tree .rep{color:var(--gold-lt);font-weight:600}
+  .tree .note{color:var(--dim)}
+
+  /* tables */
+  .tw{overflow-x:auto;margin:20px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+  th{background:var(--panel2);color:var(--ink);font-weight:750;text-align:left;
+    padding:11px 14px;border-bottom:1px solid var(--line);font-size:12.5px;
+    letter-spacing:.03em;text-transform:uppercase}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td b{color:var(--ink)}
+  td code,th code{font-family:var(--mono);font-size:12px;color:var(--cyan-lt)}
+  .num{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .tot td{background:rgba(46,139,192,.07);font-weight:750;color:var(--ink)}
+
+  /* stat strip */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .stat .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--cyan-lt);line-height:1.1}
+  .stat .v.g{color:var(--gold-lt)} .stat .v.r{color:var(--red-lt)} .stat .v.gr{color:var(--green-lt)}
+  .stat .k{font-size:12px;color:var(--soft);margin-top:6px;line-height:1.35}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .chip{font-family:var(--mono);font-size:11.5px;padding:5px 10px;border-radius:7px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--cyan-lt)}
+  .chip.g{background:rgba(192,138,46,.12);border-color:rgba(192,138,46,.35);color:var(--gold-lt)}
+  .chip.gr{background:rgba(42,162,119,.12);border-color:rgba(42,162,119,.35);color:var(--green-lt)}
+  .chip.r{background:rgba(219,74,64,.10);border-color:rgba(219,74,64,.33);color:var(--red-lt)}
+
+  /* interactive demo */
+  .demo{margin:28px 0;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .demo .dhead{padding:14px 18px 4px}
+  .demo .dhead .t{font-weight:750;color:var(--cyan-lt);font-size:15px}
+  .demo .dhead .s{font-size:13px;color:var(--soft);margin-top:3px}
+  .demo .stage{padding:6px 18px 0}
+  .demo svg{width:100%;height:auto;max-width:640px;display:block;margin:0 auto}
+  .demo .status{margin:6px 18px 4px;min-height:96px;padding:13px 15px;border-radius:10px;
+    background:#F5F8FC;border:1px solid var(--line);font-size:14px;
+    color:var(--body);line-height:1.55;transition:.2s}
+  .demo .status .ok{color:var(--green-lt);font-weight:650}
+  .demo .status .bad{color:var(--red-lt);font-weight:650}
+  .demo .status .name{color:var(--gold-lt);font-weight:700}
+  .demo .status .sm{display:block;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--soft)}
+  .demo .ctrl{display:flex;flex-wrap:wrap;gap:10px;padding:12px 18px 18px}
+  .demo button{font-family:var(--sans);font-size:13px;font-weight:650;cursor:pointer;
+    border-radius:9px;padding:9px 14px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);transition:.15s}
+  .demo button:hover{border-color:var(--cyan);color:var(--cyan-lt)}
+  .demo button.on{border-color:var(--cyan);background:rgba(46,139,192,.14);color:var(--cyan-lt)}
+  .demo button.ghost{background:transparent;color:var(--soft)}
+  /* explicit base styles so transitions never fall back to black */
+  .demo .pt{fill:#C6D4E4;stroke:#FFFFFF;stroke-width:1.2;transition:fill .3s, r .3s, opacity .3s;opacity:.75}
+  .demo .pt.lit{opacity:1;stroke-width:1.6}
+  .demo .hull{fill:none;stroke:#C6D4E4;stroke-width:2;stroke-dasharray:6 5;opacity:0;transition:opacity .3s}
+  .demo .hull.show{opacity:1}
+
+  .quote{font-family:var(--serif);font-size:clamp(24px,3.6vw,36px);line-height:1.25;
+    color:var(--ink);font-weight:600;max-width:24ch;margin:8px 0}
+  .quote .a{color:var(--gold-lt);font-style:italic}
+  .closer{margin-top:20px;padding:34px 30px;border-radius:18px;
+    background:linear-gradient(140deg,#E8F1FB,#F6FAFD);border:1px solid var(--line)}
+  .next{display:flex;align-items:center;gap:14px;margin-top:26px;padding:16px 20px;
+    border:1px solid var(--line);border-radius:14px;background:var(--panel);text-decoration:none;color:inherit;transition:.18s;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .next:hover{border-color:var(--cyan)}
+  .next .arw{font-size:24px;color:var(--cyan)}
+  .next .nl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .next .nt{color:var(--cyan-lt);font-weight:700;font-size:16px;margin-top:2px}
+  .next .nd{font-size:13px;color:var(--soft);margin-top:2px}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 10px;margin-top:40px;font-size:12.5px;color:var(--dim);line-height:1.9}
+  footer b{color:var(--soft)}
+  footer code{font-family:var(--mono);color:var(--cyan-lt);font-size:11.5px}
+  footer a{color:var(--cyan-lt);text-decoration:none;border-bottom:1px dotted var(--line2)}
+  footer a:hover{border-bottom-style:solid}
+
+  .rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  @media(max-width:1000px){
+    .shell{grid-template-columns:1fr}
+    .rail{display:none}
+    main{padding:0 22px 90px}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="topbar">
+  <span class="course">Big Data Analytics</span>
+  <span class="sep">·</span>
+  <span class="sess">Companion 1 — Poker from zero</span>
+  <span class="right">for the group project</span>
+</div>
+
+<div class="shell">
+<nav class="rail">
+  <div class="rlabel">Poker from zero</div>
+  <a href="#s1"><span class="act">Part 1</span>The cards &amp; what beats what</a>
+  <a href="#s2"><span class="act">Part 1</span>The table, button &amp; blinds</a>
+  <a href="#s3"><span class="act">Part 1</span>One hand, start to finish</a>
+  <a href="#s4"><span class="act">Part 1</span>Your five possible moves</a>
+  <a href="#s5"><span class="act">Part 2</span>Position — the hidden edge</a>
+  <a href="#s6"><span class="act">Part 2</span>What makes a player good</a>
+  <a href="#s7"><span class="act">Part 3</span>Reading a real hand</a>
+  <a href="#s8"><span class="act">Part 3</span>The action codes</a>
+  <a href="#s9"><span class="act">Part 3</span>Actions → the metrics</a>
+  <a href="#s10"><span class="act">Part 4</span>The money &amp; the rake</a>
+  <a href="#s11"><span class="act">Part 4</span>Game → data → business</a>
+  <a href="#s12"><span class="act">Reference</span>Full glossary</a>
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="eyebrow">Project companion <span class="n">· 01 of 02</span> · assumes you have never played</div>
+  <h1>Poker, <em>from zero</em></h1>
+  <p class="deck">
+    You cannot interpret the model without understanding the game. Not because you need to play well —
+    but because <b>every column in our dataset is a decision a human made at a table</b>, and every
+    metric we build is a summary of those decisions. This page takes you from
+    "I don't know what beats what" to <b>reading a real hand out of the dataset and computing a player
+    statistic from it by hand.</b>
+  </p>
+
+  <div class="legend">
+    <div class="li"><span class="dot" style="background:#2E8BC0"></span><b>Takeaway</b> — the point in one line</div>
+    <div class="li"><span class="dot" style="background:#C08A2E"></span><b>Key idea</b> — worth memorising</div>
+    <div class="li"><span class="dot" style="background:#DB4A40"></span><b>Careful</b> — a trap that will bite your code</div>
+    <div class="li"><span class="dot" style="background:#2AA277"></span><b>Verified</b> — measured from the real files</div>
+  </div>
+
+  <div class="grounded-note">
+    Every example hand on this page is a <b>real, unedited record</b> from
+    <code>data/handhq/PS-2009-07-01_2009-07-23_25NLH_OBFU/0.25/ps NLH handhq_1-OBFUSCATED.phhs</code>.
+    Nothing is invented. Companion 02 covers the data pipeline.
+  </div>
+</header>
+
+<!-- ============ 1 ============ -->
+<section id="s1">
+  <div class="sec-eyebrow"><span class="num">01</span> Part 1 · The absolute basics</div>
+  <h2>The cards, and what beats what</h2>
+
+  <p class="lead">One standard 52-card deck. Four suits — ♠ spades, ♥ hearts, ♦ diamonds, ♣ clubs —
+  and thirteen ranks in each: <b>2 3 4 5 6 7 8 9 10 J Q K A</b>. <b>No suit is worth more than
+  another.</b> Ace is the highest card (though it can also act as a 1 in the straight A-2-3-4-5).</p>
+
+  <p>The game we care about is <b>Texas Hold'em</b>, which works like this: you are dealt
+  <b>two private cards</b> that only you can see (your <span class="term">hole cards</span>), and over
+  the course of the hand <b>five shared cards</b> are placed face-up in the middle for everybody to use
+  (the <span class="term">board</span>, or community cards).</p>
+
+  <p>At the end, you make <b>the best five-card hand you can</b> out of those seven cards — your two
+  plus the five shared. You may use both of your cards, one of them, or even neither. The player with
+  the best five-card combination wins all the money in the middle.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 470" role="img" aria-label="Poker hand rankings from strongest to weakest">
+      <text x="14" y="18" font-family="-apple-system,sans-serif" font-size="12" font-weight="800" fill="#8A5E17">STRONGEST</text>
+      <text x="14" y="462" font-family="-apple-system,sans-serif" font-size="12" font-weight="800" fill="#7E92A8">WEAKEST</text>
+
+      <g font-family="-apple-system,sans-serif">
+        <!-- rows -->
+        <g>
+          <rect x="110" y="26" width="600" height="38" rx="9" fill="rgba(192,138,46,.16)" stroke="#C08A2E" stroke-width="1.3"/>
+          <text x="126" y="50" font-size="13.5" font-weight="750" fill="#8A5E17">1 · Royal Flush</text>
+          <text x="300" y="50" font-size="12" fill="#2B3D52">A K Q J 10, all the same suit</text>
+          <text x="700" y="50" text-anchor="end" font-size="11" fill="#7E92A8">almost never happens</text>
+        </g>
+        <g>
+          <rect x="110" y="68" width="600" height="38" rx="9" fill="rgba(192,138,46,.11)" stroke="#D5E0ED" stroke-width="1.2"/>
+          <text x="126" y="92" font-size="13.5" font-weight="750" fill="#14263C">2 · Straight Flush</text>
+          <text x="300" y="92" font-size="12" fill="#2B3D52">five in a row, all the same suit — 7♥8♥9♥10♥J♥</text>
+        </g>
+        <g>
+          <rect x="110" y="110" width="600" height="38" rx="9" fill="#FFFFFF" stroke="#D5E0ED" stroke-width="1.2"/>
+          <text x="126" y="134" font-size="13.5" font-weight="750" fill="#14263C">3 · Four of a Kind</text>
+          <text x="300" y="134" font-size="12" fill="#2B3D52">all four of one rank — 9♠9♥9♦9♣</text>
+        </g>
+        <g>
+          <rect x="110" y="152" width="600" height="38" rx="9" fill="#FFFFFF" stroke="#D5E0ED" stroke-width="1.2"/>
+          <text x="126" y="176" font-size="13.5" font-weight="750" fill="#14263C">4 · Full House</text>
+          <text x="300" y="176" font-size="12" fill="#2B3D52">three of one rank + two of another — K K K 4 4</text>
+        </g>
+        <g>
+          <rect x="110" y="194" width="600" height="38" rx="9" fill="#FFFFFF" stroke="#D5E0ED" stroke-width="1.2"/>
+          <text x="126" y="218" font-size="13.5" font-weight="750" fill="#14263C">5 · Flush</text>
+          <text x="300" y="218" font-size="12" fill="#2B3D52">any five of the same suit — 2♠6♠9♠J♠K♠</text>
+        </g>
+        <g>
+          <rect x="110" y="236" width="600" height="38" rx="9" fill="#FFFFFF" stroke="#D5E0ED" stroke-width="1.2"/>
+          <text x="126" y="260" font-size="13.5" font-weight="750" fill="#14263C">6 · Straight</text>
+          <text x="300" y="260" font-size="12" fill="#2B3D52">five in a row, suits don't matter — 5♦6♠7♥8♠9♣</text>
+        </g>
+        <g>
+          <rect x="110" y="278" width="600" height="38" rx="9" fill="#FFFFFF" stroke="#D5E0ED" stroke-width="1.2"/>
+          <text x="126" y="302" font-size="13.5" font-weight="750" fill="#14263C">7 · Three of a Kind</text>
+          <text x="300" y="302" font-size="12" fill="#2B3D52">three of one rank — Q♠Q♥Q♦</text>
+        </g>
+        <g>
+          <rect x="110" y="320" width="600" height="38" rx="9" fill="rgba(46,139,192,.07)" stroke="#D5E0ED" stroke-width="1.2"/>
+          <text x="126" y="344" font-size="13.5" font-weight="750" fill="#14263C">8 · Two Pair</text>
+          <text x="300" y="344" font-size="12" fill="#2B3D52">two of one rank + two of another — J J 5 5</text>
+        </g>
+        <g>
+          <rect x="110" y="362" width="600" height="38" rx="9" fill="rgba(46,139,192,.10)" stroke="#2E8BC0" stroke-width="1.3"/>
+          <text x="126" y="386" font-size="13.5" font-weight="750" fill="#176390">9 · One Pair</text>
+          <text x="300" y="386" font-size="12" fill="#2B3D52">just two of the same rank — 8♠8♦</text>
+          <text x="700" y="386" text-anchor="end" font-size="11" fill="#176390">most hands end here</text>
+        </g>
+        <g>
+          <rect x="110" y="404" width="600" height="38" rx="9" fill="rgba(46,139,192,.10)" stroke="#2E8BC0" stroke-width="1.3"/>
+          <text x="126" y="428" font-size="13.5" font-weight="750" fill="#176390">10 · High Card</text>
+          <text x="300" y="428" font-size="12" fill="#2B3D52">nothing at all — highest single card plays</text>
+        </g>
+      </g>
+    </svg>
+    <div class="cap">You do <b>not</b> need to memorise this to run the project. The dataset almost never
+    shows us the cards anyway — <b>77.6% of hands never reveal them.</b> What matters is understanding
+    that a player is constantly guessing where they stand.</div>
+  </div>
+
+  <div class="box take">
+    <span class="lab">Takeaway</span>
+    Rarer = stronger. That's the whole logic. And because strong hands are rare,
+    <b>most of the time nobody has anything much</b> — which is why poker is a game of betting and
+    pressure rather than a game of cards.
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="s2">
+  <div class="sec-eyebrow"><span class="num">02</span> Part 1 · The setup</div>
+  <h2>The table, the button and the blinds</h2>
+
+  <p class="lead">Before any cards are dealt, two things must be true: somebody has to be
+  "the dealer", and there has to be <b>money in the middle worth fighting for</b>.</p>
+
+  <h3>The button</h3>
+  <p>One seat is marked with a disc called the <span class="term">button</span>. Online there is no
+  human dealer, so the button is just a marker showing whose "turn to be dealer" it is. <b>It moves one
+  seat clockwise after every single hand</b>, so over time everyone occupies every position equally.
+  This matters enormously, as section 05 explains.</p>
+
+  <h3>The blinds</h3>
+  <p>If everyone could simply wait for a great hand and fold everything else, nobody would ever put
+  money in and the game would be dead. So two players are <b>forced</b> to bet before they even see
+  their cards:</p>
+  <ul class="pts">
+    <li>The player immediately left of the button posts the <b>small blind</b>.</li>
+    <li>The player left of them posts the <b>big blind</b>, normally double the small blind.</li>
+  </ul>
+  <p>These are not optional and they are not a choice. That distinction becomes <b>critically
+  important</b> when we compute player statistics later — money you were <i>forced</i> to put in says
+  nothing about how you like to play.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 380" role="img" aria-label="A six seat poker table showing button, blinds and playing positions">
+      <ellipse cx="360" cy="186" rx="176" ry="104" fill="#E9F0F8" stroke="#C6D4E4" stroke-width="2"/>
+      <text x="360" y="180" text-anchor="middle" font-family="Georgia,serif" font-size="17" font-style="italic" fill="#546A82">the pot</text>
+      <text x="360" y="202" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7E92A8">$0.35 to start</text>
+
+      <!-- seats: 6-max -->
+      <g font-family="-apple-system,sans-serif">
+        <!-- SB -->
+        <rect x="118" y="60" width="124" height="52" rx="11" fill="#FFFFFF" stroke="#DB4A40" stroke-width="1.6"/>
+        <text x="180" y="80" text-anchor="middle" font-size="12.5" font-weight="750" fill="#C0392E">Small blind</text>
+        <text x="180" y="98" text-anchor="middle" font-size="10.5" fill="#546A82">forced $0.10 · "p1"</text>
+
+        <!-- BB -->
+        <rect x="118" y="264" width="124" height="52" rx="11" fill="#FFFFFF" stroke="#DB4A40" stroke-width="1.6"/>
+        <text x="180" y="284" text-anchor="middle" font-size="12.5" font-weight="750" fill="#C0392E">Big blind</text>
+        <text x="180" y="302" text-anchor="middle" font-size="10.5" fill="#546A82">forced $0.25 · "p2"</text>
+
+        <!-- UTG -->
+        <rect x="298" y="292" width="124" height="52" rx="11" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.4"/>
+        <text x="360" y="312" text-anchor="middle" font-size="12.5" font-weight="750" fill="#14263C">Under the gun</text>
+        <text x="360" y="330" text-anchor="middle" font-size="10.5" fill="#546A82">acts first · "p3"</text>
+
+        <!-- MP -->
+        <rect x="478" y="264" width="124" height="52" rx="11" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.4"/>
+        <text x="540" y="284" text-anchor="middle" font-size="12.5" font-weight="750" fill="#14263C">Middle</text>
+        <text x="540" y="302" text-anchor="middle" font-size="10.5" fill="#546A82">"p4"</text>
+
+        <!-- CO -->
+        <rect x="478" y="60" width="124" height="52" rx="11" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.4"/>
+        <text x="540" y="80" text-anchor="middle" font-size="12.5" font-weight="750" fill="#14263C">Cutoff</text>
+        <text x="540" y="98" text-anchor="middle" font-size="10.5" fill="#546A82">"p5"</text>
+
+        <!-- BTN -->
+        <rect x="298" y="26" width="124" height="52" rx="11" fill="#FFFFFF" stroke="#2AA277" stroke-width="1.9"/>
+        <text x="360" y="46" text-anchor="middle" font-size="12.5" font-weight="750" fill="#1C8560">Button</text>
+        <text x="360" y="64" text-anchor="middle" font-size="10.5" fill="#546A82">acts LAST · "p6"</text>
+        <circle cx="418" cy="40" r="11" fill="#2AA277"/>
+        <text x="418" y="44" text-anchor="middle" font-size="11" font-weight="800" fill="#FFFFFF">D</text>
+      </g>
+
+      <!-- rotation arrow -->
+      <path d="M636 150 A 116 116 0 0 1 636 222" stroke="#7E92A8" stroke-width="1.6" fill="none" stroke-dasharray="4 4"/>
+      <text x="662" y="190" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#7E92A8">button</text>
+      <text x="662" y="203" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#7E92A8">moves →</text>
+    </svg>
+    <div class="cap">A six-seat ("6-max") table. The labels <code>p1…p6</code> are <b>exactly how our
+    dataset numbers the players</b> — and that turns out to be a gift, as section 08 shows.</div>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — the blinds are the engine</span>
+    Every hand starts with $0.35 sitting in the middle that <b>nobody has chosen to risk</b>. That is
+    what everyone is fighting over before a single voluntary bet is made. Without the blinds, poker
+    would be a game where everybody folds forever.
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="s3">
+  <div class="sec-eyebrow"><span class="num">03</span> Part 1 · The shape of a hand</div>
+  <h2>One hand, start to finish</h2>
+
+  <p class="lead">Every hand has up to <b>four rounds of betting</b>, separated by the dealing of shared
+  cards. This structure is the skeleton of our entire dataset.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 760 420" role="img" aria-label="The four betting rounds of a poker hand">
+      <defs>
+        <marker id="nx" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3 z" fill="#546A82"/>
+        </marker>
+      </defs>
+
+      <!-- PREFLOP -->
+      <rect x="20" y="20" width="720" height="80" rx="12" fill="rgba(46,139,192,.09)" stroke="#2E8BC0" stroke-width="1.6"/>
+      <text x="40" y="44" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="800" fill="#176390">1 · PRE-FLOP</text>
+      <text x="40" y="63" font-family="-apple-system,sans-serif" font-size="11.5" fill="#2B3D52">Everyone gets 2 private cards. No shared cards yet. First round of betting.</text>
+      <text x="40" y="82" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">Most players fold here — this is where the great majority of hands die.</text>
+      <g>
+        <rect x="600" y="38" width="26" height="36" rx="4" fill="#FFFFFF" stroke="#2E8BC0" stroke-width="1.4"/>
+        <rect x="632" y="38" width="26" height="36" rx="4" fill="#FFFFFF" stroke="#2E8BC0" stroke-width="1.4"/>
+        <text x="613" y="62" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="14" fill="#176390">?</text>
+        <text x="645" y="62" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="14" fill="#176390">?</text>
+        <text x="690" y="61" font-family="-apple-system,sans-serif" font-size="10.5" fill="#7E92A8">yours</text>
+      </g>
+      <path d="M380 104 L380 118" stroke="#546A82" stroke-width="1.6" marker-end="url(#nx)"/>
+
+      <!-- FLOP -->
+      <rect x="20" y="122" width="720" height="80" rx="12" fill="rgba(192,138,46,.10)" stroke="#C08A2E" stroke-width="1.6"/>
+      <text x="40" y="146" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="800" fill="#8A5E17">2 · THE FLOP</text>
+      <text x="40" y="165" font-family="-apple-system,sans-serif" font-size="11.5" fill="#2B3D52">Three shared cards are turned over at once. Second round of betting.</text>
+      <text x="40" y="184" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">Reaching here is what triggers the operator's commission. Remember that.</text>
+      <g>
+        <rect x="568" y="140" width="26" height="36" rx="4" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.4"/>
+        <rect x="600" y="140" width="26" height="36" rx="4" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.4"/>
+        <rect x="632" y="140" width="26" height="36" rx="4" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.4"/>
+        <text x="581" y="164" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" fill="#8A5E17">4♦</text>
+        <text x="613" y="164" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" fill="#8A5E17">Q♠</text>
+        <text x="645" y="164" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" fill="#8A5E17">4♠</text>
+        <text x="690" y="163" font-family="-apple-system,sans-serif" font-size="10.5" fill="#7E92A8">shared</text>
+      </g>
+      <path d="M380 206 L380 220" stroke="#546A82" stroke-width="1.6" marker-end="url(#nx)"/>
+
+      <!-- TURN -->
+      <rect x="20" y="224" width="720" height="66" rx="12" fill="rgba(192,138,46,.07)" stroke="#C6D4E4" stroke-width="1.4"/>
+      <text x="40" y="248" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="800" fill="#14263C">3 · THE TURN</text>
+      <text x="40" y="267" font-family="-apple-system,sans-serif" font-size="11.5" fill="#2B3D52">A fourth shared card. Third round of betting. Bets get bigger.</text>
+      <g>
+        <rect x="632" y="238" width="26" height="36" rx="4" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.4"/>
+        <text x="645" y="262" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" fill="#546A82">9♥</text>
+      </g>
+      <path d="M380 294 L380 308" stroke="#546A82" stroke-width="1.6" marker-end="url(#nx)"/>
+
+      <!-- RIVER -->
+      <rect x="20" y="312" width="720" height="66" rx="12" fill="rgba(192,138,46,.07)" stroke="#C6D4E4" stroke-width="1.4"/>
+      <text x="40" y="336" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="800" fill="#14263C">4 · THE RIVER</text>
+      <text x="40" y="355" font-family="-apple-system,sans-serif" font-size="11.5" fill="#2B3D52">The fifth and final shared card. Last round of betting.</text>
+      <g>
+        <rect x="632" y="326" width="26" height="36" rx="4" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.4"/>
+        <text x="645" y="350" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" fill="#546A82">A♦</text>
+      </g>
+      <path d="M380 382 L380 396" stroke="#546A82" stroke-width="1.6" marker-end="url(#nx)"/>
+      <text x="380" y="414" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#1C8560">SHOWDOWN — survivors reveal cards, best hand wins</text>
+    </svg>
+    <div class="cap">Betting happens <b>between</b> the deals, not during them. A hand can end at any
+    round the moment everyone but one player folds — and most do.</div>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — most hands never finish</span>
+    A hand only reaches showdown if two or more players are still in at the very end. We measured this
+    in the real data: <b>only 22.4% of hands reach showdown.</b> The other 77.6% end when everybody
+    folds — which is exactly why <b>we almost never see anyone's cards</b>, and why our entire feature
+    set is built from betting behaviour instead.
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="s4">
+  <div class="sec-eyebrow"><span class="num">04</span> Part 1 · The choices</div>
+  <h2>Your five possible moves</h2>
+
+  <p class="lead">When the action reaches you, there is a small, fixed menu. <b>Every row in our
+  229-million-row action table is one of these.</b></p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 300" role="img" aria-label="The five actions available on your turn">
+      <text x="360" y="24" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#14263C">Is there a bet in front of you?</text>
+
+      <!-- NO branch -->
+      <rect x="30" y="46" width="310" height="30" rx="8" fill="rgba(42,162,119,.12)" stroke="#2AA277" stroke-width="1.4"/>
+      <text x="185" y="66" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#1C8560">NO — nobody has bet yet</text>
+
+      <rect x="30" y="94" width="146" height="72" rx="10" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.4"/>
+      <text x="103" y="118" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="750" fill="#14263C">CHECK</text>
+      <text x="103" y="136" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">bet nothing,</text>
+      <text x="103" y="151" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">stay in the hand</text>
+
+      <rect x="194" y="94" width="146" height="72" rx="10" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.4"/>
+      <text x="267" y="118" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="750" fill="#14263C">BET</text>
+      <text x="267" y="136" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">put money in,</text>
+      <text x="267" y="151" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">others must match</text>
+
+      <!-- YES branch -->
+      <rect x="380" y="46" width="310" height="30" rx="8" fill="rgba(219,74,64,.10)" stroke="#DB4A40" stroke-width="1.4"/>
+      <text x="535" y="66" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#C0392E">YES — someone has bet</text>
+
+      <rect x="380" y="94" width="98" height="72" rx="10" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.4"/>
+      <text x="429" y="118" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="750" fill="#14263C">FOLD</text>
+      <text x="429" y="136" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">quit, lose</text>
+      <text x="429" y="151" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">what you put in</text>
+
+      <rect x="486" y="94" width="98" height="72" rx="10" fill="#FFFFFF" stroke="#C6D4E4" stroke-width="1.4"/>
+      <text x="535" y="118" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="750" fill="#14263C">CALL</text>
+      <text x="535" y="136" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">match it,</text>
+      <text x="535" y="151" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">stay in</text>
+
+      <rect x="592" y="94" width="98" height="72" rx="10" fill="#FFFFFF" stroke="#C08A2E" stroke-width="1.6"/>
+      <text x="641" y="118" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="750" fill="#8A5E17">RAISE</text>
+      <text x="641" y="136" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">increase it,</text>
+      <text x="641" y="151" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">put on pressure</text>
+
+      <path d="M360 32 L185 42" stroke="#C6D4E4" stroke-width="1.4" fill="none"/>
+      <path d="M360 32 L535 42" stroke="#C6D4E4" stroke-width="1.4" fill="none"/>
+
+      <rect x="194" y="196" width="332" height="62" rx="11" fill="rgba(192,138,46,.09)" stroke="#C08A2E" stroke-width="1.4" stroke-dasharray="5 4"/>
+      <text x="360" y="220" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="750" fill="#8A5E17">ALL-IN — betting every chip you have</text>
+      <text x="360" y="240" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">not a separate move, just a bet or call you can't afford to exceed</text>
+
+      <text x="360" y="284" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" fill="#176390" font-weight="650">In our data, folds are ~48% of everything that happens.</text>
+    </svg>
+    <div class="cap">Measured from the sample: <b>4,882 folds · 3,386 checks-or-calls · 1,566
+    bets-or-raises · 632 showdowns</b> across 991 hands.</div>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Careful — the trap that will bite your code</span>
+    <b>Checking and calling look identical in our data.</b> The PHH format writes both as
+    <code>cc</code>. Same for betting and raising — both are <code>cbr</code>. To tell them apart you
+    must track whether there was already a bet outstanding on that street.
+    <span class="sub">This matters enormously: <b>calling means voluntarily risking money; checking
+    costs nothing.</b> If you count them the same, your VPIP statistic — the single most important
+    feature in the whole project — will be wrong for every player.</span>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="s5">
+  <div class="sec-eyebrow"><span class="num">05</span> Part 2 · Strategy that matters</div>
+  <h2>Position — the hidden edge</h2>
+
+  <p class="lead">If you understand only one strategic idea, make it this one. <b>It explains a large
+  part of why some players win and others lose</b>, and it is directly computable from our data.</p>
+
+  <p>Within each betting round, players act <b>in a fixed order</b>, clockwise. The button acts
+  <b>last</b> on every round after the flop. Acting last is an enormous advantage — <b>you get to watch
+  everybody else make their decision before you make yours.</b></p>
+
+  <p>If four players check before you, they are probably weak, so you can bet and likely take the
+  money. If someone bets big into you, you have learned something before committing a rupee. The
+  player who acts first is guessing; the player who acts last is <i>responding</i>.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 240" role="img" aria-label="Acting last gives you information the first player does not have">
+      <rect x="20" y="24" width="330" height="190" rx="13" fill="rgba(219,74,64,.07)" stroke="#DB4A40" stroke-width="1.5"/>
+      <text x="185" y="50" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="#C0392E">ACTING FIRST</text>
+      <text x="185" y="70" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">"out of position"</text>
+      <g font-family="-apple-system,sans-serif" font-size="11" fill="#2B3D52">
+        <text x="46" y="102">You must decide knowing</text>
+        <text x="46" y="122">nothing about what the other</text>
+        <text x="46" y="142">five players are going to do.</text>
+        <text x="46" y="176" font-weight="700" fill="#C0392E">You are guessing.</text>
+      </g>
+      <g>
+        <circle cx="290" cy="106" r="9" fill="#DCE5EF"/><circle cx="290" cy="130" r="9" fill="#DCE5EF"/>
+        <circle cx="290" cy="154" r="9" fill="#DCE5EF"/><circle cx="314" cy="118" r="9" fill="#DCE5EF"/>
+        <circle cx="314" cy="142" r="9" fill="#DCE5EF"/>
+        <text x="302" y="184" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#7E92A8">all unknown</text>
+      </g>
+
+      <rect x="370" y="24" width="330" height="190" rx="13" fill="rgba(42,162,119,.08)" stroke="#2AA277" stroke-width="1.5"/>
+      <text x="535" y="50" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="#1C8560">ACTING LAST</text>
+      <text x="535" y="70" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#546A82">"in position" — the button</text>
+      <g font-family="-apple-system,sans-serif" font-size="11" fill="#2B3D52">
+        <text x="396" y="102">You have already watched all</text>
+        <text x="396" y="122">five players act. You know who</text>
+        <text x="396" y="142">is strong and who is weak.</text>
+        <text x="396" y="176" font-weight="700" fill="#1C8560">You are responding.</text>
+      </g>
+      <g>
+        <circle cx="640" cy="106" r="9" fill="#DB4A40" opacity=".75"/><circle cx="640" cy="130" r="9" fill="#2AA277" opacity=".75"/>
+        <circle cx="640" cy="154" r="9" fill="#2AA277" opacity=".75"/><circle cx="664" cy="118" r="9" fill="#2AA277" opacity=".75"/>
+        <circle cx="664" cy="142" r="9" fill="#DB4A40" opacity=".75"/>
+        <text x="652" y="184" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#7E92A8">all revealed</text>
+      </g>
+    </svg>
+    <div class="cap">Same cards, same players, wildly different value. <b>Good players play many more
+    hands from late position and far fewer from early position.</b> Casual players play the same
+    everywhere — and that gap is measurable in our data.</div>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — position is free to compute</span>
+    In our dataset the players are numbered <b>in blind order</b>: <code>p1</code> is always the small
+    blind, <code>p2</code> the big blind, <code>p3</code> acts first before the flop, and the
+    <b>highest-numbered player is the button</b>. So <b>position comes free from the player index</b> —
+    no extra work. That gives us a genuinely sophisticated feature ("does this player adjust by
+    position?") for almost no engineering cost.
+    <span class="sub">Verified against the real files: in every hand we checked, pre-flop action begins
+    at <code>p3</code> and post-flop action begins at <code>p1</code>. Holds for tables of 3+ players;
+    heads-up (2 players) uses a different rule, so exclude those.</span>
+  </div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="s6">
+  <div class="sec-eyebrow"><span class="num">06</span> Part 2 · The thing the model detects</div>
+  <h2>What actually makes a player good</h2>
+
+  <p class="lead">This section is the bridge between the game and the machine learning. <b>If you
+  understand this, you will understand what every cluster in our model means.</b></p>
+
+  <h3>Rule 1 — most starting hands are bad, so good players fold a lot</h3>
+  <p>You are dealt two cards. There are 169 meaningfully different two-card combinations, and the large
+  majority of them are losers against several opponents. A disciplined player at a six-seat table
+  voluntarily enters roughly <b>one hand in four</b> and throws the rest away.</p>
+  <p>A casual player finds that unbearably boring. <b>They came to play, not to fold</b>, so they enter
+  half the hands or more. That single behavioural difference is the biggest and most reliable signal in
+  the entire dataset.</p>
+
+  <h3>Rule 2 — when good players do play, they raise rather than call</h3>
+  <p>This one is less obvious and more powerful. Consider the two ways of putting money in:</p>
+  <ul class="pts">
+    <li><b>If you call</b>, you can only win by having the best hand at the end. One way to win.</li>
+    <li><b>If you raise</b>, you win either by having the best hand <i>or</i> by everyone folding
+    immediately. <b>Two ways to win.</b></li>
+  </ul>
+  <p>So strong players are <b>aggressive</b> — they raise. Weak players are <b>passive</b> — they call
+  along, hoping. This is why we track raising separately from playing at all.</p>
+
+  <div class="fig wide">
+    <svg viewBox="0 0 720 280" role="img" aria-label="How VPIP and PFR separate casual players from professionals">
+      <text x="30" y="26" font-family="-apple-system,sans-serif" font-size="12" font-weight="800" fill="#14263C">Out of 100 hands dealt to them…</text>
+
+      <!-- pro -->
+      <text x="30" y="62" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#8A5E17">A disciplined regular</text>
+      <rect x="30" y="72" width="640" height="26" rx="6" fill="#EDF2F8" stroke="#D5E0ED"/>
+      <rect x="30" y="72" width="147" height="26" rx="6" fill="#C08A2E" opacity=".30"/>
+      <rect x="30" y="72" width="121" height="26" rx="6" fill="#C08A2E" opacity=".85"/>
+      <text x="42" y="90" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#FFFFFF">raises 19</text>
+      <text x="184" y="90" font-family="-apple-system,sans-serif" font-size="11" fill="#8A5E17">plays 23 · folds the other 77</text>
+      <text x="30" y="116" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">tiny gap between playing and raising → nearly always aggressive when involved</text>
+
+      <!-- fish -->
+      <text x="30" y="158" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="750" fill="#176390">A casual player</text>
+      <rect x="30" y="168" width="640" height="26" rx="6" fill="#EDF2F8" stroke="#D5E0ED"/>
+      <rect x="30" y="168" width="288" height="26" rx="6" fill="#2E8BC0" opacity=".30"/>
+      <rect x="30" y="168" width="51" height="26" rx="6" fill="#2E8BC0" opacity=".85"/>
+      <text x="88" y="186" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#176390">raises 8</text>
+      <text x="326" y="186" font-family="-apple-system,sans-serif" font-size="11" fill="#176390">plays 45 · folds only 55</text>
+      <text x="30" y="212" font-family="-apple-system,sans-serif" font-size="10.5" fill="#546A82">huge gap → enters lots of hands but mostly just calls along. The classic losing pattern.</text>
+
+      <rect x="30" y="234" width="640" height="34" rx="9" fill="rgba(192,138,46,.10)" stroke="#C08A2E" stroke-width="1.3"/>
+      <text x="350" y="256" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#8A5E17">The GAP between the two bars is the tell — not either bar alone.</text>
+    </svg>
+    <div class="cap">Solid colour = raised. Pale colour = entered but only called. <b>The gap is what
+    separates skill from enthusiasm.</b></div>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Careful — these numbers are rules of thumb, not our findings</span>
+    The values above (23/19 and 45/8) are <b>widely cited ranges from the poker community</b>, included
+    to give you intuition for what the model is looking for. They are <b>not</b> measured from our
+    dataset. When you run K-Means, report whatever the clusters actually contain — and if they disagree
+    with these numbers, the data wins.
+  </div>
+
+  <div class="box take">
+    <span class="lab">Takeaway</span>
+    Skill in poker mostly reduces to <b>folding more than feels natural, and betting harder than feels
+    comfortable when you do play.</b> Both are directly countable from the action log. We do not need
+    to see a single card to tell a professional from a hobbyist.
+  </div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="s7">
+  <div class="sec-eyebrow"><span class="num">07</span> Part 3 · The data</div>
+  <h2>Reading a real hand, move by move</h2>
+
+  <p class="lead">Now we put it together. Below is an <b>unedited record from the dataset</b> —
+  and this time you will understand every line of it.</p>
+
+  <div class="ground">
+    <div class="ghead">
+      <span class="gtag">Verified — real file</span>
+      <span class="gfile">ps NLH handhq_1-OBFUSCATED.phhs · hand [1] of 991</span>
+    </div>
+    <div class="gbody">
+      <div class="code">
+        <div class="chead"><span class="dotrow"><i class="cdot"></i><i class="cdot"></i><i class="cdot"></i></span>
+          <span class="cname">a $0.10/$0.25 table · 4 players</span><span class="cbadge">PHH / TOML</span></div>
+<pre><span class="kw">blinds_or_straddles</span> = [0.10, 0.25, 0, 0]   <span class="cm"># p1 posts $0.10, p2 posts $0.25</span>
+<span class="kw">starting_stacks</span> = [25, 54.75, 16.35, 24.65] <span class="cm"># what each sat down with</span>
+<span class="kw">actions</span> = [
+  <span class="st">'d dh p1 ????'</span>, <span class="st">'d dh p2 ????'</span>, <span class="st">'d dh p3 ????'</span>, <span class="st">'d dh p4 ????'</span>,
+  <span class="st">'p3 f'</span>, <span class="st">'p4 cbr 0.75'</span>, <span class="st">'p1 f'</span>, <span class="st">'p2 cc'</span>,
+  <span class="st">'d db 4dQs4s'</span>, <span class="st">'p2 cc'</span>, <span class="st">'p4 cc'</span>,
+  <span class="st">'d db 9h'</span>,      <span class="st">'p2 cc'</span>, <span class="st">'p4 cc'</span>,
+  <span class="st">'d db Ad'</span>,      <span class="st">'p2 cc'</span>, <span class="st">'p4 cc'</span>,
+  <span class="st">'p2 sm 8sAh'</span>, <span class="st">'p4 sm ????'</span>]</pre>
+      </div>
+
+      <div class="walk">
+        <div class="w"><div class="wc">'d dh p1 ????'
+'d dh p2 ????'
+'d dh p3 ????'
+'d dh p4 ????'</div><div class="wt"><b>The deal.</b> Each of the four players receives two hole cards. <code>????</code> means hidden — we do not get to see them. <b>Ignore these rows entirely</b> when counting player behaviour; the dealer is not a player.</div></div>
+
+        <div class="w"><div class="wc">'p3 f'</div><div class="wt"><b>Pre-flop begins.</b> p3 acts first (they're immediately after the big blind) and <b>folds</b>. They put in nothing, they're out. For p3 this hand counts as "dealt in, chose not to play".</div></div>
+
+        <div class="w"><div class="wc">'p4 cbr 0.75'</div><div class="wt">p4 <b>raises to $0.75</b> — three times the big blind, a standard opening raise. Note <code>0.75</code> is the <b>total</b> they now have committed this round, not an amount added on top. p4 is the button here (highest number), so this is a late-position raise — textbook aggression.</div></div>
+
+        <div class="w"><div class="wc">'p1 f'</div><div class="wt">p1 — the small blind — folds. They <b>forfeit the $0.10 they were forced to post.</b> Crucially, p1 never <i>chose</i> to put money in, so this does <b>not</b> count as voluntarily playing a hand.</div></div>
+
+        <div class="w"><div class="wc">'p2 cc'</div><div class="wt">p2 — the big blind — <b>calls</b>. They already had $0.25 in, so they add $0.50 to match the $0.75. <span class="warn">This is a call, not a check</span>, because there was a bet outstanding. It counts as voluntarily playing.</div></div>
+
+        <div class="w"><div class="wc">'d db 4dQs4s'</div><div class="wt"><b>The flop.</b> Three shared cards: four of diamonds, queen of spades, four of spades. Two players remain. <b>This is the moment the operator starts earning</b> — see section 10.</div></div>
+
+        <div class="w"><div class="wc">'p2 cc'
+'p4 cc'</div><div class="wt">Both <b>check</b> — same <code>cc</code> code, completely different meaning. Nobody had bet on this street, so no money moved. <span class="warn">If your parser calls these "calls", every statistic you build will be wrong.</span></div></div>
+
+        <div class="w"><div class="wc">'d db 9h'
+'d db Ad'</div><div class="wt">The turn (nine of hearts) and the river (ace of diamonds), each followed by another check-check. Neither player wanted to bet. The board is now 4♦ Q♠ 4♠ 9♥ A♦.</div></div>
+
+        <div class="w"><div class="wc">'p2 sm 8sAh'</div><div class="wt"><b>Showdown.</b> p2 shows eight of spades and ace of hearts. Their best five cards: a pair of aces (their A♥ plus the A♦ on the board), with the two fours also playing. <b>This is one of the 22.4% of hands where we learn anything about a player's cards.</b></div></div>
+
+        <div class="w"><div class="wc">'p4 sm ????'</div><div class="wt">p4 also reaches showdown but their cards stay hidden in this record. p2's pair of aces almost certainly took the $1.60 pot.</div></div>
+      </div>
+
+      <div class="box take" style="margin-bottom:0">
+        <span class="lab">Takeaway</span>
+        Four players were dealt in. <b>Two folded immediately, two saw all five cards and neither ever
+        bet after the flop.</b> That is an extremely ordinary hand of poker — and it still produced
+        <b>nine separate player decisions</b> for our action table.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="s8">
+  <div class="sec-eyebrow"><span class="num">08</span> Part 3 · The encoding</div>
+  <h2>The complete action-code dictionary</h2>
+
+  <p class="lead">There are only seven codes in the whole format. Learn these and you can read any hand
+  in the dataset.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:18%">Code</th><th style="width:26%">Means</th><th>Notes that matter for your parser</th></tr></thead>
+    <tbody>
+      <tr><td><code>d dh pN ????</code></td><td>Dealer deals hole cards to player N</td><td>Not a player action. Skip when counting decisions. <code>????</code> = hidden.</td></tr>
+      <tr><td><code>d db XXX</code></td><td>Dealer deals board cards</td><td><b>This is your street separator.</b> Every time you see it, a new betting round starts — reset your per-street tracking.</td></tr>
+      <tr><td><code>pN f</code></td><td>Fold</td><td>Player is out. ~48% of all actions.</td></tr>
+      <tr><td><code>pN cc</code></td><td><b>Check <i>or</i> call</b></td><td class="num" style="text-align:left"><b>Ambiguous by design.</b> If the highest bet this street is greater than what this player has already put in this street → it's a <b>call</b> (voluntary money). Otherwise → a <b>check</b> (free).</td></tr>
+      <tr><td><code>pN cbr X</code></td><td><b>Bet <i>or</i> raise</b> to a total of X</td><td>X is the <b>cumulative total for that street</b>, not the increment. If it's the first money in that street it's a bet; otherwise a raise.</td></tr>
+      <tr><td><code>pN sm XX</code></td><td>Show cards at showdown</td><td>Presence of any <code>sm</code> = the hand reached showdown. Cards may still be <code>????</code>.</td></tr>
+      <tr><td><code>d dh pN AhKs</code></td><td>Hole cards visible</td><td>Rare. Only in the televised/celebrity hands, not the bulk commercial data.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — the file is TOML, so the parser is trivial</span>
+    We tested this: the <code>.phhs</code> files are valid <b>TOML</b>, a standard config format.
+    Python has a TOML reader <b>built in</b> since version 3.11, so the entire parser is essentially:
+    <span class="sub">
+    <code style="font-family:var(--mono);font-size:12.5px;color:#1C8560">import tomllib; hands = tomllib.load(open(path,'rb'))</code><br>
+    That returns a dictionary of 991 hands, each already a Python object with typed fields — the
+    timestamp even comes back as a real <code>datetime.time</code>. <b>No regular expressions, no
+    hand-rolled text parsing.</b> Companion 02 builds on this.
+    </span>
+  </div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="s9">
+  <div class="sec-eyebrow"><span class="num">09</span> Part 3 · The bridge</div>
+  <h2>From actions to the metrics — worked by hand</h2>
+
+  <p class="lead">This is the single most important page in this companion. <b>Here is exactly how a
+  row of game actions becomes a number in our machine-learning table.</b></p>
+
+  <h3>VPIP — "how often does this player choose to play?"</h3>
+  <p><b>V</b>oluntarily <b>P</b>ut money <b>I</b>n <b>P</b>ot. The definition is:</p>
+  <div class="code"><div class="chead"><span class="cname">the formula</span></div>
+<pre><span class="fn">VPIP</span> = hands where the player <span class="kw">chose</span> to put money in
+       ÷ hands they were dealt into
+</pre></div>
+  <p>The word <b>chose</b> is doing all the work. Posting a blind does not count. Checking does not
+  count. Only calling, betting or raising counts.</p>
+
+  <div class="box brk">
+    <span class="lab">Careful — the classic mistake that ruins VPIP</span>
+    The big blind can <b>check</b> pre-flop for free because their forced bet already covers the cost.
+    In the file this looks like <code>p2 cc</code> — <b>identical to a call</b>. If you count it, every
+    big blind looks like a voluntary player and <b>every single player's VPIP is inflated.</b> This is
+    the number-one bug in amateur poker analytics.
+  </div>
+
+  <p>Let's compute it for the four players in the hand from section 07:</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Player</th><th>What they did pre-flop</th><th>Voluntary?</th><th>VPIP counts</th></tr></thead>
+    <tbody>
+      <tr><td><b>p1</b> (small blind)</td><td>Posted $0.10 by force, then folded</td><td style="color:#C0392E"><b>No</b></td><td>0 / 1</td></tr>
+      <tr><td><b>p2</b> (big blind)</td><td>Posted $0.25 by force, then <b>called</b> a raise for $0.50 more</td><td style="color:#1C8560"><b>Yes</b></td><td>1 / 1</td></tr>
+      <tr><td><b>p3</b></td><td>Folded immediately</td><td style="color:#C0392E"><b>No</b></td><td>0 / 1</td></tr>
+      <tr><td><b>p4</b> (button)</td><td><b>Raised</b> to $0.75</td><td style="color:#1C8560"><b>Yes</b></td><td>1 / 1</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Do that across all 21.6 million hands, group by player, and you have a VPIP for everyone. <b>That
+  group-by is the distributed computation at the heart of the project.</b></p>
+
+  <h3>The other four metrics, same idea</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:16%">Metric</th><th style="width:38%">Counted from the action log as…</th><th>Reads as</th></tr></thead>
+    <tbody>
+      <tr><td><b>PFR</b></td><td>Hands containing a <code>cbr</code> by this player <b>before the first <code>d db</code></b> ÷ hands dealt</td><td>How often they raise pre-flop. Aggression.</td></tr>
+      <tr><td><b>VPIP − PFR gap</b></td><td>Simple subtraction of the two above</td><td><b>The passivity tell.</b> Big gap = calls a lot = weak.</td></tr>
+      <tr><td><b>AF</b></td><td>(count of <code>cbr</code>) ÷ (count of <code>cc</code>-that-were-calls), <b>after</b> the flop only</td><td>Pushing versus following.</td></tr>
+      <tr><td><b>WTSD</b></td><td>Hands with an <code>sm</code> by this player ÷ hands where they saw a flop</td><td>Do they stubbornly go to the end?</td></tr>
+      <tr><td><b>Tables at once</b></td><td>Distinct <code>table</code> values for this player within the same minute of <code>time</code></td><td><b>The strongest professional signal.</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — every feature is a count, not a card</span>
+    Look back at that table. <b>Not one metric needs to know what anybody held.</b> They are all counts
+    of decisions. That is why the fact that 77.6% of hole cards are hidden does not damage this project
+    at all — and being able to explain <i>why</i> is worth real marks in your report.
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="s10">
+  <div class="sec-eyebrow"><span class="num">10</span> Part 4 · The money</div>
+  <h2>The stack, the big blind, and how the house earns</h2>
+
+  <h3>Stakes and stacks</h3>
+  <p>A table is named after its big blind. <b>"25NL"</b> means No-Limit with a $0.25 big blind — you
+  normally sit down with about $25, or <b>100 big blinds</b>. "1000NL" means a $10 big blind and a
+  $1,000 buy-in. Same game, forty times the money.</p>
+
+  <p>This is why <b>everything must be measured in big blinds, not dollars.</b> Winning $50 at 25NL is
+  an extraordinary session; winning $50 at 1000NL is a rounding error. Expressed in big blinds — 200bb
+  versus 5bb — the difference is obvious and the two tables become comparable. <b>The standard
+  scorecard is <code>bb/100</code>: big blinds won per 100 hands played.</b></p>
+
+  <h3>The rake — where the company's money comes from</h3>
+  <p>The operator takes a small cut of each pot. We <b>verified how this works in the actual data</b>,
+  and found two things worth knowing.</p>
+
+  <div class="ground">
+    <div class="ghead">
+      <span class="gtag">Verified — computed from 288 fully reconciled hands</span>
+      <span class="gfile">ps NLH handhq_1-OBFUSCATED.phhs</span>
+    </div>
+    <div class="gbody">
+      <div class="stats" style="margin-top:0">
+        <div class="stat"><div class="v gr">$0.00</div><div class="k">rake on hands that ended before the flop — <b>109 out of 109</b></div></div>
+        <div class="stat"><div class="v g">3.7%</div><div class="k">median rake on hands that saw a flop</div></div>
+        <div class="stat"><div class="v">$0.05</div><div class="k">the increment — rake only moves in 5¢ steps</div></div>
+        <div class="stat"><div class="v r">$0.65</div><div class="k">largest rake seen — the cap, regardless of pot size</div></div>
+      </div>
+      <p style="margin-bottom:0"><b>"No flop, no drop."</b> This is a real and universal rule in poker:
+      if everybody folds before the flop, <b>the house takes nothing at all.</b> We confirmed it holds
+      perfectly — every single pre-flop-only hand had exactly zero rake.
+      <b>Only hands that reach the flop generate revenue.</b></p>
+    </div>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Key idea — this reframes the entire business problem</span>
+    The operator does not earn from hands being <i>dealt</i>. It earns from hands that go
+    <b>past the flop with money in the middle.</b> So the business goal is not just "more players" —
+    it is <b>more players willing to keep putting money in after the flop.</b>
+    <span class="sub">A table full of cautious professionals folding at each other generates almost no
+    revenue. A table with two recreational players calling each other down generates a lot. <b>That is
+    the entire ecosystem argument, in one sentence, backed by a number you measured yourself.</b></span>
+  </div>
+
+  <div class="box brk">
+    <span class="lab">Careful — the correction that took us three attempts</span>
+    Rake looks like it should just be <b>(money in) − (money paid out)</b>. It is not, quite. When
+    everybody folds to a final bet, <b>the uncalled portion of that bet is returned to the bettor</b> —
+    it was never really in the pot. Miss that and you compute a median rake of 40%, which is nonsense.
+    Handle it and you get 3.7%, which is right.
+    <span class="sub">There is also a coverage limit: of 991 hands, only <b>288 could be fully
+    reconciled</b> (211 have no winnings field at all, 486 have it recorded as all zeros). So
+    <b>money-based features are computable on roughly a third of hands, while behavioural features work
+    on all of them.</b> Say this openly in your report.</span>
+  </div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="s11">
+  <div class="sec-eyebrow"><span class="num">11</span> Part 4 · The whole chain</div>
+  <h2>Game → data → business decision</h2>
+
+  <p class="lead">The complete translation, in one table. <b>This is the slide your professor will
+  remember.</b></p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:20%">At the table</th><th style="width:20%">In the file</th><th style="width:22%">Becomes the metric</th><th>Tells management</th></tr></thead>
+    <tbody>
+      <tr><td>Player folds most hands</td><td>lots of <code>p3 f</code></td><td><b>Low VPIP</b></td><td>Disciplined. Probably a professional. Watch their extraction rate.</td></tr>
+      <tr><td>Player plays almost everything</td><td>lots of <code>cc</code> after a bet</td><td><b>High VPIP</b></td><td><b>This is a customer.</b> Protect them.</td></tr>
+      <tr><td>Player raises when they enter</td><td><code>cbr</code> before first <code>d db</code></td><td><b>High PFR</b></td><td>Skilled and aggressive.</td></tr>
+      <tr><td>Player enters but only calls</td><td>big VPIP, small PFR</td><td><b>Large gap</b></td><td>Passive. Loses money steadily. Will churn.</td></tr>
+      <tr><td>Player is on 14 tables at 9pm</td><td>14 <code>table</code> ids, one <code>time</code></td><td><b>High multi-tabling</b></td><td>Industrial-scale extraction. Consider a cap.</td></tr>
+      <tr><td>Hand dies before the flop</td><td>no <code>d db</code></td><td><b>Zero rake</b></td><td>No revenue at all from that hand.</td></tr>
+      <tr><td>Two casuals call to the river</td><td>flop + turn + river <code>cc</code></td><td><b>Big raked pot</b></td><td>The most profitable hand type on the site.</td></tr>
+      <tr><td>Player stops appearing</td><td>no rows after day 14</td><td><b>Churn label</b></td><td>Revenue lost. Could we have seen it coming?</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="closer">
+    <div class="quote">Every number in the model<br><span class="a">is a person deciding whether to fold.</span></div>
+    <p style="margin-top:18px;margin-bottom:0;color:#546A82">
+      You now know enough poker to defend every feature in the project, explain every cluster the model
+      finds, and answer the awkward question in the viva: <b>"why should I believe this column means
+      what you say it means?"</b>
+    </p>
+    <a class="next" href="data-pipeline-guide.html">
+      <span class="arw">→</span>
+      <span>
+        <span class="nl">Companion 02</span>
+        <span class="nt">Working with the 20 GB</span>
+        <span class="nd">Spark from scratch, plus every command you need to run</span>
+      </span>
+    </a>
+  </div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section id="s12">
+  <div class="sec-eyebrow"><span class="num">12</span> Reference</div>
+  <h2>Full glossary</h2>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:22%">Term</th><th>Plain English</th></tr></thead>
+    <tbody>
+      <tr><td><b>Action</b></td><td>One decision by one player: fold, check, call, bet or raise. Our smallest unit of data.</td></tr>
+      <tr><td><b>Aggression factor (AF)</b></td><td>Bets and raises divided by calls. High = pushes; low = follows.</td></tr>
+      <tr><td><b>All-in</b></td><td>Betting every chip you have left.</td></tr>
+      <tr><td><b>bb</b></td><td>Big blind. Both a forced bet and the unit of measurement for all money.</td></tr>
+      <tr><td><b>bb/100</b></td><td>Big blinds won per 100 hands. The universal win-rate scorecard.</td></tr>
+      <tr><td><b>Big blind</b></td><td>The larger of two forced bets, posted before cards are dealt.</td></tr>
+      <tr><td><b>Board</b></td><td>The five shared cards everyone can use. Also "community cards".</td></tr>
+      <tr><td><b>Button</b></td><td>The marker showing who is nominally dealing. Acts last after the flop — the best seat. Moves one place each hand.</td></tr>
+      <tr><td><b>Buy-in</b></td><td>The money you sit down with. Usually about 100 big blinds.</td></tr>
+      <tr><td><b>Call</b></td><td>Match the current bet to stay in the hand.</td></tr>
+      <tr><td><b>Check</b></td><td>Bet nothing but stay in. Only possible when nobody has bet.</td></tr>
+      <tr><td><b>Fold</b></td><td>Give up the hand, losing whatever you already put in. The most common action.</td></tr>
+      <tr><td><b>Flop</b></td><td>The first three shared cards, dealt together. <b>The point at which the house starts earning.</b></td></tr>
+      <tr><td><b>Grinder / reg</b></td><td>A regular who plays for profit, usually many tables at once. Also "shark".</td></tr>
+      <tr><td><b>Hand</b></td><td>Confusingly, two things: your cards, and one complete round of play. We mean the round.</td></tr>
+      <tr><td><b>Hole cards</b></td><td>Your two private cards.</td></tr>
+      <tr><td><b>In position</b></td><td>Acting after your opponents. A large, measurable advantage.</td></tr>
+      <tr><td><b>Loose / tight</b></td><td>Plays many hands / plays few hands. High VPIP versus low VPIP.</td></tr>
+      <tr><td><b>Multi-tabling</b></td><td>Playing several tables simultaneously. Casuals: 1–2. Professionals: 8–24.</td></tr>
+      <tr><td><b>"No flop, no drop"</b></td><td>The rule that the house takes nothing if the hand ends before the flop. Verified in our data.</td></tr>
+      <tr><td><b>PFR</b></td><td>Pre-Flop Raise percentage. How often they raise first in.</td></tr>
+      <tr><td><b>Passive / aggressive</b></td><td>Tends to call / tends to bet and raise. Aggression correlates with skill.</td></tr>
+      <tr><td><b>Pot</b></td><td>All the money bet so far in the current hand.</td></tr>
+      <tr><td><b>Rake</b></td><td>The operator's commission on each pot. <b>The entire revenue line.</b> ~3.7% median in our data, capped.</td></tr>
+      <tr><td><b>Recreational</b></td><td>Someone playing for fun who loses over time. Also "fish". <b>The customer.</b></td></tr>
+      <tr><td><b>River</b></td><td>The fifth and final shared card.</td></tr>
+      <tr><td><b>Showdown</b></td><td>The end, when survivors reveal cards. Only 22.4% of hands get here.</td></tr>
+      <tr><td><b>Small blind</b></td><td>The smaller forced bet, posted by the player left of the button.</td></tr>
+      <tr><td><b>Stack</b></td><td>How much money a player has on the table right now.</td></tr>
+      <tr><td><b>Street</b></td><td>One betting round: pre-flop, flop, turn or river.</td></tr>
+      <tr><td><b>Turn</b></td><td>The fourth shared card.</td></tr>
+      <tr><td><b>VPIP</b></td><td>Voluntarily Put money In Pot. How often they <i>choose</i> to play. Our most important feature.</td></tr>
+      <tr><td><b>WTSD</b></td><td>Went To Showdown percentage.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<footer>
+  <b>Companion 01 of 02 · Big Data Analytics group project.</b><br>
+  Every example hand is real and unedited, from
+  <code>data/handhq/PS-2009-07-01_2009-07-23_25NLH_OBFU/0.25/ps NLH handhq_1-OBFUSCATED.phhs</code>
+  (University of Toronto <code>phh-dataset</code>, CC BY 4.0).<br>
+  <b>Measured on 1–2 Aug 2026 from 991 real hands:</b> 22.4% showdown rate · 10.6 player-actions per
+  hand · 6.16 players per hand · action mix 4,882 folds / 3,386 checks-calls / 1,566 bets-raises /
+  632 shows · rake $0.00 on all 109 pre-flop-only hands and 3.7% median on flop-seeing hands, in $0.05
+  increments, capped at $0.65 · 288 of 991 hands fully reconcilable for money.<br>
+  <b>Rules of thumb, NOT measured here</b> (flagged in the text): the 23/19 and 45/8 VPIP/PFR profiles
+  in section 06 are community benchmarks for intuition only.<br>
+  <br>
+  Next: <a href="data-pipeline-guide.html">Companion 02 — Working with the 20 GB</a> ·
+  Plan: <a href="poker-project-plan.html">The Ecosystem Engine</a>
+</footer>
+
+</main>
+</div>
+
+<script>
+const prog = document.getElementById('progress');
+function onScroll(){
+  const h = document.documentElement;
+  const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  prog.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+document.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+const links = [...document.querySelectorAll('.rail a')];
+const map = {};
+links.forEach(a => map[a.getAttribute('href').slice(1)] = a);
+const sections = [...document.querySelectorAll('section')];
+let spyActive = null;
+function setActive(){
+  const line = 150;
+  let current = sections[0];
+  for(const s of sections){ if(s.getBoundingClientRect().top <= line) current = s; }
+  if(current.id === spyActive) return;
+  spyActive = current.id;
+  links.forEach(l=>l.classList.remove('on'));
+  const a = map[current.id];
+  if(a) a.classList.add('on');
+}
+document.addEventListener('scroll', setActive, {passive:true});
+window.addEventListener('resize', setActive, {passive:true});
+setActive();
+
+const rvEls = [...document.querySelectorAll('.rv')];
+function revealInView(){
+  const vh = window.innerHeight;
+  for(const el of rvEls){
+    if(el.classList.contains('in')) continue;
+    if(el.getBoundingClientRect().top < vh * 0.92) el.classList.add('in');
+  }
+}
+document.addEventListener('scroll', revealInView, {passive:true});
+window.addEventListener('resize', revealInView, {passive:true});
+window.addEventListener('hashchange', ()=>{ [80,300,600].forEach(t=>setTimeout(revealInView, t)); });
+revealInView();
+</script>
+</body>
+</html>

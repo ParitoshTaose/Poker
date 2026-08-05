@@ -1,0 +1,29 @@
+# ── Data lake ────────────────────────────────────────────────────────────────
+# Contents are NEVER committed (the dataset is 1.71 GB subset / 20.3 GB full).
+# The folder STRUCTURE is committed, via .gitkeep, so a fresh clone is runnable.
+data/**
+!data/**/
+!data/README.md
+!data/**/.gitkeep
+
+# Big-data file types, wherever they land
+*.phhs
+*.parquet
+*.zip
+*.tar.gz
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# ── Spark scratch ────────────────────────────────────────────────────────────
+spark-warehouse/
+metastore_db/
+derby.log
+/tmp/spark-scratch/
+
+# ── macOS ────────────────────────────────────────────────────────────────────
+.DS_Store
