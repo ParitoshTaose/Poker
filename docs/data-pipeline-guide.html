@@ -909,10 +909,20 @@ OUT = <span class="fn">Path</span>(<span class="st">"silver"</span>); OUT.<span 
   </div>
 
   <div class="box brk">
-    <span class="lab">Careful — do not accumulate everything in memory at full scale</span>
-    The code above collects all rows before writing. That is fine for the 1.71 GB subset. For the full
-    18 GB it would blow past 16 GB of RAM. <b>At full scale, write one Parquet file per source folder
-    inside the loop</b> rather than one giant list at the end — then point Spark at the folder.
+    <span class="lab">Superseded 6 Aug 2026 — the code above will NOT run as written. Use the roadmap's version.</span>
+    Two assumptions behind this snippet turned out to be false when it was actually executed:
+    <ul>
+      <li><b>There is no 1.71 GB subset.</b> The GitHub route delivers <b>15 GB / 21,782 files</b>
+        — effectively the whole real-money dataset. Collecting all rows before writing needs on the
+        order of <b>100+ GB of RAM</b> on a <b>16 GB</b> machine. <b>Batch it.</b></li>
+      <li><b>Venues disagree on data types</b> — Ongame writes string hand IDs where everyone else
+        writes integers, which kills the Parquet write mid-run.</li>
+    </ul>
+    <span class="sub">The working, measured version — batched, with per-reason drop counts and a
+    <code>hand_uid</code> join key — is in
+    <a href="execution-roadmap.html#s6" style="color:var(--cyan-lt)">the execution roadmap, Step 3</a>,
+    and on disk as <code>src/build_silver.py</code>. This block is kept only to show the simpler idea
+    it grew from.</span>
   </div>
 </section>
 

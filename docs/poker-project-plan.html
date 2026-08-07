@@ -780,6 +780,123 @@ day = 1</div><div class="wt">A real timestamp, down to the second. <b>This is wh
       </div>
     </div>
   </div>
+
+  <h3>Every abbreviation in this dataset, decoded</h3>
+  <p>Once the shorthand above stops being mysterious, the rest of the dataset reads itself. This is
+  the complete reference — every code that appears anywhere in a folder name, a filename, or inside
+  a hand — checked against the dataset's own <a href="https://github.com/uoftcprg/pokerkit" target="_blank" rel="noopener">reference parser
+  library (<code>pokerkit</code>)</a>, not guessed.</p>
+
+  <h4>The six platforms</h4>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:18%">Code</th><th>Full name</th></tr></thead>
+    <tbody>
+      <tr><td><code>PTY</code></td><td>PartyPoker</td></tr>
+      <tr><td><code>IPN</code></td><td>iPoker Network</td></tr>
+      <tr><td><code>PS</code></td><td>PokerStars</td></tr>
+      <tr><td><code>ONG</code></td><td>Ongame Network</td></tr>
+      <tr><td><code>FTP</code></td><td>Full Tilt Poker</td></tr>
+      <tr><td><code>ABS</code></td><td>Absolute Poker</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>Folder &amp; filename shorthand</h4>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:18%">Code</th><th>Means</th></tr></thead>
+    <tbody>
+      <tr><td><code>NLH</code></td><td>No-Limit Hold'em — tacked onto the stake number in every folder name (e.g. <code>25NLH</code>). Said out loud as "<b>NL</b>" — "a 25NL table" — everywhere else.</td></tr>
+      <tr><td><code>25NL, 50NL … 1000NL</code></td><td>Not a literal price — it's the <b>maximum buy-in in dollars, which is always 100× the big blind.</b> "1000NL" ⇒ $10 big blind (100 × $10 = $1000), matches the <code>1000NLH_OBFU/10/</code> folder we've been reading from.</td></tr>
+      <tr><td><code>OBFU</code></td><td>Short for <b>obfuscated</b> — player identities (and table names) are scrambled into codes like <code>X+u4T/E5AN…</code> so nobody can be identified, but the <em>same</em> scrambled code always maps back to the <em>same</em> real person (verified — 91.7% ID overlap across separate files).</td></tr>
+      <tr><td><code>handhq</code></td><td>Not an acronym — <b>HandHQ</b> is the name of the company that originally scraped and published these hand histories in 2009. It survives today only as the <code>data/handhq/</code> folder name.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>Inside a hand — the action codes (<code>actions = [...]</code>)</h4>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:14%">Code</th><th>Stands for</th><th>What it actually means</th></tr></thead>
+    <tbody>
+      <tr><td><code>d</code></td><td>deal</td><td>Always the first word of a dealing event — read the next word to see what's being dealt.</td></tr>
+      <tr><td><code>dh</code></td><td>deal hole</td><td>Deals a player their own 2 private "hole" cards. Almost always masked (<code>????</code>) since we shouldn't know a player's cards until they choose to reveal them.</td></tr>
+      <tr><td><code>db</code></td><td>deal board</td><td>Deals the shared community cards — 3 at once for the flop, 1 each for the turn and river.</td></tr>
+      <tr><td><code>cc</code></td><td>check or call</td><td>One code, two different actions — whether money actually changed hands is what tells them apart. (This is the disambiguation the parser has to get exactly right — see the earlier big-blind sanity check.)</td></tr>
+      <tr><td><code>cbr</code></td><td>complete / bet / raise</td><td>Money goes in voluntarily. The number after it is the <b>new running total for that betting round</b>, not the extra amount just added.</td></tr>
+      <tr><td><code>f</code></td><td>fold</td><td>Give up the hand — the single most common action in poker.</td></tr>
+      <tr><td><code>sm</code></td><td>show or muck</td><td>At showdown: reveal your cards (real cards appear, e.g. <code>4cJc</code>), or decline (stays masked). Reaching showdown does not guarantee both hands get shown.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="font-size:14px;color:var(--soft)">Two more codes exist in the wider PHH standard —
+  <code>sd</code> (stand pat/discard, for draw games) and <code>pb</code> (post bring-in, for stud
+  games) — but they never appear anywhere in this No-Limit Hold'em dataset. Confirmed by scanning
+  every action across a random 40-file sample: only <code>dh</code>, <code>f</code>, <code>cc</code>,
+  <code>cbr</code>, <code>db</code> and <code>sm</code> ever show up.</p>
+
+  <h4>Reading the cards themselves</h4>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:18%">Code</th><th>Means</th></tr></thead>
+    <tbody>
+      <tr><td><code>2 3 4 5 6 7 8 9 T J Q K A</code></td><td>Card ranks. Only <code>T</code> is non-obvious — <b>ten.</b> The rest of the letters are just the first letter of Jack / Queen / King / Ace.</td></tr>
+      <tr><td><code>c d h s</code></td><td>Suits — clubs, diamonds, hearts, spades, always written lower-case immediately after the rank. <code>7c</code> = seven of clubs.</td></tr>
+      <tr><td><code>?</code></td><td>Unknown / hidden card. Each hidden card is 2 characters (rank + suit), both replaced with <code>?</code> — which is exactly why a fully-masked 2-card hand always prints as <b>four</b> question marks: <code>????</code>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>Positions &amp; stats shorthand (used once hands become tables)</h4>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:18%">Code</th><th>Means</th></tr></thead>
+    <tbody>
+      <tr><td><code>p1, p2 … pN</code></td><td>Generic seat labels for one hand, always listed in blind order: <code>p1</code> = small blind, and the <b>highest number = the button</b> (best seat, acts last). Holds for 3+ players — heads-up (2 players) works differently, so we exclude those hands from position analysis.</td></tr>
+      <tr><td><code>SB / BB</code></td><td>Small blind / big blind — the two forced bets that start every hand and give every table a shared unit of money.</td></tr>
+      <tr><td><code>bb</code></td><td>"Big blinds" — the unit money gets converted into so a $5 pot at a 25NL table and a $50 pot at a 1000NL table become comparable. Shows up as column suffixes we've been using throughout: <code>pot_bb</code>, <code>rake_bb</code>, <code>invested_bb</code>, <code>net_bb</code>. The standard industry win-rate metric is <b>bb/100</b> — big blinds won per 100 hands.</td></tr>
+      <tr><td><code>VPIP</code></td><td>"Voluntarily Put money In Pot" — the % of hands a player chose to spend money on, not counting the forced blind. Measures how loose a player is.</td></tr>
+      <tr><td><code>PFR</code></td><td>"Pre-Flop Raise" — the % of hands a player raised before the flop. Measures how aggressive a player is.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>File format &amp; citation</h4>
+  <div class="tw">
+  <table>
+    <thead><tr><th style="width:18%">Code</th><th>Means</th></tr></thead>
+    <tbody>
+      <tr><td><code>PHH</code></td><td>"Poker Hand History" — the open, academically-published standard this entire dataset follows.</td></tr>
+      <tr><td><code>TOML</code></td><td>"Tom's Obvious, Minimal Language" — the actual plain-text format every <code>.phhs</code> file is written in under the hood. This is <em>why</em> Python can read it with one line (<code>tomllib.load</code>) and no custom parser.</td></tr>
+      <tr><td><code>NT</code></td><td>The file format's own internal code for "No-Limit Texas Hold'em" — the <code>variant = 'NT'</code> line inside every single hand. Same meaning as the folder-name <code>NLH</code>, just a different label used in a different place.</td></tr>
+      <tr><td><code>ET</code></td><td>Eastern Time — the time zone every timestamp in this dataset is recorded in.</td></tr>
+      <tr><td><code>DOI</code></td><td>Digital Object Identifier — the permanent citation ID for the Zenodo archive, so this dataset can be cited like a journal article.</td></tr>
+      <tr><td><code>CC BY 4.0</code></td><td>Creative Commons Attribution 4.0 — the license on the Zenodo data itself: free to use, must credit the source.</td></tr>
+      <tr><td><code>MIT</code></td><td>The license on the GitHub code repository (separate from the CC BY 4.0 license on the data).</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="box take">
+    <span class="lab">For completeness — codes that exist, but never in our data</span>
+    The PHH standard actually defines <b>11</b> game-variant codes, because the same format is used
+    to record stud, Omaha, lowball and badugi hands too. Only <code>NT</code> shows up anywhere in
+    <code>data/handhq/</code> — verified across every file sampled so far. The other 10, purely for
+    reference, are never something you'll see here:
+    <div class="chips">
+      <span class="chip">FT — Fixed-Limit Hold'em</span>
+      <span class="chip">NS — No-Limit Short-Deck Hold'em</span>
+      <span class="chip">PO — Pot-Limit Omaha</span>
+      <span class="chip">FO/8 — Fixed-Limit Omaha Hi-Lo</span>
+      <span class="chip">F7S — Fixed-Limit 7-Card Stud</span>
+      <span class="chip">F7S/8 — Fixed-Limit 7-Card Stud Hi-Lo</span>
+      <span class="chip">FR — Fixed-Limit Razz</span>
+      <span class="chip">N2L1D — No-Limit 2-7 Lowball, Single Draw</span>
+      <span class="chip">F2L3D — Fixed-Limit 2-7 Lowball, Triple Draw</span>
+      <span class="chip">FB — Fixed-Limit Badugi</span>
+    </div>
+  </div>
 </section>
 
 <!-- ===================== 6 ===================== -->
