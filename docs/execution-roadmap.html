@@ -1094,9 +1094,14 @@ du -sh data/silver
       <li><b>147 hand IDs are reused <i>within</i> a single venue.</b> iPoker issues the same id to
         genuinely different hands — different time, different player count, different pot. So
         <code style="font-family:var(--mono);font-size:13px">hand_uid</code> reduces the problem but
-        <b>does not fully solve it</b>: 400 of 21,556,835 rows share a uid with another row.
+        <b>does not fully solve it</b>: <b>547</b> of 21,556,835 rows share a uid with another row
+        (147 uids × 2&ndash;5 rows each, so <b>400 <i>excess</i></b> rows — the two figures are
+        different and both get quoted, so be precise about which one you mean).
         <b>At 0.002% this is negligible for modelling — but it must be de-duplicated before any join,
-        not assumed away.</b></li>
+        not assumed away.</b>
+        <span class="sub">Step 4 drops all 547 rows from <i>both</i> tables rather than keeping one
+        arbitrarily: once two genuinely different hands share a uid, a seat-row cannot be attributed
+        to the right one, and leaving them in fans the 116 M-row join out silently.</span></li>
       <li><b>The estimated action count was too high.</b> The plan projected <b>~229 M</b> action rows
         by scaling PokerStars' 10.56 actions/hand across the dataset. Measured across all six venues:
         <b>183.7 M rows, 8.52 actions per hand</b>. PokerStars runs fuller tables than average, so the
@@ -1152,7 +1157,11 @@ du -sh data/silver
 
   <p><b><code style="font-family:var(--mono);font-size:14px">src/features.py</code></b> (the second
   script the guides name) starts with the tuned local session — these settings are for <i>this</i>
-  16 GB machine, and the defaults they replace are wrong for it:</p>
+  16 GB machine, and the defaults they replace are wrong for it. <b>Measured:</b> without the
+  <code style="font-family:var(--mono);font-size:13px">driver.memory</code> line the JVM starts with a
+  <b>1.0 GB</b> heap; with it, <b>9.0 GB</b>. It is not decoration — and in PySpark 4.2 the builder
+  form shown here really does take effect in local mode, which is worth knowing because a lot of
+  advice online insists it cannot:</p>
 
   <div class="code rv">
     <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
@@ -1163,12 +1172,14 @@ spark = (SparkSession.builder
     .appName(<span class="st">"ecosystem-engine"</span>)
     .master(<span class="st">"local[8]"</span>)                            <span class="cm"># 8 of the 10 cores</span>
     .config(<span class="st">"spark.driver.memory"</span>, <span class="st">"9g"</span>)           <span class="cm"># leave RAM for macOS</span>
-    .config(<span class="st">"spark.sql.shuffle.partitions"</span>, <span class="st">"48"</span>)  <span class="cm"># default 200 is cluster-tuned</span>
-    .config(<span class="st">"spark.local.dir"</span>, <span class="st">"/tmp/spark-scratch"</span>)
+    .config(<span class="st">"spark.sql.shuffle.partitions"</span>, <span class="st">"96"</span>)  <span class="cm"># default 200 is cluster-tuned</span>
+    .config(<span class="st">"spark.local.dir"</span>, <span class="st">"data/_work/spark-scratch"</span>)  <span class="cm"># NOT /tmp — see below</span>
+    .config(<span class="st">"spark.sql.files.maxPartitionBytes"</span>, <span class="st">"64m"</span>)
     .getOrCreate())
 
-hp    = spark.read.parquet(<span class="st">"data/silver/hand_players.parquet"</span>)
-hands = spark.read.parquet(<span class="st">"data/silver/hands.parquet"</span>)</pre>
+<span class="cm"># folder, NOT a .parquet file — Silver is 44 numbered parts per table</span>
+hp    = spark.read.parquet(<span class="st">"data/silver/hand_players"</span>)
+hands = spark.read.parquet(<span class="st">"data/silver/hands"</span>)</pre>
   </div>
 
   <p>Then the two Gold outputs. The player-level aggregation is spelled out line by line in
@@ -1198,11 +1209,165 @@ hands = spark.read.parquet(<span class="st">"data/silver/hands.parquet"</span>)<
     <code style="font-family:var(--mono);font-size:13px">spark.sql.files.maxPartitionBytes=64m</code>.
   </div>
 
+  <div class="ground rv">
+    <div class="ghead"><span class="gtag">Verified — the full Gold build, 7 Aug 2026</span>
+      <span class="gfile">all 44 Silver parts · 4.6 min · 8 cores</span></div>
+    <div class="gbody">
+      <div class="stats">
+        <div class="stat"><div class="v" style="font-size:21px">21,556,288</div><div class="k">hand_features rows<br>389 MB</div></div>
+        <div class="stat"><div class="v g" style="font-size:21px">106,977</div><div class="k">player_features rows<br><b>18 MB</b></div></div>
+        <div class="stat"><div class="v g" style="font-size:21px">1.0000</div><div class="k">money identity ratio<br>must be exactly 1</div></div>
+        <div class="stat"><div class="v gr" style="font-size:21px">4.6 min</div><div class="k">end to end<br>on the laptop</div></div>
+      </div>
+
+      <p><b>This is the step where "big data" stops being big.</b> 116,619,267 seat-rows went in;
+      <b>18 MB of player table came out</b> — small enough to open in anything, which is exactly why
+      the medallion layout is worth arguing for in the report. Every model from here on reads Gold.</p>
+
+      <h4 style="margin-top:22px">The sanity checks — Gold against the parser, independently</h4>
+      <div class="tw"><table>
+        <tr><th>Check</th><th class="num">Gold</th><th class="num">Parser</th><th>Verdict</th></tr>
+        <tr><td>Pooled VPIP</td><td class="num">27.4%</td><td class="num">27.4%</td><td><b>exact</b></td></tr>
+        <tr><td>Pooled PFR</td><td class="num">14.1%</td><td class="num">14.1%</td><td><b>exact</b></td></tr>
+        <tr><td>Big-blind VPIP (all)</td><td class="num">31.3%</td><td class="num">31.3%</td><td><b>exact</b> — and nowhere near 100%</td></tr>
+        <tr><td>Big-blind VPIP (3+ handed)</td><td class="num">25.7%</td><td class="num">—</td><td>heads-up excluded, as it must be</td></tr>
+        <tr class="tot"><td>Money identity <code>Σ net_bb</code> vs <code>−Σ rake_bb</code></td><td class="num">−2,064,330</td><td class="num">−2,064,329</td><td><b>ratio 1.0000</b></td></tr>
+      </table></div>
+      <p>The last row is the one that matters. <b>Poker is zero-sum apart from the rake</b>, so those
+      two numbers are forced to agree — and they do, to one big blind in two million. That single line
+      is what proves the Step 3 bug is gone at full scale.</p>
+
+      <h4>Who survives the 100-hand threshold</h4>
+      <div class="tw"><table>
+        <tr><th>Population</th><th class="num">Players</th><th class="num">Share</th></tr>
+        <tr><td>Seen in the data</td><td class="num">280,363</td><td class="num">100%</td></tr>
+        <tr><td>Dropped — fewer than 100 hands</td><td class="num">173,386</td><td class="num">61.8%</td></tr>
+        <tr class="tot"><td>Kept in <code>player_features</code></td><td class="num">106,977</td><td class="num">38.2%</td></tr>
+      </table></div>
+      <p><b>Report the 61.8%, do not bury it.</b> A player with 12 hands can
+      show a VPIP of 100% by luck alone, and K-Means will happily build a cluster out of that noise.
+      Filtering is the right call — but it discards <b>173,386 real people</b>, and the honest version
+      of this project says so out loud rather than quoting 106,977 as if it were everyone.</p>
+
+      <h4>One trap this table hands to Step 5</h4>
+      <p style="margin-bottom:0">The 100-hand threshold is on <b>hands played</b>, not on
+      <b>hands where the money is usable</b> — and those are very different numbers. Median
+      <code>money_hands</code> is <b>92</b>, and <b>only 88,655 of the 106,977 players have any usable
+      money at all</b>. So the win-rate column has a wild tail: median
+      <code>bb_per_100</code> is a sensible <b>&minus;5.3</b> (that is rake drag, exactly as it should
+      be), but <b>6.4% of players sit beyond ±200</b> — and every one of those is a small sample, not a
+      superstar. The worst case is a player with <b>103 hands played but only 7 with usable money</b>,
+      whose &minus;1,494 bb/100 is computed off those 7 hands.
+      <b>Fork B must therefore filter on <code>money_hands</code>, never on
+      <code>hands_played</code>.</b> Gold deliberately stores the raw value and both counts rather than
+      clipping — <span class="warn">winsorising here would hide the problem instead of letting Phase 2
+      decide it</span>, and "handle your outliers" is a named part of that mark.</p>
+    </div>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — putting Spark's scratch in <code style="font-family:var(--mono);font-size:14px">/tmp</code> killed two full runs</span>
+    A shuffle is Spark moving rows between cores so that every row for one player ends up in the same
+    place. It does not do that in memory — it <b>writes many GB to disk</b>, at
+    <code style="font-family:var(--mono);font-size:13px">spark.local.dir</code>, then reads it back.
+    <span class="sub">Point that at <code style="font-family:var(--mono);font-size:13px">/tmp</code>
+    and anything that tidies <code style="font-family:var(--mono);font-size:13px">/tmp</code> while
+    the job runs — macOS's own cleaner, a sandbox, a CI agent — <b>deletes the job's working data out
+    from under it</b>. It then dies about ten minutes in with
+    <code style="font-family:var(--mono);font-size:12px">java.io.FileNotFoundException:
+    /private/tmp/spark-scratch/blockmgr-…/shuffle_16_1472_0.data</code>, which looks like a Spark bug
+    and is not one. <b>The tell: it always dies on a shuffle <i>read</i>, never on a write</b> — the
+    file was written fine, then vanished.</span>
+    <span class="sub"><b>Fix: keep scratch on the project disk</b>
+    (<code style="font-family:var(--mono);font-size:13px">data/_work/spark-scratch</code>, gitignored).
+    This run spilled <b>1.4 GB within the first minute</b>, so it is not a theoretical concern. Check
+    free space before a full run: <code style="font-family:var(--mono);font-size:13px">df -h .</code></span>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — Step 4's sanity check found a bug in <i>Step 3</i>, and it cost a full rebuild</span>
+    The first Gold table looked perfect until the last line of the run: <b>every high-volume player
+    had a win rate of about &minus;100 bb/100</b> — losing a full big blind every single hand. In a
+    game where the house takes only rake, that is impossible, so the data was wrong.
+    <span class="sub"><b>The cause was in <code style="font-family:var(--mono);font-size:13px">parse_phh.py</code>, not in Spark.</b>
+    If you bet $50 and everyone folds, that $50 never entered the pot and comes straight back to you.
+    The parser correctly removed it from the <b>pot</b> — <i>which is exactly why rake reconciled to
+    the penny and nobody noticed</i> — but never removed it from that player's own
+    <code style="font-family:var(--mono);font-size:13px">invested</code>. Players were charged for
+    chips they got back, on <b>99.4% of hands</b>, by a mean of <b>7.35 bb — 17× the rake itself</b>.</span>
+    <span class="sub"><b>The test that catches it is one line of arithmetic.</b> Poker is zero-sum
+    apart from the rake, so across every seat of a hand
+    <code style="font-family:var(--mono);font-size:13px">sum(net_bb) == &minus;rake_bb</code>. Before
+    the fix the shortfall was <i>exactly</i> the uncalled bet: the identity
+    <code style="font-family:var(--mono);font-size:13px">sum(net_bb) + uncalled_bb + rake_bb = 0</code>
+    held on <b>100% of 852,293</b> reconciled hands — proof, not suspicion. After the fix,
+    <b>5,378,874 / 5,378,874</b> hands satisfy the real identity. <b>Both checks now run
+    automatically</b>, in the parser's self-test and in Step 4's sanity block.</span>
+    <span class="sub"><b>The sentence worth putting in the report:</b> a downstream check found an
+    upstream bug that every upstream check had passed. <b>Rake reconciled perfectly and the data was
+    still wrong.</b> Silver was rebuilt from all 21,782 files (27 min) and came back with byte-identical
+    row counts and an identical <code style="font-family:var(--mono);font-size:13px">hands</code> table
+    across all 21,556,288 non-duplicate hands — which is how you prove only the intended columns moved.</span>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — "winnings recorded" is not "winnings usable", and the gap is a <i>venue</i> property</span>
+    The obvious money filter — "did every seat report a figure, and did the pot pay out?" — is wrong.
+    <b>13.8% of hands pass it while their winnings sum to ~1.5× the pot</b>, and averaging those in is
+    the second reason everyone looked like a loser. The right filter is the parser's own
+    reconciliation: <code style="font-family:var(--mono);font-size:13px">rake_bb IS NOT NULL</code>.
+    <div class="tw" style="margin-top:14px"><table>
+      <tr><th>Money status of a hand</th><th class="num">Share</th><th>What it means</th></tr>
+      <tr><td><b>ok</b> — balances against the pot</td><td class="num">25.0%</td><td>a win rate computed here is real</td></tr>
+      <tr><td><b>unreconciled</b> — sums to ~1.5× pot</td><td class="num">13.8%</td><td>looks complete, is unusable</td></tr>
+      <tr><td><b>all_zero</b> — every seat won exactly 0</td><td class="num">52.2%</td><td>recording artifact, never a real result</td></tr>
+      <tr><td><b>absent</b> — no winnings column</td><td class="num">9.0%</td><td>nothing to work with</td></tr>
+    </table></div>
+    <span class="sub"><b>And it is structural, not random — this answers the old "why are the winnings
+    arrays all zero?" question.</b> Usable money by venue: <b>ONG 99.1% · ABS 82.0% · PS 27.3% ·
+    FTP 27.2%</b>; <b>PTY records winnings on 100% of hands but only 14% reconcile</b>; and
+    <b>iPoker reconciles on NONE of its 6.0 M hands.</b> <b>Consequences:</b> Fork B is a four-venue
+    question and must exclude iPoker outright; behavioural features still work on 100% of hands; and
+    <span class="warn">never impute the zeros — that invents a break-even player who never existed.</span></span>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — the showpiece feature silently reads "1" on a venue that records no tables at all</span>
+    The multi-tabling detector is the feature that separates a human from a professional without any
+    labelled data: <b>one person plays one table; a grinder plays a dozen.</b> Distinct table ids per
+    venue, measured: <b>PS 11,355 · ONG 1,252 · ABS 1,046 · FTP 809 · PTY 697 · <span class="warn">IPN 1</span></b>.
+    <span class="sub"><b>iPoker writes the literal string
+    <code style="font-family:var(--mono);font-size:13px">"HandHQ"</code></b> — the name of the company
+    that packaged the data — <b>into all 5,996,194 of its table fields.</b> So every iPoker player
+    scores exactly <code style="font-family:var(--mono);font-size:13px">max_tables = 1</code>. That is
+    not a measurement of single-tabling; it is <b>a missing value wearing a plausible number</b>, and
+    it is far more dangerous than a blank, because nothing downstream can tell the difference.</span>
+    <span class="sub"><b>Left alone, K-Means would file all 15,549 iPoker players — 14.5% of the Gold
+    table — as recreational single-tablers</b>, which is exactly backwards for the grinders among
+    them, and those grinders are the whole point of the ecosystem thesis.
+    <b>Fix:</b> null <code style="font-family:var(--mono);font-size:13px">max_tables</code>,
+    <code style="font-family:var(--mono);font-size:13px">avg_tables</code> and
+    <code style="font-family:var(--mono);font-size:13px">distinct_tables</code> for any venue with ≤1
+    distinct table id, and carry <code style="font-family:var(--mono);font-size:13px">tables_recorded</code>
+    so the absence is explicit. <b>A null a model can see beats a number that lies to it.</b></span>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — the six venues stop recording on different days, so "churn" can be an illusion</span>
+    Every source folder is labelled <code style="font-family:var(--mono);font-size:13px">2009-07-01_2009-07-23</code>,
+    but the hands' own timestamps run to <b>day 26</b>, and each venue ends somewhere different:
+    <b>ABS 20 · PS 20 · FTP 23 · ONG 24 · IPN 26 · PTY 26</b>.
+    <span class="sub">So a single global rule — "played in the final week?" — would mark
+    <b>every Absolute and PokerStars player as lapsed by construction</b>: 9.55 M hands, <b>44% of the
+    dataset</b>, labelled churned because the <i>recording</i> stopped, not because anyone left.
+    A churn model trained on that learns to predict which site a player used.
+    <b>The fix is one decision, and it is worth a rubric mark:</b> every activity window is measured
+    backwards from <i>that venue's own</i> last observed day, via
+    <code style="font-family:var(--mono);font-size:13px">site_last_day</code> and
+    <code style="font-family:var(--mono);font-size:13px">days_since_last</code>. Gold carries the raw
+    material; Step 5 picks the cut-point knowing this.</span>
+  </div>
+
   <h4>Done when</h4>
   <ol class="steps rv">
-    <li>Both Gold tables exist under <code style="font-family:var(--mono);font-size:13px">data/gold/</code>, built from the subset.</li>
-    <li>Sanity check passes: pooled VPIP in Gold ≈ the parser's ~27.9%, top players play plausible hand counts.</li>
-    <li>Commit: <i>"Step 4: features.py — two gold tables (subset)"</i>.</li>
+    <li>Both Gold tables exist under <code style="font-family:var(--mono);font-size:13px">data/gold/</code>, built from <b>all 44 Silver parts</b> (the subset run is <code style="font-family:var(--mono);font-size:13px">--parts N</code>, and it writes to <code style="font-family:var(--mono);font-size:13px">data/gold_sample/</code> so it can never clobber the real thing).</li>
+    <li>Sanity checks pass: pooled VPIP in Gold ≈ the parser's <b>27.4%</b>, big-blind VPIP nowhere near 100%, <b>the money identity ratio is 1.0000</b>, and the top players by volume have plausible hand counts.</li>
+    <li>Commit: <i>"Step 4: features.py — two gold tables at full scale"</i>.</li>
   </ol>
 
   <h4>Specs this step earns</h4>

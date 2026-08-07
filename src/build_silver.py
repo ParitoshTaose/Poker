@@ -12,6 +12,7 @@ folder (data/silver/hands/part-0000.parquet, part-0001.parquet, ...) rather
 than one single file. Polars/Spark read a folder of part files exactly like
 one table -- this is the same partitioning idea already used for Bronze.
 """
+import shutil
 from collections import Counter
 from multiprocessing import Pool
 from pathlib import Path
@@ -65,8 +66,14 @@ def safe(p):
 if __name__ == "__main__":
     files = sorted(SRC.rglob("*.phhs"))
     print(len(files), "files")
+    # Part names are deterministic (part-{batch}), so a re-run that dies halfway
+    # would leave new parts 0..k next to stale parts k+1..n in the same folder --
+    # a table that is silently half one parser version and half another. Clear
+    # first: a run that fails loudly beats a table that lies quietly.
     for name in TABLES:
-        (OUT / name).mkdir(parents=True, exist_ok=True)
+        if (OUT / name).exists():
+            shutil.rmtree(OUT / name)
+        (OUT / name).mkdir(parents=True)
 
     skipped = 0
     row_totals = {name: 0 for name in TABLES}

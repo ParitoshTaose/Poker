@@ -145,10 +145,19 @@ def parse_file(path):
                 "action_order": _i(order),
             })
 
-        # uncalled portion of the final bet is returned to its owner
+        # Uncalled portion of the final bet is returned to its owner: if you bet
+        # 50 and everyone folds, 50 never entered the pot and comes straight back.
         s = sorted(committed, reverse=True)
         uncalled = (s[0] - s[1]) if n > 1 else 0.0
         pot = sum(committed) - uncalled
+        # It has to come back out of that player's OWN investment too, not just
+        # out of the pot. Leaving it in overstates their loss by the whole bet --
+        # measured at 7.35 bb per hand, 17x the rake, on 99.4% of hands, which
+        # made every player look like a heavy loser. When uncalled > 0 the top
+        # contributor is unique by construction, so index() is unambiguous.
+        invested = list(committed)
+        if uncalled > 0:
+            invested[committed.index(s[0])] -= uncalled
         saw_flop = street >= 1
         w = [float(x) for x in h["winnings"]] if h.get("winnings") else None
         rake = None
@@ -176,10 +185,10 @@ def parse_file(path):
                 "position_idx": _i(i + 1),                 # p1=SB, p2=BB, pN=button
                 "is_sb": i == 0, "is_bb": i == 1, "is_button": i == n - 1,
                 "starting_stack": _f(h["starting_stacks"][i]),
-                "invested": _f(committed[i]),
-                "invested_bb": _f(committed[i] / bb),
+                "invested": _f(invested[i]),
+                "invested_bb": _f(invested[i] / bb),
                 "winnings": _f(won),
-                "net_bb": _f((won - committed[i]) / bb) if won is not None else None,
+                "net_bb": _f((won - invested[i]) / bb) if won is not None else None,
                 "vpip": bool(vol[i]), "pfr": bool(raised_pf[i]), "folded": bool(folded[i]),
                 "showed": bool(showed[i]), "postflop_bets": _i(n_bets[i]),
                 "postflop_calls": _i(n_calls[i]),
@@ -208,3 +217,12 @@ if __name__ == "__main__":
     bb_seats = [r for r in HP if r["is_bb"]]
     print(f"big blinds who 'vpip'd = {sum(1 for r in bb_seats if r['vpip'])/len(bb_seats)*100:.1f}%"
           "  <- should NOT be ~100%, else the check/call bug is present")
+    # A hand is zero-sum apart from the rake, so every seat's net must sum to
+    # exactly -rake. Fails the moment the uncalled bet stops being returned.
+    net = collections.defaultdict(float)
+    for r in HP:
+        if r["net_bb"] is not None:
+            net[r["hand_uid"]] += r["net_bb"]
+    ok = sum(1 for h in raked if abs(net[h["hand_uid"]] + h["rake_bb"]) < 0.01)
+    print(f"money identity (sum net_bb == -rake_bb) holds on {ok}/{len(raked)} raked hands"
+          "  <- anything less means the uncalled bet is not being returned")
