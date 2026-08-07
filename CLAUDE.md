@@ -22,6 +22,7 @@ Explain jargon in plain language and always tie technical ideas to a business co
 | `docs/execution-roadmap.html` | **The checklist (v2, 6 Aug 2026).** Steps 0–9 in order: commands, "done when", and chips mapping each step to the phase/rubric/deliverable it earns. **v2 added a line-by-line plain-English `.walk` walkthrough under every command and script**, plus measurements taken while actually running Steps 1–3. Also holds the "one base, three forks" strategy. |
 | `src/parse_phh.py` | **A tested, working parser.** Turns one `.phhs` file into 3 flat tables. Run it from the repo root: `python3.13 src/parse_phh.py <file.phhs>` |
 | `src/build_silver.py` | **Bronze → Silver, done.** Parses all 21,782 files on 8 cores into batched Parquet parts. Run: `python3.13 src/build_silver.py`. **Must stay batched** — see gotchas. |
+| `src/features.py` | **Silver → Gold (Spark), done.** Writes `gold/player_features` (one row per **site + player**) and `gold/hand_features` (one row per hand, Fork C's target `pot_bb`). Run: `.venv/bin/python src/features.py`; smoke-test on a subset with `--parts 3` (writes to `data/gold_sample/`, never clobbers real Gold). |
 | `data/` | Bronze/Silver/Gold lake. **Contents gitignored**, structure committed via `.gitkeep`. `data/README.md` explains both download routes. |
 | `notebooks/` | Empty. The executable Databricks/PySpark deliverable (Phases 2 & 3) goes here. |
 | `deliverables/report/` · `deliverables/presentation/` | Empty. Consulting report PDF; exec deck (max 10 slides). |
@@ -29,8 +30,8 @@ Explain jargon in plain language and always tie technical ideas to a business co
 All four HTML files are self-contained (no external CSS/JS/fonts/images) and cross-link to each
 other **by bare filename** — they only work if all four stay in the same folder. Do not split them.
 
-`src/` will grow one more script the guides already name and describe: `features.py` (PySpark).
-Keep that name.
+`src/` now holds all three scripts the guides name. The Gold layer is built; Step 5 (the fork
+bake-off) is the next unrun step.
 
 ## The brief (from `../Github folder/nmims_analytics/sessions/Big_Data_Analytics_Project_Guidelines.pdf`)
 
@@ -84,8 +85,17 @@ problem, not a game-AI problem. Three models: K-Means segmentation, churn classi
   (CC BY 4.0, v3, 16 Sep 2025). Repo is MIT.
 - **Cite:** Kim, Juho. *"Recording and Describing Poker Hands."* IEEE Conference on Games (CoG), 2024.
   DOI `10.1109/CoG60054.2024.10645611`.
-- **The real-money portion:** **21,605,687** No-Limit Hold'em hands, **1–23 July 2009**, stakes
-  25NL–1000NL, six commercial platforms.
+- **The real-money portion:** **21,605,687** No-Limit Hold'em hands, nominally **1–23 July 2009**,
+  stakes 25NL–1000NL, six commercial platforms.
+- **CORRECTED 2026-08-07 — the window is 1–26 July, and the six venues do NOT share it.** Every
+  source folder is labelled `2009-07-01_2009-07-23`, but the hands' own timestamps run to **day 26**:
+  470,790 hands (2.2%) fall on days 24–26. Measured last day **per venue**:
+  **ABS 20 · PS 20 · FTP 23 · ONG 24 · IPN 26 · PTY 26**. The tail hands are structurally normal
+  (same median pot 2.5bb, same stakes) but come from only 97 tables — a collection overrun on three
+  venues, not corrupt dates. **Consequence for Fork A: any global "played in the last week?" rule
+  labels every ABS and PS player as lapsed by construction — 9.55M hands, 44% of the dataset —
+  because their data simply stops. Lapse windows must be measured backwards from each venue's own
+  last day.** `features.py` does this via `site_last_day` / `days_since_last`.
 - **CORRECTED 2026-08-06 — PS and PTY were swapped in the per-site figures.** Earlier notes said
   "PTY 8,298,718 … PS 3,092,698". **Measured over all 21.5M parsed hands it is the reverse.** The
   check is decisive: each file states its own `venue` internally and folder-derived site agrees
@@ -147,6 +157,31 @@ actions      183,671,936 rows  (8.52 per hand)
   everything; PS runs fuller tables than average. **True figure: 183.7M rows @ 8.52/hand** — still
   **175× Excel's limit**, so the Big Data argument is unaffected. Update the estimate wherever it appears.
 
+### FULL-SCALE Gold build — measured 2026-08-07 (`features.py`, all 44 Silver parts, 4.6 min, 8 cores)
+
+```
+colliding hand_uids dropped : 147 uids / 547 hand rows  (=> 2,369 seat-rows)
+venues with no table identity: ['IPN']
+observation window per venue : ABS 20 · IPN 26 · FTP 23 · ONG 24 · PS 20 · PTY 26
+hand_features   21,556,288 rows · 20 cols · 389 MB
+player_features    106,977 rows · 41 cols ·  18 MB   (from 280,363 seen; 61.8% dropped at <100 hands)
+```
+
+- **The whole point of the medallion layout, in one line:** 116,619,267 seat-rows in → **18 MB** out.
+  ML never touches the big data. Say this in the architecture section.
+- **Every sanity check matches the parser exactly:** pooled VPIP **27.4% / 27.4%**, pooled PFR
+  **14.1% / 14.1%**, big-blind VPIP **31.3% / 31.3%** (25.7% when heads-up is excluded).
+- **THE money regression test — keep it forever.** Poker is zero-sum apart from the rake, so
+  `Σ net_bb` must equal `−Σ rake_bb`: measured **−2,064,330 vs −2,064,329 bb, ratio 1.0000**. This is
+  what proves the uncalled-bet bug is gone at full scale, and it is the check that caught it.
+- **`bb_per_100` has a wild tail, and it is a sample-size artifact, not talent.** Median is a sane
+  **−5.3** (rake drag), but **6.4% of players sit beyond ±200**. Cause: the 100-hand threshold is on
+  `hands_played`, not on usable-money hands — median `money_hands` is only **92**, and just
+  **88,655 of 106,977** players have any usable money. Worst case: 103 hands played, **7** with money,
+  −1,494 bb/100. **Fork B must filter on `money_hands`, never `hands_played`.** Gold stores the raw
+  value plus both counts on purpose — clipping here would hide the problem instead of letting Phase 2
+  handle it, and "outliers" is a named part of that mark.
+
 ## Data & code gotchas (these bite — they are already flagged in the HTML)
 
 ### Cross-venue defects — found 2026-08-06 by running all 21,782 files (one-file-per-venue MISSED them all)
@@ -170,9 +205,12 @@ actions      183,671,936 rows  (8.52 per hand)
 - **Hand IDs are REUSED within a venue — measured at full scale.** No *cross*-venue collisions exist
   (ABS 3.02–3.09bn and IPN 3.41–3.49bn are disjoint), but **iPoker reissues the same id to genuinely
   different hands** (different time, player count, pot). Over all 21,556,835 rows: **21,556,435
-  distinct `hand_uid`, i.e. 147 uids covering 400 rows.** So `hand_uid` (= `"{site}:{hand_id}"`)
+  distinct `hand_uid`.** Precisely (re-measured 2026-08-07): **147 uids covering 547 rows**, i.e.
+  400 *excess* rows — don't conflate the two figures. So `hand_uid` (= `"{site}:{hand_id}"`)
   is the right join key **but is NOT unique** — 0.002%. **De-duplicate before any join;** do not
-  assume it away.
+  assume it away. `features.py` drops all 547 rows from both `hands` and `hand_players` rather than
+  keeping one arbitrarily: once two real hands share a uid, a seat-row cannot be attributed to the
+  right one, and leaving them in fans the 116M-row join out silently.
 - **`parse_phh.py` originally parsed folder metadata for the ORIGINAL dataset layout**, so under the
   Bronze `venue=X/stake=Y/` layout it produced `stake="stake=0.25"` and lost the date-carrying
   `venue_dir`. **Fixed: `_folder_meta()` handles both layouts** and returns `stake` as a float plus a
@@ -195,8 +233,38 @@ actions      183,671,936 rows  (8.52 per hand)
   (highest − second-highest contribution)`; `rake = pot − sum(winnings)`. Omit the correction and you
   get a nonsensical ~40% median rake. With it: **preflop-only hands rake exactly $0.00 (109/109 —
   "no flop, no drop" confirmed)**, flop hands median **3.7%** in $0.05 steps, capped ~$0.65 at 25NL.
-- **Money coverage is ~⅓.** Only 288/991 hands reconcile (211 lack `winnings`, 486 have it all-zero).
+- **The uncalled bet must be returned to the PLAYER, not just removed from the pot — fixed
+  2026-08-07, never regress it.** `parse_phh.py` originally subtracted the uncalled amount from the
+  pot (so rake reconciled perfectly) but left it inside that player's `invested`, so they never got
+  their own uncalled bet back. `net_bb` was therefore wrong on **99.4% of hands**, by a mean of
+  **7.35 bb — 17× the rake itself (0.434 bb)**. Every high-volume player came out at ≈ **−100 bb/100**,
+  i.e. losing a full big blind per hand, which is impossible in a rake-only game.
+  **The test that catches it: poker is zero-sum apart from the rake, so `Σ net_bb == −rake_bb` on
+  every reconciled hand.** Before the fix that identity was off by exactly the uncalled bet
+  (`Σ net_bb + uncalled_bb + rake_bb = 0` held on 100% of 852,293 hands — algebraic proof, not a
+  guess). `parse_phh.py`'s self-test now prints this identity on every run, next to the BB-VPIP check.
+  **This forced a full Silver rebuild** — the old, wrong Silver is why `hand_players` was rebuilt.
+- **Money coverage is ~⅓ overall, but it is a VENUE PROPERTY, not random — measured 2026-08-07.**
+  This answers the old "why are the winnings arrays all zero?" question. Per hand, winnings are
+  recorded for **every seat or none** (partial coverage: exactly 0 hands). Of 21,556,435 hands:
+  **25.0% reconcile against the pot ("ok")**, 13.8% carry a full set of winnings that sums to
+  **~1.5× the pot** (median) and are therefore unusable, 52.2% are present-but-all-zero, 9.0% absent.
+  **Usable money by venue: ONG 99.1% · ABS 82.0% · PS 27.3% · FTP 27.2% · PTY 100% present but only
+  14% reconciling · IPN 0.0% — iPoker reconciles on NONE of its 6.0M hands.**
+  **Consequences: use `rake_bb IS NOT NULL` (not "winnings present") as the money filter, or every
+  player looks like a heavy loser; Fork B is a four-venue question and must exclude iPoker entirely;
+  never impute the zeros — that invents a break-even player who never existed.**
   **Behavioural features work on 100% of hands; money features do not.** Say so in the report.
+- **iPoker records NO table identity — it writes the literal string `'HandHQ'` (the data vendor's
+  name) into all 5,996,194 of its `table` fields. Measured 2026-08-07.** Distinct `table_id` per
+  venue: **PS 11,355 · ONG 1,252 · ABS 1,046 · FTP 809 · PTY 697 · IPN 1**. PS also has 256,213
+  (3.1%) nulls. **Why this matters: the multi-tabling detector is the showpiece feature** — one human
+  plays one table, a professional grinder plays a dozen — and on iPoker every player scores exactly
+  `max_tables = 1`. That is **a missing value wearing a plausible number**, and feeding it to K-Means
+  files all **15,549 iPoker players (14.5% of the Gold table) as recreational single-tablers**, which
+  is the precise opposite of the truth for the grinders among them. **`features.py` nulls
+  `max_tables` / `avg_tables` / `distinct_tables` for any venue with ≤1 distinct table id and sets
+  `tables_recorded = false`.** Never impute 1 there.
 - **Position is free.** Players are indexed in blind order: `p1`=SB, `p2`=BB, `p3` acts first pre-flop,
   **highest index = button**. Holds for 3+ players; heads-up differs — exclude it.
 - **A few hands per file are legitimately dropped** (no big blind ⇒ money cannot be normalised) —
@@ -217,9 +285,19 @@ actions      183,671,936 rows  (8.52 per hand)
   wins the plain-shell PATH; the user's interactive shell is conda `(base)`, which may differ).
   `parse_phh.py` dies with `ModuleNotFoundError: No module named 'tomllib'`. Always invoke it as
   **`python3.13`** (or `/opt/homebrew/bin/python3`, which is 3.14.4). Both have `tomllib`.
-- **Local Spark tuning:** `spark.driver.memory=9g` · `master("local[8]")` ·
-  `spark.sql.shuffle.partitions=48` (default 200 is cluster-tuned and wrong locally) ·
-  `spark.local.dir=/tmp/spark-scratch` · `spark.sql.files.maxPartitionBytes=64m` if OOM.
+- **Local Spark tuning (as actually used in `src/features.py`):** `master("local[8]")` ·
+  `spark.driver.memory=9g` · **`spark.sql.shuffle.partitions=96`** (200 is cluster-tuned; **48 was
+  too coarse** for 116.6M-row shuffles on a 9 GB heap) · `spark.sql.files.maxPartitionBytes=64m` ·
+  `spark.local.dir=data/_work/spark-scratch`.
+- **`spark.driver.memory` DOES work from the builder in local mode (PySpark 4.2) — verified.** A lot
+  of advice says it cannot. Measured JVM max heap: **no config → 1.0 GB**, `.config(...,"9g")` → 9.0 GB,
+  `PYSPARK_SUBMIT_ARGS="--driver-memory 9g"` → 9.0 GB. Use the builder form.
+- **NEVER put `spark.local.dir` in `/tmp` — this killed two full runs, 2026-08-07.** Spark spills
+  many GB of shuffle data there, and anything that tidies `/tmp` mid-run (macOS's cleaner, a sandbox,
+  a CI agent) deletes it underneath the job. It dies ~10 min in with
+  `java.io.FileNotFoundException: /private/tmp/spark-scratch/blockmgr-*/shuffle_*.data`, which reads
+  like a Spark bug and is not one. **Point scratch at the project disk** (`data/_work/spark-scratch`,
+  gitignored, 230 GB free). Symptom to recognise: the job dies at a *shuffle read*, never at a write.
 - **Never `.toPandas()` or `.collect()` on anything but the Gold table.** On a laptop the driver *is*
   your 16 GB. This is the #1 way to kill a local Spark job.
 - **Databricks Community Edition retired 1 Jan 2026** → use **Databricks Free Edition**.
@@ -266,9 +344,13 @@ artifacts after a programmatic scroll: `.rv` caught mid-transition, stale rail h
 3. ~~Only PokerStars files have been sampled.~~ **DONE 6 Aug** — all six venues sampled (Step 2) and
    then all 21,782 files parsed (Step 3). One-file-per-venue proved **insufficient**; see the
    cross-venue defects above.
-4. **Why are 486/991 `winnings` arrays all zero?** Not explained. Affects money-feature coverage.
-5. ~~Nothing has been run at full scale yet.~~ **Silver now built from all 21,782 Bronze files**
-   (6 Aug). Gold/Spark (Step 4) and everything after it are still unrun.
+4. ~~Why are 486/991 `winnings` arrays all zero?~~ **ANSWERED 7 Aug — it is a venue property, not a
+   random defect.** Full breakdown in the money-coverage gotcha above. iPoker records nothing usable
+   on any of its 6.0M hands; PartyPoker records winnings on 100% of hands but only 14% reconcile.
+   What remains genuinely unexplained is *why the operators' exports differ* — but the effect is now
+   measured, bounded, and handled in code.
+5. ~~Nothing has been run at full scale yet.~~ **Silver rebuilt from all 21,782 Bronze files with the
+   corrected parser (7 Aug), and Gold/Spark (Step 4) built from it.** Steps 5+ are still unrun.
 6. **Is player-ID stability real ACROSS venues?** 91.7% overlap was measured *within* PokerStars only.
    Never merge IDs across venues — and confirm the within-venue figure holds for the other five.
 

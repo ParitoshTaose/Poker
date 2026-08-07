@@ -1,5 +1,5 @@
 # ── Data lake ────────────────────────────────────────────────────────────────
-# Contents are NEVER committed (the dataset is 1.71 GB subset / 20.3 GB full).
+# Contents are NEVER committed (Bronze is 15 GB of text; Silver 2.2 GB of Parquet).
 # The folder STRUCTURE is committed, via .gitkeep, so a fresh clone is runnable.
 data/**
 !data/**/
