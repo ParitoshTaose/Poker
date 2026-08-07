@@ -242,7 +242,7 @@
   <span class="course">Big Data Analytics</span>
   <span class="sep">·</span>
   <span class="sess">MBA Group Project — 20 marks</span>
-  <span class="right">Execution Roadmap v1 · 5 Aug 2026</span>
+  <span class="right">Execution Roadmap v3 · 6 Aug 2026</span>
 </div>
 
 <div class="shell">
@@ -251,7 +251,7 @@
   <a href="#s1"><span class="act">Read first</span>How this page works</a>
   <a href="#s2"><span class="act">Strategy</span>One base, three forks</a>
   <a href="#s3"><span class="act">Step 0</span>Unblock &amp; set up the Mac</a>
-  <a href="#s4"><span class="act">Step 1</span>Get the data (1.7 GB)</a>
+  <a href="#s4"><span class="act">Step 1</span>Get the data (15 GB)</a>
   <a href="#s5"><span class="act">Step 2</span>Prove the parser ×6</a>
   <a href="#s6"><span class="act">Step 3</span>Bronze → Silver</a>
   <a href="#s7"><span class="act">Step 4</span>Silver → Gold (Spark)</a>
@@ -274,6 +274,11 @@
     commands</b>. Ten steps, from an empty laptop to a submitted project. Each step lists the exact
     terminal commands, what "done" looks like, and — in the coloured chips — <b>which requirement of
     the brief that step earns</b>. Follow it top to bottom.
+  </p>
+  <p class="deck" style="margin-top:16px">
+    <b>Revision 2</b> adds a <b>line-by-line plain-English walkthrough under every command and
+    script</b> — what it does, why it is there, and what its output is telling you — so no step has
+    to be run on faith.
   </p>
 
   <div class="herofig">
@@ -350,8 +355,17 @@
   <div class="grounded-note">
     The commands on this page are adapted from <code>data-pipeline-guide.html</code>, whose core steps
     were run against real dataset files on this machine on <b>1–2 Aug 2026</b>. Numbers repeated here
-    (21.6 M hands, 27.9% VPIP, 3.7% median rake, 91.7% ID overlap…) were measured then — this page adds
-    <b>no new measurements</b>. Anything marked <b>est.</b> is an estimate, not a claim.
+    (21.6 M hands, 27.9% VPIP, 3.7% median rake, 91.7% ID overlap…) were measured then.
+    <b>Revision 2 · 6 Aug 2026</b> adds line-by-line explanations of every command and script,
+    plus <b>new measurements taken while actually executing Steps 1–3</b> — the Bronze file census,
+    the memory profile that forced <code>build_silver.py</code> to be rewritten, and the Silver row
+    counts. Two earlier claims were <b>corrected, not quietly edited</b>: the "1.7 GB subset" (it is
+    15 GB) and the single-shot Silver build (it would have exhausted RAM). Anything marked
+    <b>est.</b> is still an estimate, not a claim.
+  <br><b>Revision 3 · 6 Aug 2026</b> — the Silver layer was built at <b>full scale</b> (all 21,782
+  files, 27.7 min). Step 3's green panel is measured, not projected. Three further corrections:
+  the published <b>PS/PTY figures were swapped</b>, the <b>~229 M action estimate was 25% high</b>
+  (measured: 183.7 M), and hand IDs are <b>reused within a venue</b>.
   </div>
 </header>
 
@@ -546,6 +560,15 @@ s=SparkSession.builder.master('local[*]').getOrCreate(); \
 print('spark ok:', s.range(1000).count()); s.stop()"</span></pre>
   </div>
 
+  <p style="margin-top:18px"><b>Line by line — what each command actually does, and why it's there:</b></p>
+  <div class="walk rv">
+    <div class="w"><div class="wc">python3.13 -m venv .venv</div><div class="wt">Creates a <b>private, disposable copy of Python</b> just for this project, living in a folder called <code style="font-family:var(--mono);font-size:13px">.venv</code>. Anything you <code style="font-family:var(--mono);font-size:13px">pip install</code> next goes in there, not into your Mac's system Python — so it can't clash with anything else, and you can delete the folder and start clean if it ever gets messy.</div></div>
+    <div class="w"><div class="wc">source .venv/bin/activate</div><div class="wt">Switches your terminal <b>into</b> that private copy. Until this runs, typing <code style="font-family:var(--mono);font-size:13px">python</code> or <code style="font-family:var(--mono);font-size:13px">pip</code> quietly uses the Mac's built-in Python 3.9.6 — the one with no <code style="font-family:var(--mono);font-size:13px">tomllib</code>, which is exactly what breaks the parser if you forget this step.</div></div>
+    <div class="w"><div class="wc">pip install pyspark polars<br>pyarrow pandas</div><div class="wt">Installs the four libraries the whole pipeline depends on: <b>PySpark</b> (the Python interface to Spark, the distributed engine used from Step 4 onward), <b>Polars</b> (the fast dataframe library from the Session 3/7/8 labs, doing the heavy lifting in Steps 2–3), <b>PyArrow</b> (the shared in-memory format Parquet and Spark both speak, so data moves between them without being copied or re-encoded), and <b>Pandas</b> (some Spark and reporting tooling still expects it as glue).</div></div>
+    <div class="w"><div class="wc">export JAVA_HOME=$(/usr/libexec/<br>java_home -v 17)</div><div class="wt">Spark itself is written in Scala and actually runs on the <b>Java Virtual Machine</b> — PySpark is a thin Python wrapper around it. A Mac can have several Java versions installed at once; this line tells your terminal exactly which one (17, already installed) Spark should launch against.</div></div>
+    <div class="w"><div class="wc">SparkSession.builder<br>.master('local[*]')...</div><div class="wt">This line <b>actually starts a tiny Spark cluster</b> — just one, running entirely inside your laptop, using every CPU core (<code style="font-family:var(--mono);font-size:13px">local[*]</code>). It then asks that cluster to count 1,000 numbers. Printing <code style="font-family:var(--mono);font-size:13px">spark ok: 1000</code> proves the full chain works: Spark can launch, hand out work, and return an answer — the exact machinery Step 4 leans on for real.</div></div>
+  </div>
+
   <div class="box board rv"><span class="lab">Key idea — if the smoke test complains about the Python version</span>
     PySpark is sometimes slow to support the newest Python. If step 4 fails with a version error,
     install a slightly older one and rebuild the venv:
@@ -574,14 +597,26 @@ print('spark ok:', s.range(1000).count()); s.stop()"</span></pre>
 <!-- ===================== 4 ===================== -->
 <section id="s4">
   <div class="sec-eyebrow"><span class="num">04</span> Step 1</div>
-  <h2>Get the data — the 1.7 GB development subset</h2>
-  <p class="lead">Development happens against the <b>GitHub subset (~1.7 GB)</b>. The full 20.3 GB
-  Zenodo archive waits until Step 6, when the pipeline is proven and the topic is approved.</p>
+  <h2>Get the data — the GitHub development copy</h2>
+  <p class="lead">Development happens against the <b>GitHub clone</b>. The Zenodo archive waits until
+  Step 6, when the pipeline is proven and the topic is approved.</p>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — corrected 6 Aug 2026: this is not a 1.7 GB "subset"</span>
+    Earlier drafts of this page (and the repo's notes) called the GitHub route a <b>~1.7 GB subset</b>.
+    <b>Measured on this machine after the sparse-checkout completed, it is 15 GB across 21,782
+    <code style="font-family:var(--mono);font-size:13px">.phhs</code> files</b> — which works out to
+    roughly <b>21.7 M hands, i.e. essentially the entire real-money dataset</b>, not a sample of it.
+    <span class="sub">The likely cause: <code style="font-family:var(--mono);font-size:13px">--filter=blob:none</code>
+    makes the <i>initial</i> clone tiny because file contents are skipped; the following
+    <code style="font-family:var(--mono);font-size:13px">git sparse-checkout set</code> is what
+    actually downloads them. Measure <i>after</i> the checkout, not after the clone.
+    <b>Consequence: Step 6's "download the full archive" is largely already done</b> — see the note there.</span>
+  </div>
 
   <div class="code rv">
     <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
       <span class="cname">Terminal — download Route A (subset)</span><span class="cbadge">step 1</span></div>
-    <pre><span class="cm"># work inside data/ — everything under it is gitignored, so 1.7 GB never hits the repo</span>
+    <pre><span class="cm"># work inside data/ — everything under it is gitignored, so the raw files never hit the repo</span>
 <span class="kw">cd</span> data
 
 <span class="cm"># clone the structure without file contents, then pull ONLY the real-money hands</span>
@@ -589,9 +624,17 @@ git clone --filter=blob:none --sparse https://github.com/uoftcprg/phh-dataset.gi
 <span class="kw">cd</span> phh-dataset
 git sparse-checkout set data/handhq
 
-<span class="cm"># see what you got — expect ~1.7 GB</span>
+<span class="cm"># see what you got — MEASURED: 15 GB, 21,782 files (not the 1.7 GB once assumed)</span>
 du -sh data/handhq
-ls data/handhq</pre>
+<span class="fn">find</span> data/handhq -name <span class="st">"*.phhs"</span> | wc -l</pre>
+  </div>
+
+  <p style="margin-top:18px"><b>Line by line — what each command actually does:</b></p>
+  <div class="walk rv">
+    <div class="w"><div class="wc">git clone --filter=blob:none</div><div class="wt">Downloads the repository's <b>structure and history but not the file contents</b> — you get the full folder tree instantly, with the actual data fetched only when asked for. Without this flag git would pull every file in the repo, including the 619 M bot-vs-bot hands this project deliberately ignores.</div></div>
+    <div class="w"><div class="wc">--sparse</div><div class="wt">Starts the working copy <b>almost empty</b> instead of checking out everything, so you can name the one folder you want in the next command. The two flags work as a pair: <code style="font-family:var(--mono);font-size:13px">--filter</code> controls what gets <i>downloaded</i>, <code style="font-family:var(--mono);font-size:13px">--sparse</code> controls what gets <i>written to disk</i>.</div></div>
+    <div class="w"><div class="wc">git sparse-checkout set<br>data/handhq</div><div class="wt"><b>This is the line that does the actual downloading.</b> It says "materialise only <code style="font-family:var(--mono);font-size:13px">data/handhq</code>" — the real-money human hands — and git then fetches exactly those blobs. Everything else in the repo stays as a name in the index, costing nothing.</div></div>
+    <div class="w"><div class="wc">du -sh data/handhq</div><div class="wt"><b>d</b>isk <b>u</b>sage, <b>-s</b>ummarised to one total, in <b>-h</b>uman units. The verification step — it tells you the download finished and how much you actually got. <span class="warn">Run it after the sparse-checkout, not after the clone</span>, or you'll read a misleadingly tiny number.</div></div>
   </div>
 
   <p>Then lay the raw files into <b>Bronze</b> in the partitioned layout the repo's
@@ -617,6 +660,37 @@ ls data/handhq</pre>
 <span class="fn">find</span> data/bronze -name <span class="st">"*.phhs"</span> | wc -l   <span class="cm"># how many raw files landed</span></pre>
   </div>
 
+  <p style="margin-top:18px"><b>Line by line — the copy loop is just renaming folders into a queryable shape:</b></p>
+  <div class="walk rv">
+    <div class="w"><div class="wc">for d in .../handhq/*/; do</div><div class="wt">Walks each venue-and-date folder the dataset ships with, e.g. <code style="font-family:var(--mono);font-size:12px">PS-2009-07-01_..._25NLH_OBFU/</code>. The trailing <code style="font-family:var(--mono);font-size:13px">/</code> matters — it makes the pattern match <b>only folders</b>, never stray files.</div></div>
+    <div class="w"><div class="wc">site=$(basename "$d" | cut -d- -f1)</div><div class="wt">Extracts the venue code from the folder name. <code style="font-family:var(--mono);font-size:13px">basename</code> throws away the leading path, and <code style="font-family:var(--mono);font-size:13px">cut -d- -f1</code> splits on the dash and keeps field 1 — so <code style="font-family:var(--mono);font-size:12px">PS-2009-07-01_…</code> becomes just <code style="font-family:var(--mono);font-size:13px">PS</code>. <b>The metadata was free, sitting in the folder name; this harvests it.</b></div></div>
+    <div class="w"><div class="wc">stake=$(basename "$s")</div><div class="wt">The nested folder is named after the big blind (<code style="font-family:var(--mono);font-size:13px">0.25</code>, <code style="font-family:var(--mono);font-size:13px">1</code>, <code style="font-family:var(--mono);font-size:13px">10</code>…), so the stake needs no parsing at all — the folder name <i>is</i> the value.</div></div>
+    <div class="w"><div class="wc">mkdir -p "…/venue=$site/<br>stake=$stake"</div><div class="wt"><b>The whole point of the loop.</b> The <code style="font-family:var(--mono);font-size:13px">key=value</code> folder naming is the industry-standard <b>Hive partitioning</b> convention: Spark and Polars both read it automatically and turn <code style="font-family:var(--mono);font-size:13px">venue=PS</code> into a real, filterable column — without you writing a single line of parsing code. <code style="font-family:var(--mono);font-size:13px">-p</code> creates parent folders as needed and doesn't error if they already exist.</div></div>
+    <div class="w"><div class="wc">cp "$s"*.phhs "…/"</div><div class="wt"><b>Copy, not move.</b> The sparse clone stays untouched as a pristine original, so if the Bronze layer is ever corrupted you rebuild from it instead of re-downloading 15 GB.</div></div>
+    <div class="w"><div class="wc">find data/bronze -name<br>"*.phhs" | wc -l</div><div class="wt">Counts every file that landed — <code style="font-family:var(--mono);font-size:13px">find</code> lists them, <code style="font-family:var(--mono);font-size:13px">wc -l</code> counts the lines. <b>Record this number</b>; it's the denominator for every "we processed X of Y files" claim in the report.</div></div>
+  </div>
+
+  <div class="ground rv">
+    <div class="ghead"><span class="gtag">Verified — measured on this machine, 6 Aug 2026</span>
+      <span class="gfile">data/bronze/handhq/</span></div>
+    <div class="gbody">
+      <p style="margin-bottom:12px">What actually landed in Bronze, per venue:</p>
+      <div class="tw"><table>
+        <tr><th>Venue</th><th class="num">Files</th><th>Stakes present (big blind)</th></tr>
+        <tr><td><b>PS</b> · PokerStars</td><td class="num">8,316</td><td>0.25 · 0.5 · 2 · 4 · 6 · 10</td></tr>
+        <tr><td><b>IPN</b> · iPoker Network</td><td class="num">6,123</td><td>1 · 2 · 4 · 6 · 10</td></tr>
+        <tr><td><b>PTY</b> · PartyPoker</td><td class="num">3,103</td><td>0.25 · 4 · 6 · 10</td></tr>
+        <tr><td><b>ONG</b> · Ongame</td><td class="num">1,651</td><td>4 · 6 · 10</td></tr>
+        <tr><td><b>FTP</b> · Full Tilt</td><td class="num">1,313</td><td>0.5 · 6 · 10</td></tr>
+        <tr><td><b>ABS</b> · Absolute</td><td class="num">1,276</td><td>0.5 · 1 · 2 · 4 · 6 · 10</td></tr>
+        <tr class="tot"><td>Total</td><td class="num">21,782</td><td>15 GB on disk</td></tr>
+      </table></div>
+      <p style="margin-bottom:0"><b>Note the shape of this table</b> — it is itself a report finding.
+      PokerStars and iPoker are <b>66% of all files</b>, and not every venue offers every stake.
+      Any cross-venue comparison has to say so, or it will silently be a statement about PokerStars.</p>
+    </div>
+  </div>
+
   <div class="tree rv"><span class="dir">data/</span>
 ├── <span class="dir">phh-dataset/</span>          <span class="note">← the sparse clone; keep it as the pristine source</span>
 ├── <span class="dir">bronze/handhq/</span>
@@ -635,8 +709,8 @@ ls data/handhq</pre>
 
   <h4>Done when</h4>
   <ol class="steps rv">
-    <li><code style="font-family:var(--mono);font-size:13px">du -sh</code> reports roughly 1.7 GB in the sparse clone.</li>
-    <li>All six venue folders exist under <code style="font-family:var(--mono);font-size:13px">data/bronze/handhq/</code>.</li>
+    <li><code style="font-family:var(--mono);font-size:13px">du -sh</code> reports <b>~15 GB</b> in the sparse clone (measured; <i>not</i> the 1.7 GB earlier drafts assumed).</li>
+    <li>All six venue folders exist under <code style="font-family:var(--mono);font-size:13px">data/bronze/handhq/</code> — <b>21,782 files total</b>.</li>
     <li>The file count from the copy loop is recorded (it goes in the report's Data Understanding section).</li>
     <li>Commit: <i>"Step 1: bronze layer populated (subset)"</i> — the commit is small because data is gitignored; commit the counts into a note or the README.</li>
   </ol>
@@ -657,6 +731,43 @@ ls data/handhq</pre>
   <p class="lead">The parser already exists and is tested — <b>on PokerStars files only</b>. Before
   anything is built on top of it, run it against one file from <b>each</b> of the six platforms.</p>
 
+  <h3>First — what the parser actually does</h3>
+
+  <p>A <code style="font-family:var(--mono);font-size:13px">.phhs</code> file is <b>not</b> a
+  spreadsheet. It is a stack of nested records, one per hand, each holding lists of players, lists of
+  money, and a list of actions written in shorthand. Nothing in that shape can be put in a table, let
+  alone fed to a model. <b>The parser's entire job is to flatten one awkward nested hand into three
+  flat tables</b>, each at a different <span class="hl">grain</span> — the word for "what one row means".</p>
+
+  <div class="tw rv"><table>
+    <tr><th style="width:22%">Table</th><th style="width:26%">One row = </th><th>What it is for</th></tr>
+    <tr><td><b><code>hands</code></b></td><td>one hand of poker</td>
+        <td>The hand's facts: venue, stake, time, pot size, rake, whether a flop came, whether anyone showed cards. <b>Fork C (pot-size prediction) trains on this table.</b></td></tr>
+    <tr><td><b><code>hand_players</code></b></td><td>one player <i>in</i> one hand</td>
+        <td>Roughly 6 rows per hand. Position, money invested, money won, and the behaviour flags — <code>vpip</code>, <code>pfr</code>, <code>folded</code>. <b>Grouping this by player is what produces the player features for segmentation and churn.</b></td></tr>
+    <tr><td><b><code>actions</code></b></td><td>one decision by one player</td>
+        <td>Roughly 10.6 rows per hand — the most granular level. Every fold, check, call, bet, raise, in order, with amounts. <b>This is the ~229 M-row table that makes the project genuinely "big data".</b></td></tr>
+  </table></div>
+
+  <p>Three lines of <code style="font-family:var(--mono);font-size:13px">parse_phh.py</code> carry
+  almost all the difficulty. They are worth understanding, because <b>each one is a decision you will
+  have to defend</b>:</p>
+
+  <div class="walk rv">
+    <div class="w"><div class="wc">raw = tomllib.load(f)</div><div class="wt"><b>The single biggest shortcut in the project.</b> The <code style="font-family:var(--mono);font-size:13px">.phhs</code> format turns out to be valid <b>TOML</b>, a standard config format Python has read natively since version 3.11. So there is <b>no hand-written parser</b> — one standard-library call turns the whole file into typed Python objects, with <code style="font-family:var(--mono);font-size:13px">time</code> arriving as a real time object rather than text. <span class="warn">This is why the venv must be Python 3.11+</span> — the Mac's built-in 3.9.6 has no <code style="font-family:var(--mono);font-size:13px">tomllib</code> and the script dies immediately.</div></div>
+    <div class="w"><div class="wc">elif verb == "cc":
+  target = max(street_bet)
+  amount = target - street_bet[idx]
+  if amount &gt; 0:  # CALL
+  else:           # CHECK</div><div class="wt"><b>The correctness test made of code.</b> The format writes <code style="font-family:var(--mono);font-size:13px">cc</code> for <i>both</i> "check" and "call" — two very different acts stored identically. The fix: look at the biggest bet on the street and subtract what this player has already put in. <b>If money would have to move, it was a call; if not, it was a free check.</b> Get this wrong and the big blind — who can always check for free — looks like they voluntarily played every single hand, inflating every downstream statistic.</div></div>
+    <div class="w"><div class="wc">s = sorted(committed, reverse=True)
+uncalled = s[0] - s[1]
+pot = sum(committed) - uncalled
+rake = pot - sum(winnings)</div><div class="wt"><b>How rake is recovered when nobody recorded it.</b> The dataset never stores the operator's cut, so it is derived: the pot is everything players put in, <i>minus the uncalled portion of the last bet</i> — if you bet $10 and everyone folds, $10 comes back to you and was never really in the pot. Subtract what players collected from what was in the pot, and the difference is the house's take. <span class="warn">Omit the uncalled-bet correction and the answer is a nonsensical ~40% rake.</span> With it: exactly $0.00 on hands that end before the flop.</div></div>
+  </div>
+
+  <h3>Now run it — on every venue</h3>
+
   <div class="code rv">
     <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
       <span class="cname">Terminal — from the Project/ repo root, venv active</span><span class="cbadge">step 2</span></div>
@@ -670,16 +781,45 @@ python3.13 src/parse_phh.py <span class="st">"data/bronze/handhq/venue=PS/stake=
 <span class="kw">done</span></pre>
   </div>
 
-  <p>What a healthy run looks like — these are the numbers actually measured on this machine:</p>
+  <div class="walk rv">
+    <div class="w"><div class="wc">*handhq_1*.phhs</div><div class="wt">The <code style="font-family:var(--mono);font-size:13px">*</code> wildcards let the shell fill in the rest of a long filename. This picks the known-good PokerStars file the parser was originally built against — <b>run the case you already know the answer to first</b>, so that if something is broken you learn it immediately.</div></div>
+    <div class="w"><div class="wc">for v in PTY IPN ONG FTP ABS</div><div class="wt">Repeats the same command five times, once per remaining venue, with <code style="font-family:var(--mono);font-size:13px">$v</code> standing in for each code. <b>The point of Step 2 in one line:</b> the parser was proven on one operator's export format, and five other companies wrote their files independently.</div></div>
+    <div class="w"><div class="wc">f=$(find … | head -1)</div><div class="wt">Grabs <b>any one</b> file from that venue — <code style="font-family:var(--mono);font-size:13px">find</code> lists all of them, <code style="font-family:var(--mono);font-size:13px">head -1</code> keeps the first. You are testing whether the <i>format</i> parses, so which specific file hardly matters.</div></div>
+  </div>
+
+  <p>What a healthy run looks like — this is the <b>verbatim output</b> measured on this machine:</p>
 
   <div class="code rv">
     <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
-      <span class="cname">console — measured output, PS file 1 (989 hands)</span><span class="cbadge">verified 2 Aug 2026</span></div>
+      <span class="cname">console — measured output, PS file 1 (989 hands)</span><span class="cbadge">re-verified 6 Aug 2026</span></div>
     <pre>hands=989  hand_players=6098  actions=10440
-action mix: fold 4874 · check 1849 · call 1531 · bet 791 · raise 769 · show 626
-reconciled rake on 288 hands  (preflop-only 109 → $0.00, flop median 3.70%)
-pooled VPIP = 27.9%   pooled PFR = 10.2%
-<span class="warnln">big blinds who 'vpip'd = 27.4%  ← THE correctness test — must NOT be ~100%</span></pre>
+actions per hand = 10.56   players per hand = 6.17
+action mix: [('fold', 4874), ('check', 1849), ('call', 1531), ('bet', 791), ('raise', 769), ('show', 626)]
+reconciled rake on 288 hands  (preflop-only 109, flop 179)
+  preflop rake values: [0.0]
+  flop rake median = 0.05  median % = 3.70%
+pooled VPIP = 27.9%   pooled PFR = 10.2%   (all players mixed together)
+<span class="warnln">big blinds who 'vpip'd = 27.4%  &lt;- should NOT be ~100%, else the check/call bug is present</span></pre>
+  </div>
+
+  <p style="margin-top:18px"><b>Line by line — what the parser is telling you:</b></p>
+  <div class="walk rv">
+    <div class="w"><div class="wc">hands=989
+hand_players=6098
+actions=10440</div><div class="wt"><b>The three tables were built, and here is how many rows each got.</b> One file produced 989 hands, 6,098 player-seats and 10,440 individual decisions. These are the same three grains described above — this line is proof the flattening worked.</div></div>
+    <div class="w"><div class="wc">actions per hand = 10.56
+players per hand = 6.17</div><div class="wt">Sanity checks, and <b>the project's scale argument</b>. 6.17 players per hand is exactly right for 6-max tables. The 10.56 is the number that justifies the whole exercise: <b>×21.6 M hands ⇒ ~229 M action rows, about 218× what Excel can hold.</b> This single figure is the honest answer to "why is this a Big Data project?"</div></div>
+    <div class="w"><div class="wc">action mix: fold 4874,
+check 1849, call 1531,
+bet 791, raise 769, show 626</div><div class="wt">A tally of what players did. <b>Folding is ~47% of all actions</b> — correct, and important: good poker is mostly not playing. Note <code style="font-family:var(--mono);font-size:13px">check</code> and <code style="font-family:var(--mono);font-size:13px">call</code> appear as <i>separate</i> counts even though the file stores both as <code style="font-family:var(--mono);font-size:13px">cc</code> — <b>visible proof the disambiguation logic ran</b>. Only 626 shows against 989 hands is the 22.4% showdown rate: <b>most hole cards are never revealed.</b></div></div>
+    <div class="w"><div class="wc">reconciled rake on 288 hands
+(preflop-only 109, flop 179)</div><div class="wt"><span class="warn">The honest limitation.</span> Rake could only be computed for <b>288 of 989 hands</b> — the rest are missing <code style="font-family:var(--mono);font-size:13px">winnings</code> or have it recorded as all zeros. This is the "money coverage is ~⅓" problem: <b>behavioural features work on 100% of hands, money features do not.</b> It belongs in the report, not hidden.</div></div>
+    <div class="w"><div class="wc">preflop rake values: [0.0]</div><div class="wt"><b>The most satisfying line in the output.</b> Every one of the 109 hands that ended before the flop was raked <i>exactly</i> $0.00 — no exceptions, no rounding noise. That is the poker industry's <b>"no flop, no drop"</b> rule, recovered from raw data by arithmetic alone. <b>It is strong evidence the pot maths is right</b>, because a bug would produce scattered near-zero values instead of a clean single number.</div></div>
+    <div class="w"><div class="wc">flop rake median = 0.05
+median % = 3.70%</div><div class="wt">Once a flop is dealt, the house takes a median of <b>$0.05 per hand, about 3.7% of the pot</b> — consistent with a real ~5%-capped rake structure. <b>This is the revenue model of the entire business, reconstructed from a column that was never recorded.</b> It is what lets the project talk about operator revenue at all.</div></div>
+    <div class="w"><div class="wc">pooled VPIP = 27.9%
+pooled PFR = 10.2%</div><div class="wt">The two standard poker behaviour stats, across all players mixed together. <b>VPIP</b> = how often a player voluntarily puts money in — think "engagement rate". <b>PFR</b> = how often they raise first — think "aggression". 27.9 / 10.2 is a believable low-stakes average. <span class="warn">"Pooled" means it is not yet per player</span> — turning this into one row per player is exactly what Step 4 does, and those per-player numbers are what the clustering consumes.</div></div>
+    <div class="w"><div class="wc">big blinds who 'vpip'd = 27.4%</div><div class="wt"><b>THE correctness test — and it passed.</b> The big blind has already been forced to post money, so if nobody raises they see the flop for <i>free</i>. That free check is stored identically to a real call. Had the parser confused them, this number would read ~100% and every player would look far looser than they are. <b>27.4% ≈ the pooled 27.9% is the signal that the check/call logic is sound</b> — and therefore that everything built on top of it is trustworthy. Read this line on every venue, every time.</div></div>
   </div>
 
   <div class="box brk rv"><span class="lab">Where it breaks — the one number that must be right</span>
@@ -691,17 +831,90 @@ pooled VPIP = 27.9%   pooled PFR = 10.2%
   </div>
 
   <div class="box board rv"><span class="lab">Key idea — dropped hands are reported, never silent</span>
-    About <b>two hands per file</b> are legitimately dropped (no big blind ⇒ money cannot be
-    normalised). Fine — but <b>count them and write the count down</b>. "We dropped 0.2% of hands,
-    here is why" is a sentence that earns marks; silent data loss is what "justify every decision"
-    is designed to catch.
+    A small number of hands per file are legitimately dropped (no big blind ⇒ money cannot be
+    normalised) — <b>2 in the PokerStars sample, 8 in a Full Tilt one</b>. Fine — but <b>count them
+    and write the count down</b>. "We dropped 0.2% of hands, here is why" is a sentence that earns
+    marks; silent data loss is what "justify every decision" is designed to catch.
+    <span class="sub">The parser now prints a <code style="font-family:var(--mono);font-size:13px">dropped
+    hands:</code> line on every run, broken down by reason, and <code style="font-family:var(--mono);font-size:13px">build_silver.py</code>
+    totals it across all 21,782 files.</span>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — Step 2 as written is NOT strong enough. Proven on 6 Aug 2026.</span>
+    Testing <b>one file per venue</b> passed cleanly on all six — and the full Step 3 run then
+    <b>crashed anyway, twice</b>, because these defects hide in files that a one-file sample never
+    touches. All were found only by running all 21,782 files:
+    <ul>
+      <li><b>Ongame writes string hand IDs.</b> Every other venue uses integers; ONG uses
+        <code style="font-family:var(--mono);font-size:13px">'R5-2483622-63'</code>. Polars inferred a
+        number column from the first venues and <b>threw a fatal error the moment ONG's files were
+        reached</b> — 8,712 files in, roughly 15 minutes of work lost.</li>
+      <li><b>A few hands carry no <code style="font-family:var(--mono);font-size:13px">hand</code> id at all.</b>
+        The parser assumed the field always exists, so a single malformed hand raised an error that
+        <b>discarded the entire file</b> — <b>31 Full Tilt files, ~31,000 good hands, thrown away to
+        protect 31 bad ones</b>.</li>
+      <li><b>The same field is an integer in one hand and a decimal in the next.</b> TOML infers types
+        from how a value is <i>written</i>: <code style="font-family:var(--mono);font-size:13px">25</code>
+        loads as a whole number, <code style="font-family:var(--mono);font-size:13px">25.0</code> as a
+        decimal. Audited across all six venues, <b>five money fields</b> —
+        <code style="font-family:var(--mono);font-size:13px">starting_stacks</code>,
+        <code style="font-family:var(--mono);font-size:13px">winnings</code>,
+        <code style="font-family:var(--mono);font-size:13px">blinds_or_straddles</code>,
+        <code style="font-family:var(--mono);font-size:13px">antes</code>,
+        <code style="font-family:var(--mono);font-size:13px">min_bet</code> — <b>mix both types inside
+        a single list</b>. Polars guesses a column's type from the first rows it sees, so it guessed
+        "whole number", then died when a decimal arrived. <span class="warn">This killed the run twice,
+        at the same point, with two different error messages.</span></li>
+      <li><b>Hand IDs are assigned per venue, so uniqueness across venues is not guaranteed.</b>
+        Absolute (3.02–3.09 bn) and iPoker (3.41–3.49 bn) number in the same order of magnitude.
+        <span class="sub" style="display:inline">Measured honestly: <b>a 240-file sample across all
+        six venues found zero actual collisions</b>, and those two observed ranges do not overlap —
+        so this is a <b>latent risk, not an observed bug</b>. It is listed here because it is the
+        only one of the three that <b>would produce no error at all</b>, and a silent bad join is far
+        more expensive than a crash.</span></li>
+    </ul>
+    <span class="sub"><b>Fixed:</b> hand IDs are forced to text, hands missing an id are dropped
+    individually and counted, and every table now carries
+    <code style="font-family:var(--mono);font-size:13px">hand_uid</code> =
+    <code style="font-family:var(--mono);font-size:13px">"{site}:{hand_id}"</code> — <b>join on that,
+    never on <code style="font-family:var(--mono);font-size:13px">hand_id</code></b>. The PokerStars
+    numbers above re-ran <i>identical</i> afterwards (989 hands · VPIP 27.9% · BB-VPIP 27.4%), which
+    is how you know a fix didn't quietly change the results. <b>Always re-run a known-good case after
+    fixing a parser.</b></span>
+  </div>
+
+  <div class="box board rv"><span class="lab">Key idea — stop guessing schemas; declare them</span>
+    The first two failures were each patched individually, and the run died again at <b>exactly the
+    same batch</b> with a different message. The real fix was to stop treating them as separate bugs:
+    <b>every value is now coerced to one fixed type as it leaves the parser, and
+    <code style="font-family:var(--mono);font-size:13px">build_silver.py</code> declares an explicit
+    schema for all three tables</b> instead of letting Polars infer one from a sample.
+    <span class="sub"><b>Why this is the right fix, in one sentence for the report:</b> inference is a
+    guess made from the first few rows, so it fails <i>late</i>, <i>randomly</i>, and <i>only at
+    scale</i> — a declared schema fails <b>immediately and in the same place every time</b>. Same
+    principle as a database column type. <b>Pre-flight check added:</b> all 27 venue/stake partitions
+    are validated against the schema before the long run starts — seconds, instead of discovering it
+    15 minutes in.</span>
+  </div>
+
+  <div class="box take rv"><span class="lab">Takeaway — this is the most valuable paragraph in your report</span>
+    Do not hide this. <b>"Our validation step passed, the full run still failed twice — here is what
+    one-file-per-venue could not see, and here is how we changed the test"</b> is exactly the
+    engineering judgement the <i>Data Engineering &amp; Architecture</i> mark rewards. A pipeline
+    that never hit a problem usually means nobody looked.
+    <span class="sub">It also gives you the honest version of the <b>Variety</b> V in the report's
+    5 Vs section: six operators, six independently-written export formats, disagreeing on types for
+    the same fields. <b>That is what "Variety" actually costs</b> — not a bullet point.</span>
   </div>
 
   <h4>Done when</h4>
   <ol class="steps rv">
     <li>All six venues parse without crashing, or the failures are documented as findings.</li>
-    <li>Big-blind VPIP is sane (~25–30%) on every venue.</li>
+    <li>Big-blind VPIP is sane (~25–35%) on every venue — <b>measured: PS 27.4%, ONG 30.4%</b>.</li>
     <li>Drop counts per venue are recorded.</li>
+    <li><b>Added after the 6 Aug failures:</b> confirm the <i>types</i> agree across venues, not just
+      that each file parses. One file per venue is a smoke test, <b>not</b> proof — expect Step 3 to
+      find things it missed, and treat that as normal.</li>
     <li>Commit: <i>"Step 2: parser validated on all 6 venues"</i> — include any parser fixes.</li>
   </ol>
 
@@ -721,13 +934,24 @@ pooled VPIP = 27.9%   pooled PFR = 10.2%
   — <b>hands, hand_players, actions</b> — as Parquet into <code style="font-family:var(--mono);font-size:14px">data/silver/</code>.
   Plain Python and Polars; Spark is not needed yet.</p>
 
-  <p>This is the script the guides already name: <b><code style="font-family:var(--mono);font-size:14px">src/build_silver.py</code></b>.
-  Its shape (from <a href="data-pipeline-guide.html#s8" style="color:var(--cyan-lt)">the pipeline guide, step 4</a>),
-  with paths adapted to this repo's lake:</p>
+  <p>This is the script the guides already name:
+  <b><code style="font-family:var(--mono);font-size:14px">src/build_silver.py</code></b>.</p>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — the version in the guides would have run this Mac out of memory</span>
+    Earlier drafts of this page (and <a href="data-pipeline-guide.html#s8" style="color:var(--cyan-lt)">the
+    pipeline guide, step 4</a>) show a simpler script that parses <b>every file first and writes at the
+    very end</b>. That was written assuming a ~1.7 GB subset. <b>Bronze actually holds 21,782 files</b>
+    (see Step 1's correction), and the simple version keeps every parsed row in RAM until the last one
+    is done.
+    <span class="sub"><b>Measured, not guessed:</b> parsing just <b>200 files</b> peaked at
+    <b>1.08 GB of RAM</b> and produced 2.17 M action rows. Scaled to 21,782 files that is on the order
+    of <b>100+ GB</b> — on a <b>16 GB</b> machine. The run would have swapped, crawled, and died,
+    quite possibly after an hour of apparently-fine progress. <b>The fix is batching</b>, below.</span>
+  </div>
 
   <div class="code rv">
     <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
-      <span class="cname">src/build_silver.py — plain Python, 8 cores</span><span class="cbadge">step 3</span></div>
+      <span class="cname">src/build_silver.py — batched, 8 cores</span><span class="cbadge">step 3 · the version that runs</span></div>
     <pre><span class="kw">from</span> multiprocessing <span class="kw">import</span> Pool
 <span class="kw">from</span> pathlib <span class="kw">import</span> Path
 <span class="kw">import</span> polars <span class="kw">as</span> pl
@@ -735,38 +959,180 @@ pooled VPIP = 27.9%   pooled PFR = 10.2%
 
 SRC = Path(<span class="st">"data/bronze/handhq"</span>)
 OUT = Path(<span class="st">"data/silver"</span>)
+BATCH = <span class="kw">500</span>          <span class="cm"># keeps peak RAM to a few GB, whatever the file count</span>
+
+TABLES = [<span class="st">"hands"</span>, <span class="st">"hand_players"</span>, <span class="st">"actions"</span>]
 
 <span class="kw">def</span> <span class="fn">safe</span>(p):
     <span class="kw">try</span>:
         <span class="kw">return</span> parse_file(p)
     <span class="kw">except</span> Exception <span class="kw">as</span> e:
         print(<span class="st">"SKIP"</span>, p.name, e)   <span class="cm"># never let one bad file kill the run</span>
-        <span class="kw">return</span> [], [], []
+        <span class="kw">return</span> <span class="kw">None</span>
 
 <span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
     files = sorted(SRC.rglob(<span class="st">"*.phhs"</span>))
     print(len(files), <span class="st">"files"</span>)
-    <span class="kw">with</span> Pool(8) <span class="kw">as</span> pool:          <span class="cm"># 8 of the 10 cores</span>
-        results = pool.map(safe, files, chunksize=8)
-    <span class="kw">for</span> i, name <span class="kw">in</span> enumerate([<span class="st">"hands"</span>, <span class="st">"hand_players"</span>, <span class="st">"actions"</span>]):
-        rows = [r <span class="kw">for</span> res <span class="kw">in</span> results <span class="kw">for</span> r <span class="kw">in</span> res[i]]
-        pl.DataFrame(rows).write_parquet(OUT / <span class="kw">f</span><span class="st">"{name}.parquet"</span>)
-        print(name, len(rows), <span class="st">"rows"</span>)</pre>
+    <span class="kw">for</span> name <span class="kw">in</span> TABLES:
+        (OUT / name).mkdir(parents=<span class="kw">True</span>, exist_ok=<span class="kw">True</span>)
+
+    skipped = <span class="kw">0</span>
+    row_totals = {name: <span class="kw">0</span> <span class="kw">for</span> name <span class="kw">in</span> TABLES}
+
+    <span class="kw">with</span> Pool(<span class="kw">8</span>) <span class="kw">as</span> pool:                      <span class="cm"># 8 of the 10 cores</span>
+        <span class="kw">for</span> b <span class="kw">in</span> range(<span class="kw">0</span>, len(files), BATCH):
+            batch = files[b:b + BATCH]
+            results = pool.map(safe, batch, chunksize=<span class="kw">8</span>)
+            skipped += sum(<span class="kw">1</span> <span class="kw">for</span> r <span class="kw">in</span> results <span class="kw">if</span> r <span class="kw">is</span> <span class="kw">None</span>)
+            ok = [r <span class="kw">for</span> r <span class="kw">in</span> results <span class="kw">if</span> r <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span>]
+            <span class="kw">for</span> i, name <span class="kw">in</span> enumerate(TABLES):
+                rows = [row <span class="kw">for</span> res <span class="kw">in</span> ok <span class="kw">for</span> row <span class="kw">in</span> res[i]]
+                <span class="kw">if</span> rows:
+                    part = b // BATCH
+                    pl.DataFrame(rows).write_parquet(
+                        OUT / name / <span class="kw">f</span><span class="st">"part-{part:04d}.parquet"</span>)
+                row_totals[name] += len(rows)
+            print(<span class="kw">f</span><span class="st">"batch {b // BATCH}: {b + len(batch)}/{len(files)} files"</span>, flush=<span class="kw">True</span>)
+
+    print(<span class="st">"SKIP count:"</span>, skipped)
+    <span class="kw">for</span> name <span class="kw">in</span> TABLES:
+        print(name, row_totals[name], <span class="st">"rows"</span>)</pre>
+  </div>
+
+  <p style="margin-top:18px"><b>Line by line — the four ideas that make this work:</b></p>
+  <div class="walk rv">
+    <div class="w"><div class="wc">with Pool(8) as pool:
+  pool.map(safe, batch)</div><div class="wt"><b>Use 8 of the Mac's 10 cores at once.</b> <code style="font-family:var(--mono);font-size:13px">Pool</code> starts 8 independent Python processes and <code style="font-family:var(--mono);font-size:13px">map</code> deals files out to whichever is free. This is legitimate parallel computing — <b>and it is the same idea as MapReduce from Sessions 1–4</b>, just on one machine instead of a cluster. Parsing is <b>embarrassingly parallel</b>: no file needs to know anything about any other, so there is nothing to coordinate. Two cores are left for macOS so the laptop stays usable.</div></div>
+    <div class="w"><div class="wc">for b in range(0, len(files), BATCH):
+    batch = files[b:b + BATCH]</div><div class="wt"><b>The memory fix.</b> Instead of "parse all 21,782, then write", this does "parse 500, write them, forget them, repeat". Peak memory is set by the <i>batch size</i>, not the dataset size — so the same script would work on ten times the data without changes. <b>This is the single most important line in the file.</b></div></div>
+    <div class="w"><div class="wc">except Exception as e:
+    print("SKIP", p.name, e)
+    return None</div><div class="wt"><b>One corrupt file must not kill a 20-minute run.</b> If a file fails, say so, return nothing, carry on. Returning <code style="font-family:var(--mono);font-size:13px">None</code> (rather than empty lists) lets the failures be <i>counted</i> — <code style="font-family:var(--mono);font-size:13px">skipped</code> is printed at the end. <b>The rubric's "justify every decision" line is really asking whether you noticed your losses.</b></div></div>
+    <div class="w"><div class="wc">OUT / name / f"part-{part:04d}.parquet"</div><div class="wt">Each batch writes its own numbered file, so you end up with <code style="font-family:var(--mono);font-size:13px">data/silver/actions/part-0000.parquet</code>, <code style="font-family:var(--mono);font-size:13px">part-0001.parquet</code>… <b>Polars and Spark both read a folder of parts exactly as if it were one table</b>, so nothing downstream has to care. This is precisely how real distributed systems store data — many parts, read in parallel — and it is the same partitioning idea already used for Bronze.</div></div>
+  </div>
+
+  <h4>Run it</h4>
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">Terminal — from the Project/ repo root</span><span class="cbadge">step 3 · ~35 min</span></div>
+    <pre><span class="cm"># takes roughly half an hour on 21,782 files — let it run</span>
+<span class="cm"># redirect, do NOT pipe to tee (see the warning below)</span>
+python3.13 src/build_silver.py &gt; /tmp/build_silver.log 2&gt;&amp;1
+<span class="fn">echo</span> <span class="st">"exit code: $?"</span>
+
+<span class="cm"># check what landed</span>
+du -sh data/silver
+<span class="fn">find</span> data/silver -name <span class="st">"*.parquet"</span> | wc -l</pre>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — <code style="font-family:var(--mono);font-size:14px">| tee</code> will lie to you about success</span>
+    An earlier version of this page said to run
+    <code style="font-family:var(--mono);font-size:13px">… | tee log</code>. <b>In a pipeline the shell
+    reports the exit code of the <i>last</i> command — <code style="font-family:var(--mono);font-size:13px">tee</code>,
+    which almost always succeeds.</b> The first full run reported <b>exit code 0 while Python had
+    actually crashed</b>, and it looked finished. <b>Redirect with
+    <code style="font-family:var(--mono);font-size:13px">&gt;</code> instead</b>, or add
+    <code style="font-family:var(--mono);font-size:13px">set -o pipefail</code> first.
+    <span class="sub">Saving the log matters either way — the printed row counts are evidence the
+    report needs, and you do not want to re-run 35 minutes of work to get them back.</span>
   </div>
 
   <div class="box take rv"><span class="lab">Takeaway — why Parquet is the architecture argument</span>
-    Raw text ~18 GB (est. at full scale) becomes <b>2–4 GB of Parquet (est.)</b> because Parquet is
-    columnar and compressed — a query that needs three columns reads three columns, not every byte.
+    Raw text becomes <b>far smaller Parquet</b> because Parquet is <b>columnar</b> and compressed —
+    a query that needs three columns reads three columns, not every byte. Text files force you to
+    read every character of every row just to count something.
     The business consequence: the laptop becomes big enough for a "big data" project, and the exact
     same files upload to Databricks unchanged. One storage decision, argued in one report paragraph,
     worth real rubric marks.
   </div>
 
+  <div class="ground rv">
+    <div class="ghead"><span class="gtag">Verified — the full run, 6 Aug 2026</span>
+      <span class="gfile">21,782 files · 27.7 min · 8 cores</span></div>
+    <div class="gbody">
+      <div class="stats">
+        <div class="stat"><div class="v" style="font-size:21px">21,556,835</div><div class="k">hand rows<br><b>21,556,435</b> distinct</div></div>
+        <div class="stat"><div class="v g" style="font-size:21px">116,621,636</div><div class="k">hand_players rows<br>5.41 per hand</div></div>
+        <div class="stat"><div class="v g" style="font-size:21px">183,671,936</div><div class="k">action rows<br>8.52 per hand</div></div>
+        <div class="stat"><div class="v gr" style="font-size:21px">0</div><div class="k">files skipped<br>all 21,782 parsed</div></div>
+      </div>
+
+      <p><b>The reconciliation that proves the pipeline is complete</b> — and this landed
+      <i>exactly</i>, not approximately:</p>
+      <div class="tw"><table>
+        <tr><th>Quantity</th><th class="num">Hands</th><th>Source</th></tr>
+        <tr><td>Distinct hands parsed</td><td class="num">21,556,435</td><td>measured</td></tr>
+        <tr><td>+ dropped, no big blind</td><td class="num">49,119</td><td>counted, by reason</td></tr>
+        <tr><td>+ dropped, no hand id</td><td class="num">133</td><td>counted, by reason</td></tr>
+        <tr class="tot"><td>= total</td><td class="num">21,605,687</td><td><b>= the published figure, exactly</b></td></tr>
+      </table></div>
+      <p><b>Every single hand in the dataset is accounted for</b> — either parsed, or dropped with a
+      recorded reason. Total loss is <b>49,252 hands = 0.23%</b>. That is the sentence the
+      "justify every engineering decision" mark is asking for, and it is now backed by arithmetic
+      rather than by hope.</p>
+
+      <h4 style="margin-top:22px">Storage — the architecture argument, measured</h4>
+      <div class="tw"><table>
+        <tr><th>Layer</th><th class="num">Size</th><th>Note</th></tr>
+        <tr><td>Bronze — raw <code>.phhs</code> text</td><td class="num">15.0 GB</td><td>21,782 files</td></tr>
+        <tr><td>Silver — <code>hands</code></td><td class="num">297 MB</td><td rowspan="3">44 Parquet parts each</td></tr>
+        <tr><td>Silver — <code>actions</code></td><td class="num">897 MB</td></tr>
+        <tr><td>Silver — <code>hand_players</code></td><td class="num">1.0 GB</td></tr>
+        <tr class="tot"><td>Silver total</td><td class="num">2.2 GB</td><td><b>6.8× smaller than the raw text</b></td></tr>
+      </table></div>
+
+      <h4>The correctness test, at full scale</h4>
+      <p style="margin-bottom:0">Across <b>all 21.5 M big-blind seats</b>, not one sample file:
+      pooled VPIP <b>27.4%</b>, pooled PFR <b>14.1%</b>, and <b>big-blind VPIP 31.3%</b> — sane, and
+      nowhere near the ~100% that would signal the check/call bug. <b>The logic holds on all six
+      venues at full volume.</b></p>
+    </div>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — two findings the full run exposed</span>
+    <ul>
+      <li><b>147 hand IDs are reused <i>within</i> a single venue.</b> iPoker issues the same id to
+        genuinely different hands — different time, different player count, different pot. So
+        <code style="font-family:var(--mono);font-size:13px">hand_uid</code> reduces the problem but
+        <b>does not fully solve it</b>: 400 of 21,556,835 rows share a uid with another row.
+        <b>At 0.002% this is negligible for modelling — but it must be de-duplicated before any join,
+        not assumed away.</b></li>
+      <li><b>The estimated action count was too high.</b> The plan projected <b>~229 M</b> action rows
+        by scaling PokerStars' 10.56 actions/hand across the dataset. Measured across all six venues:
+        <b>183.7 M rows, 8.52 actions per hand</b>. PokerStars runs fuller tables than average, so the
+        single-venue sample over-projected by <b>25%</b>.
+        <span class="sub">Update this everywhere it appears. 183.7 M is still <b>175× Excel's limit</b>
+        — the Big Data argument is untouched, and a corrected measured number is far stronger in a
+        viva than an inflated estimate.</span></li>
+    </ul>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — the published per-site figures have PokerStars and PartyPoker swapped</span>
+    The project's notes recorded <code style="font-family:var(--mono);font-size:13px">PTY 8,298,718 …
+    PS 3,092,698</code>. <b>Measured, it is the other way round.</b> The check is decisive: each hand
+    file states its own <code style="font-family:var(--mono);font-size:13px">venue</code> internally,
+    and folder-derived site agrees with it <b>1:1 on all 21.5 M hands</b> — every
+    <code style="font-family:var(--mono);font-size:13px">venue=PS</code> file says "PokerStars".
+    <div class="tw" style="margin-top:14px"><table>
+      <tr><th>Site</th><th class="num">Measured</th><th class="num">Published</th><th>Verdict</th></tr>
+      <tr><td><b>PS</b> · PokerStars</td><td class="num">8,293,797</td><td class="num">3,092,698</td><td><b>swapped</b> — matches published PTY</td></tr>
+      <tr><td><b>PTY</b> · PartyPoker</td><td class="num">3,092,685</td><td class="num">8,298,718</td><td><b>swapped</b> — matches published PS</td></tr>
+      <tr><td>IPN · iPoker</td><td class="num">5,996,741</td><td class="num">5,996,345</td><td>100.01% ✓</td></tr>
+      <tr><td>ONG · Ongame</td><td class="num">1,631,839</td><td class="num">1,647,765</td><td>99.03% ✓</td></tr>
+      <tr><td>FTP · Full Tilt</td><td class="num">1,283,795</td><td class="num">1,299,503</td><td>98.79% ✓</td></tr>
+      <tr><td>ABS · Absolute</td><td class="num">1,257,978</td><td class="num">1,270,658</td><td>99.00% ✓</td></tr>
+    </table></div>
+    <span class="sub">The other four match within 1%, so this is a transcription error in the recorded
+    figures, not a parsing fault. <b>Good news for the project:</b> PokerStars is the <b>largest</b>
+    venue at 38% of all hands — and the parser was built and validated on PokerStars files, so the
+    development sample was the dominant venue, not a minor one.</span>
+  </div>
+
   <h4>Done when</h4>
   <ol class="steps rv">
-    <li>Three <code style="font-family:var(--mono);font-size:13px">.parquet</code> files exist in <code style="font-family:var(--mono);font-size:13px">data/silver/</code> with row counts printed and recorded.</li>
+    <li>Three folders of <code style="font-family:var(--mono);font-size:13px">.parquet</code> parts exist under <code style="font-family:var(--mono);font-size:13px">data/silver/</code> with row counts printed and recorded.</li>
     <li>The <code style="font-family:var(--mono);font-size:13px">SKIP</code> count is ~0 — anything else becomes a documented finding.</li>
-    <li>Commit: <i>"Step 3: build_silver.py — silver layer built (subset)"</i>.</li>
+    <li>Commit: <i>"Step 3: build_silver.py — silver layer built"</i>.</li>
   </ol>
 
   <h4>Specs this step earns</h4>
@@ -914,7 +1280,18 @@ hands = spark.read.parquet(<span class="st">"data/silver/hands.parquet"</span>)<
   archive) and <b>how long the runs take</b>. The code does not change. That is the whole point of
   having built the pipeline first.</p>
 
-  <div class="box brk rv"><span class="lab">Gate — do not start this step until</span>
+  <div class="box brk rv"><span class="lab">Corrected 6 Aug 2026 — this step is mostly already done</span>
+    Step 1's GitHub route was assumed to give a 1.7 GB <i>subset</i>. <b>Measured, it gave 15 GB and
+    21,782 files — around 21.7 M hands, essentially the whole real-money dataset.</b> So Steps 3–5
+    already run at full Volume, and the headline numbers below are being produced now, not later.
+    <span class="sub"><b>What is left of this step:</b> confirm nothing is missing by comparing the
+    Silver <code style="font-family:var(--mono);font-size:13px">hands</code> count against the
+    published <b>21,605,687</b>. Only download the Zenodo archive if that comparison shows a real
+    shortfall — and then only for the gap. <b>Re-read this before spending an evening on a 20 GB
+    download you may not need.</b></span>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Gate — if you do need the Zenodo route, do not start until</span>
     The professor has accepted the dataset (Step 0's question), <b>and</b> the parser is proven on
     all six venues (Step 2). This download is ~20.3 GB and the re-runs are overnight jobs — it is
     the first step that is expensive to repeat.
@@ -1170,10 +1547,14 @@ unzip poker-hand-histories.zip <span class="st">'*/data/handhq/*'</span> -d data
   dataset files): the 21,605,687-hand count and per-site split, the 989-hand parser run (VPIP 27.9% ·
   PFR 10.2% · BB-VPIP 27.4%), the rake reconciliation (109/109 preflop at $0.00, flop median 3.70%),
   the 91.7% player-ID overlap, the missing-data rates (21.3% <code>winnings</code>, 4.3%
-  <code>seat_count</code>), and the exact Zenodo archive size (20,289,230,983 bytes). Estimated
-  (labelled <b>est.</b>): Parquet sizes, Gold table size, action-row total, run times. Planned (not
-  yet real): everything from Step 3 onward — <code>build_silver.py</code>, <code>features.py</code>,
-  the bake-off, all Databricks work. Companions:
+  <code>seat_count</code>), and the exact Zenodo archive size (20,289,230,983 bytes).
+  <b>Also measured (6 Aug 2026, while executing Steps 1–3):</b> the Bronze census (21,782 files,
+  15 GB, per-venue split), the memory profile that forced the Silver build to be batched
+  (200 files → 1.08 GB peak RSS), and <b>the entire Step 3 green panel — 21,556,835 hands ·
+  116,621,636 hand_players · 183,671,936 actions · 2.2 GB Parquet · 27.7 min · 0 files skipped ·
+  49,252 hands dropped, reconciling exactly to the published 21,605,687</b>. Estimated (labelled
+  <b>est.</b>): Gold table size, remaining run times. Planned (not yet real): everything from Step 4
+  onward — <code>features.py</code>, the bake-off, all Databricks work. Companions:
   <a href="poker-project-plan.html">poker-project-plan.html</a> ·
   <a href="poker-explained.html">poker-explained.html</a> ·
   <a href="data-pipeline-guide.html">data-pipeline-guide.html</a>.

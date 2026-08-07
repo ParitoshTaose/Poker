@@ -1,27 +1,78 @@
 """Parse PHH (.phhs) poker hand-history files into flat tables."""
 import tomllib
+from collections import Counter
 from pathlib import Path
 
 STREETS = ["preflop", "flop", "turn", "river"]
 
 
+# TOML types are VALUE-dependent: `25` loads as int, `25.0` as float. So the same
+# field is int in one hand and float in the next, which makes Polars' schema
+# inference unreliable and blows up the Parquet write on a mixed batch.
+# Every value below is coerced to one fixed type at the source.
+def _f(x, nd=4):
+    """-> float or None"""
+    return None if x is None else round(float(x), nd)
+
+
+def _i(x):
+    """-> int or None"""
+    return None if x is None else int(x)
+
+
+def _s(x):
+    """-> str or None"""
+    return None if x is None else str(x)
+
+
+def _folder_meta(path):
+    """Pull site/stake out of the folder names.
+
+    Handles BOTH layouts:
+      Bronze   .../venue=PS/stake=0.25/file.phhs
+      original .../PS-2009-07-01_..._25NLH_OBFU/0.25/file.phhs
+    """
+    parent, grand = path.parent.name, path.parent.parent.name
+    if grand.startswith("venue="):
+        site, venue_dir = grand.split("=", 1)[1], None
+    else:
+        site, venue_dir = grand.split("-")[0], grand
+    stake = parent.split("=", 1)[1] if parent.startswith("stake=") else parent
+    try:
+        stake = float(stake)
+    except ValueError:
+        stake = None
+    return site, venue_dir, stake
+
+
 def parse_file(path):
-    """Return (hands, hand_players, actions) as lists of dicts."""
+    """Return (hands, hand_players, actions, drops) — first three are lists of dicts."""
     path = Path(path)
-    venue_dir = path.parent.parent.name          # e.g. PS-2009-07-01_..._25NLH_OBFU
-    stake = path.parent.name                     # e.g. 0.25
+    site, venue_dir, stake = _folder_meta(path)
     with open(path, "rb") as f:
         raw = tomllib.load(f)
 
     hands, hand_players, actions = [], [], []
+    drops = Counter()
 
     for local_id, h in raw.items():
+        # A few hands carry no id at all. Drop that ONE hand, never the whole file.
+        hid = h.get("hand")
+        if hid is None:
+            drops["no_hand_id"] += 1
+            continue
+        # Venues disagree on type: most use ints, Ongame uses strings like 'R5-2483622-63'.
+        # Force one type or the Parquet write fails on a mixed batch.
+        hid = str(hid)
+        uid = f"{site}:{hid}"          # globally unique — ids are only unique WITHIN a venue
+
         players = h["players"]
         n = len(players)
-        blinds = h.get("blinds_or_straddles", [])
+        blinds = [float(x) for x in h.get("blinds_or_straddles", [])]
         bb = blinds[1] if len(blinds) > 1 else None
         if not bb:
-            continue                              # cannot normalise money without a big blind
+            drops["no_big_blind"] += 1            # cannot normalise money without a big blind
+            continue
 
         committed = [0.0] * n                     # total put in across the whole hand
         street_bet = [0.0] * n                    # amount put in on the current street
@@ -34,7 +85,7 @@ def parse_file(path):
 
         for i, a in enumerate(h.get("antes", [])):
             if i < n:
-                committed[i] += a
+                committed[i] += float(a)
         for i, b in enumerate(blinds):
             if i < n:
                 committed[i] += b
@@ -88,10 +139,10 @@ def parse_file(path):
 
             order += 1
             actions.append({
-                "hand_id": h["hand"], "player_id": players[idx],
+                "hand_uid": uid, "hand_id": hid, "player_id": _s(players[idx]),
                 "street": STREETS[min(street, 3)], "action": kind,
-                "amount": round(amount, 4), "amount_bb": round(amount / bb, 4),
-                "action_order": order,
+                "amount": _f(amount), "amount_bb": _f(amount / bb),
+                "action_order": _i(order),
             })
 
         # uncalled portion of the final bet is returned to its owner
@@ -99,7 +150,7 @@ def parse_file(path):
         uncalled = (s[0] - s[1]) if n > 1 else 0.0
         pot = sum(committed) - uncalled
         saw_flop = street >= 1
-        w = h.get("winnings")
+        w = [float(x) for x in h["winnings"]] if h.get("winnings") else None
         rake = None
         if w and sum(w) > 0:
             r = round(pot - sum(w), 4)
@@ -107,39 +158,41 @@ def parse_file(path):
                 rake = max(r, 0.0)
 
         hands.append({
-            "hand_id": h["hand"], "venue": h.get("venue"), "venue_dir": venue_dir,
-            "stake": stake, "big_blind": bb, "table_id": h.get("table"),
-            "year": h.get("year"), "month": h.get("month"), "day": h.get("day"),
-            "time": str(h.get("time")), "n_players": n,
-            "seat_count": h.get("seat_count") or n,
-            "saw_flop": saw_flop, "showdown": any(showed),
-            "pot": round(pot, 4), "pot_bb": round(pot / bb, 4),
-            "rake": rake, "rake_bb": round(rake / bb, 4) if rake is not None else None,
+            "hand_uid": uid, "hand_id": hid, "site": site,
+            "venue": _s(h.get("venue")), "venue_dir": _s(venue_dir),
+            "stake": _f(stake), "big_blind": _f(bb), "table_id": _s(h.get("table")),
+            "year": _i(h.get("year")), "month": _i(h.get("month")), "day": _i(h.get("day")),
+            "time": _s(h.get("time")), "n_players": _i(n),
+            "seat_count": _i(h.get("seat_count") or n),
+            "saw_flop": bool(saw_flop), "showdown": bool(any(showed)),
+            "pot": _f(pot), "pot_bb": _f(pot / bb),
+            "rake": _f(rake), "rake_bb": _f(rake / bb) if rake is not None else None,
         })
 
         for i, pid in enumerate(players):
             won = w[i] if w and i < len(w) else None
             hand_players.append({
-                "hand_id": h["hand"], "player_id": pid,
-                "position_idx": i + 1,                     # p1=SB, p2=BB, pN=button
+                "hand_uid": uid, "hand_id": hid, "player_id": _s(pid),
+                "position_idx": _i(i + 1),                 # p1=SB, p2=BB, pN=button
                 "is_sb": i == 0, "is_bb": i == 1, "is_button": i == n - 1,
-                "starting_stack": h["starting_stacks"][i],
-                "invested": round(committed[i], 4),
-                "invested_bb": round(committed[i] / bb, 4),
-                "winnings": won,
-                "net_bb": round((won - committed[i]) / bb, 4) if won is not None else None,
-                "vpip": vol[i], "pfr": raised_pf[i], "folded": folded[i],
-                "showed": showed[i], "postflop_bets": n_bets[i],
-                "postflop_calls": n_calls[i],
+                "starting_stack": _f(h["starting_stacks"][i]),
+                "invested": _f(committed[i]),
+                "invested_bb": _f(committed[i] / bb),
+                "winnings": _f(won),
+                "net_bb": _f((won - committed[i]) / bb) if won is not None else None,
+                "vpip": bool(vol[i]), "pfr": bool(raised_pf[i]), "folded": bool(folded[i]),
+                "showed": bool(showed[i]), "postflop_bets": _i(n_bets[i]),
+                "postflop_calls": _i(n_calls[i]),
             })
 
-    return hands, hand_players, actions
+    return hands, hand_players, actions, drops
 
 
 if __name__ == "__main__":
     import sys, collections, statistics
-    H, HP, A = parse_file(sys.argv[1])
+    H, HP, A, D = parse_file(sys.argv[1])
     print(f"hands={len(H)}  hand_players={len(HP)}  actions={len(A)}")
+    print(f"dropped hands: {dict(D) or 'none'}")
     print(f"actions per hand = {len(A)/len(H):.2f}   players per hand = {len(HP)/len(H):.2f}")
     print("action mix:", collections.Counter(a["action"] for a in A).most_common())
     raked = [h for h in H if h["rake"] is not None]

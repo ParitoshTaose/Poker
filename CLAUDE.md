@@ -19,16 +19,18 @@ Explain jargon in plain language and always tie technical ideas to a business co
 | `docs/poker-project-plan.html` | **The plan.** 15 sections. Business problem → data → architecture → 3 phases → rubric map → what to submit. Interactive player-segment explorer. |
 | `docs/poker-explained.html` | **Companion 01.** Poker from absolute zero → terminology → strategy → how each game concept becomes a data column. 12 sections. |
 | `docs/data-pipeline-guide.html` | **Companion 02.** The 20 GB pipeline. Concept *and* runnable commands. Teaches Spark from scratch. 14 sections. |
-| `src/parse_phh.py` | **A tested, working parser.** Turns one `.phhs` file into 3 flat tables. Run it from the repo root: `python3 src/parse_phh.py <file.phhs>` |
+| `docs/execution-roadmap.html` | **The checklist (v2, 6 Aug 2026).** Steps 0–9 in order: commands, "done when", and chips mapping each step to the phase/rubric/deliverable it earns. **v2 added a line-by-line plain-English `.walk` walkthrough under every command and script**, plus measurements taken while actually running Steps 1–3. Also holds the "one base, three forks" strategy. |
+| `src/parse_phh.py` | **A tested, working parser.** Turns one `.phhs` file into 3 flat tables. Run it from the repo root: `python3.13 src/parse_phh.py <file.phhs>` |
+| `src/build_silver.py` | **Bronze → Silver, done.** Parses all 21,782 files on 8 cores into batched Parquet parts. Run: `python3.13 src/build_silver.py`. **Must stay batched** — see gotchas. |
 | `data/` | Bronze/Silver/Gold lake. **Contents gitignored**, structure committed via `.gitkeep`. `data/README.md` explains both download routes. |
 | `notebooks/` | Empty. The executable Databricks/PySpark deliverable (Phases 2 & 3) goes here. |
 | `deliverables/report/` · `deliverables/presentation/` | Empty. Consulting report PDF; exec deck (max 10 slides). |
 
-All three HTML files are self-contained (no external CSS/JS/fonts/images) and cross-link to each
-other **by bare filename** — they only work if all three stay in the same folder. Do not split them.
+All four HTML files are self-contained (no external CSS/JS/fonts/images) and cross-link to each
+other **by bare filename** — they only work if all four stay in the same folder. Do not split them.
 
-`src/` will grow two more scripts the guides already name and describe: `build_silver.py`
-(plain Python, no Spark) and `features.py` (PySpark). Keep those names.
+`src/` will grow one more script the guides already name and describe: `features.py` (PySpark).
+Keep that name.
 
 ## The brief (from `../Github folder/nmims_analytics/sessions/Big_Data_Analytics_Project_Guidelines.pdf`)
 
@@ -83,12 +85,23 @@ problem, not a game-AI problem. Three models: K-Means segmentation, churn classi
 - **Cite:** Kim, Juho. *"Recording and Describing Poker Hands."* IEEE Conference on Games (CoG), 2024.
   DOI `10.1109/CoG60054.2024.10645611`.
 - **The real-money portion:** **21,605,687** No-Limit Hold'em hands, **1–23 July 2009**, stakes
-  25NL–1000NL, six commercial platforms — PTY 8,298,718 · IPN 5,996,345 · PS 3,092,698 ·
-  ONG 1,647,765 · FTP 1,299,503 · ABS 1,270,658.
-- **Two download routes.** GitHub repo is **1.71 GB** (a *subset*) — develop against this:
+  25NL–1000NL, six commercial platforms.
+- **CORRECTED 2026-08-06 — PS and PTY were swapped in the per-site figures.** Earlier notes said
+  "PTY 8,298,718 … PS 3,092,698". **Measured over all 21.5M parsed hands it is the reverse.** The
+  check is decisive: each file states its own `venue` internally and folder-derived site agrees
+  **1:1 on every hand** (`venue=PS` ⇒ "PokerStars"). Correct split (measured):
+  **PS 8,293,797 · IPN 5,996,741 · PTY 3,092,685 · ONG 1,631,839 · FTP 1,283,795 · ABS 1,257,978**.
+  **PokerStars is the LARGEST venue (38%)**, which is also the one `parse_phh.py` was developed on.
+- **Two download routes.** Develop against the GitHub route:
   `git clone --filter=blob:none --sparse …` then `git sparse-checkout set data/handhq`.
   Zenodo is the full archive, **exactly 20,289,230,983 bytes** (HTTP 200 verified). Extract
   selectively — `unzip <zip> '*/data/handhq/*'` — never blind.
+- **CORRECTED 2026-08-06 — the GitHub route is NOT a 1.71 GB subset.** Earlier notes said 1.71 GB;
+  **measured on disk after the sparse-checkout completed it is 15 GB / 21,782 `.phhs` files**
+  (~21.7M hands ⇒ effectively the *whole* real-money dataset). The 1.71 GB figure was almost
+  certainly read *before* `git sparse-checkout set` finished downloading blobs — `--filter=blob:none`
+  makes the initial clone tiny. **Consequence: "Step 6 · scale to the full 20 GB" is largely already
+  done**; verify by comparing the Silver `hands` count against 21,605,687 before downloading Zenodo.
 - **Folder naming carries free metadata:** `{SITE}-{start}_{end}_{stake}NLH_OBFU/{big_blind}/*.phhs`.
 
 ### Measured from 3 real files (2,986 hands), `PS-…25NLH_OBFU/0.25/`
@@ -97,8 +110,8 @@ problem, not a game-AI problem. Three models: K-Means segmentation, churn classi
 |---|---|---|
 | Player-ID stability across files | **91.7% overlap** | The make-or-break check. Same human keeps the same code — player-level analytics works. |
 | File structure | consecutive **~2¼-minute** time slices, ~330 tables live | Real second-level timestamps, not placeholders. |
-| Player actions per hand | **10.56** | ×21.6M ⇒ **~229M action rows ≈ 218× Excel's 1,048,576 limit** |
-| Players per hand | **6.17** | |
+| Player actions per hand | **10.56** *(PS only — see below)* | the ×21.6M ⇒ ~229M projection **was 25% too high** |
+| Players per hand | **6.17** *(PS only)* | true all-venue figure is **5.41** |
 | Showdown rate | **22.4%** | ⇒ **77.6% of hole cards are never revealed** — structural, not sloppiness |
 | Hands missing `winnings` | 21.3% | real data-quality work for Phase 2 |
 | Hands missing `seat_count` | 4.3% | recoverable by counting `players` |
@@ -113,7 +126,61 @@ pooled VPIP 27.9% · PFR 10.2% · big-blind VPIP 27.4%
 288 of 991 hands fully reconciled for money
 ```
 
+### FULL-SCALE Silver build — measured 2026-08-06 (`build_silver.py`, all 21,782 files, 27.7 min, 8 cores)
+
+```
+SKIPPED FILES: 0
+DROPPED HANDS: {'no_big_blind': 49119, 'no_hand_id': 133}
+hands         21,556,835 rows  (21,556,435 distinct hand_uid)
+hand_players 116,621,636 rows  (5.41 per hand)
+actions      183,671,936 rows  (8.52 per hand)
+```
+
+- **PERFECT RECONCILIATION — use this in the report.** 21,556,435 distinct + 49,252 dropped =
+  **21,605,687 = the published count, exactly.** Every hand is either parsed or dropped with a
+  recorded reason. Total loss **0.23%**.
+- **Storage:** Bronze 15.0 GB text → Silver **2.2 GB** Parquet (`hands` 297 MB · `actions` 897 MB ·
+  `hand_players` 1.0 GB), 44 parts each = **6.8× compression**.
+- **Correctness test at full scale:** pooled VPIP **27.4%**, PFR **14.1%**, **big-blind VPIP 31.3%**
+  over all 21.5M BB seats — sane on all six venues, nowhere near ~100%.
+- **The ~229M action estimate was 25% too high.** It scaled PokerStars' 10.56 actions/hand across
+  everything; PS runs fuller tables than average. **True figure: 183.7M rows @ 8.52/hand** — still
+  **175× Excel's limit**, so the Big Data argument is unaffected. Update the estimate wherever it appears.
+
 ## Data & code gotchas (these bite — they are already flagged in the HTML)
+
+### Cross-venue defects — found 2026-08-06 by running all 21,782 files (one-file-per-venue MISSED them all)
+
+- **TOML types are VALUE-dependent — this is the big one.** `25` loads as `int`, `25.0` as `float`,
+  so **the same field is both types across hands**. Audited across all 6 venues: `starting_stacks`,
+  `winnings`, `blinds_or_straddles`, `antes`, `min_bet` **all mix int/float inside one list**.
+  Polars inference guessed from early rows and **killed the run twice at the same batch with two
+  different errors**. **Fix (do not regress): `parse_phh.py` coerces every value via `_f/_i/_s`
+  helpers, and `build_silver.py` declares explicit `SCHEMAS` for all 3 tables.** Never let Polars
+  infer these. A pre-flight validating all 27 venue/stake partitions against the schema takes
+  seconds — run it before any long job.
+
+- **ONG (Ongame) hand IDs are STRINGS** (`'R5-2483622-63'`); all five other venues use ints.
+  Mixed types **crash the Parquet write** (`ComputeError: could not append value ... of type: str`)
+  ~8,700 files in. **Fix in place: `parse_phh.py` forces `hand_id` to `str`.** Never revert.
+- **Some hands have no `hand` key at all.** The old parser did `h["hand"]` unconditionally, so one
+  bad hand raised `KeyError` and `build_silver.py`'s file-level `except` **discarded the whole file**
+  — 31 FTP files ≈ 31k good hands lost to protect 31 bad ones. **Fix: drop the individual hand and
+  count it.** Lesson: catch at the smallest unit that can fail.
+- **Hand IDs are REUSED within a venue — measured at full scale.** No *cross*-venue collisions exist
+  (ABS 3.02–3.09bn and IPN 3.41–3.49bn are disjoint), but **iPoker reissues the same id to genuinely
+  different hands** (different time, player count, pot). Over all 21,556,835 rows: **21,556,435
+  distinct `hand_uid`, i.e. 147 uids covering 400 rows.** So `hand_uid` (= `"{site}:{hand_id}"`)
+  is the right join key **but is NOT unique** — 0.002%. **De-duplicate before any join;** do not
+  assume it away.
+- **`parse_phh.py` originally parsed folder metadata for the ORIGINAL dataset layout**, so under the
+  Bronze `venue=X/stake=Y/` layout it produced `stake="stake=0.25"` and lost the date-carrying
+  `venue_dir`. **Fixed: `_folder_meta()` handles both layouts** and returns `stake` as a float plus a
+  clean `site` code. `venue_dir` is `None` under the Bronze layout — the dates live in Bronze's path.
+- **`cmd | tee log` masks Python's exit code** (you get `tee`'s). The first full run "succeeded" with
+  exit 0 while actually having crashed. Use `set -o pipefail`, or redirect instead of piping.
+
+### Format & domain gotchas
 
 - **`.phhs` files are valid TOML.** `tomllib.load(open(p,'rb'))` (stdlib since Python 3.11) parses a
   whole file into typed objects; `time` returns a real `datetime.time`. **No regex parser needed.**
@@ -132,7 +199,8 @@ pooled VPIP 27.9% · PFR 10.2% · big-blind VPIP 27.4%
   **Behavioural features work on 100% of hands; money features do not.** Say so in the report.
 - **Position is free.** Players are indexed in blind order: `p1`=SB, `p2`=BB, `p3` acts first pre-flop,
   **highest index = button**. Holds for 3+ players; heads-up differs — exclude it.
-- **Two hands per file are legitimately dropped** (no big blind ⇒ money cannot be normalised).
+- **A few hands per file are legitimately dropped** (no big blind ⇒ money cannot be normalised) —
+  **2 in the PS sample but 8 in an FTP one**, so don't quote "two per file" as a constant.
   Count and report drops; silent data loss is what the "justify each decision" mark tests.
 - **Normalise all money by the big blind.** $50 at 25NL and at 1000NL are not comparable; 200bb vs 5bb
   is. Standard metric is `bb/100`.
@@ -195,11 +263,14 @@ artifacts after a programmatic scroll: `.rv` caught mid-transition, stale rail h
    30-second office-hours question that de-risks three weeks of work. The responsible-gaming framing
    is the defence. **Ask before the team invests.**
 2. **Which Databricks tier does the course use?** Free Edition vs a provided workspace.
-3. **Only PokerStars files have been sampled.** Check one file from each of the other five platforms
-   (PTY, IPN, ONG, FTP, ABS) before trusting the parser at full scale.
+3. ~~Only PokerStars files have been sampled.~~ **DONE 6 Aug** — all six venues sampled (Step 2) and
+   then all 21,782 files parsed (Step 3). One-file-per-venue proved **insufficient**; see the
+   cross-venue defects above.
 4. **Why are 486/991 `winnings` arrays all zero?** Not explained. Affects money-feature coverage.
-5. **Nothing has been run at full scale yet** — all findings come from one 991-hand file plus two
-   others for the ID-stability check.
+5. ~~Nothing has been run at full scale yet.~~ **Silver now built from all 21,782 Bronze files**
+   (6 Aug). Gold/Spark (Step 4) and everything after it are still unrun.
+6. **Is player-ID stability real ACROSS venues?** 91.7% overlap was measured *within* PokerStars only.
+   Never merge IDs across venues — and confirm the within-venue figure holds for the other five.
 
 ## Honesty rules for anything added here
 
