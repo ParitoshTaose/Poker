@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery Gate · The Ecosystem Engine — BDA Group Project</title>
+<style>
+  :root{
+    --bg:#EDF2F8; --paper:#FFFFFF; --panel:#FFFFFF; --panel2:#E9F0F8; --line:#D5E0ED; --line2:#C6D4E4;
+    --cyan:#2E8BC0; --cyan-lt:#176390;
+    --gold:#C08A2E; --gold-lt:#8A5E17;
+    --red:#DB4A40;  --red-lt:#C0392E;
+    --green:#2AA277; --green-lt:#1C8560;
+    --ink:#14263C; --body:#2B3D52; --soft:#546A82; --dim:#7E92A8;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+    --maxw:64ch;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    background:
+      radial-gradient(1100px 650px at 80% -10%, rgba(46,139,192,.10) 0%, rgba(237,242,248,0) 55%),
+      var(--bg);
+    color:var(--ink); font-family:var(--sans); line-height:1.6;
+    font-size:17px; -webkit-font-smoothing:antialiased;
+  }
+
+  .progress{position:fixed;top:0;left:0;height:3px;width:0%;z-index:60;
+    background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .12s linear}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:50;
+    display:flex;align-items:center;gap:14px;padding:0 20px;
+    background:rgba(237,242,248,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);font-size:12.5px}
+  .topbar .course{color:var(--cyan-lt);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .topbar .sep{color:var(--dim)}
+  .topbar .sess{color:var(--gold-lt);font-weight:700}
+  .topbar .right{margin-left:auto;color:var(--soft)}
+
+  .shell{display:grid;grid-template-columns:238px minmax(0,1fr);gap:0;
+    max-width:1180px;margin:0 auto;padding-top:52px}
+  .rail{position:sticky;top:52px;align-self:start;height:calc(100vh - 52px);
+    padding:30px 18px 30px 24px;overflow-y:auto}
+  .rail .rlabel{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dim);font-weight:800;margin:0 0 14px 8px}
+  .rail a{display:block;text-decoration:none;color:var(--soft);font-size:13px;
+    padding:6px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0;
+    transition:.18s;line-height:1.35}
+  .rail a .act{display:block;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:1px}
+  .rail a:hover{color:var(--ink);background:rgba(46,139,192,.09)}
+  .rail a.on{color:var(--cyan-lt);border-left-color:var(--cyan);background:rgba(46,139,192,.12);font-weight:700}
+  .rail a.on .act{color:var(--gold-lt)}
+
+  main{padding:0 clamp(20px,5vw,64px) 120px;min-width:0}
+
+  .hero{padding:56px 0 30px}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;
+    color:var(--cyan-lt);margin-bottom:20px}
+  .eyebrow .n{color:var(--gold-lt)}
+  .hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(38px,6.4vw,68px);
+    line-height:1.02;letter-spacing:-.01em;color:var(--ink);margin-bottom:22px}
+  .hero h1 em{font-style:italic;color:var(--gold-lt)}
+  .hero .deck{font-size:19.5px;color:var(--soft);max-width:60ch;line-height:1.5}
+  .hero .deck b{color:var(--ink);font-weight:600}
+  .herofig{margin:38px 0 6px}
+  .grounded-note{margin-top:26px;font-size:13px;color:var(--dim);
+    border-top:1px solid var(--line);padding-top:16px;line-height:1.7}
+  .grounded-note code{font-family:var(--mono);color:var(--cyan-lt);font-size:12px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:22px;
+    padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .legend .li{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--soft)}
+  .legend .dot{width:11px;height:11px;border-radius:3px;flex:none}
+  .legend b{color:var(--ink);font-weight:650}
+
+  section{padding:52px 0;border-top:1px solid var(--line);scroll-margin-top:64px}
+  .sec-eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+    color:var(--gold-lt);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .sec-eyebrow .num{font-family:var(--mono);color:var(--cyan);font-size:12px}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(27px,3.8vw,40px);
+    line-height:1.08;letter-spacing:-.01em;color:var(--ink);margin-bottom:18px}
+  h3{font-size:19px;font-weight:750;color:var(--cyan-lt);margin:30px 0 10px}
+  h4{font-size:15.5px;font-weight:750;color:var(--ink);margin:22px 0 8px}
+  p{max-width:var(--maxw);margin-bottom:16px;color:var(--body)}
+  p b{color:var(--ink);font-weight:650}
+  p .hl{color:var(--gold-lt);font-weight:650}
+  ul.pts{list-style:none;max-width:var(--maxw);margin:6px 0 18px}
+  ul.pts li{position:relative;padding-left:26px;margin-bottom:11px;color:var(--body)}
+  ul.pts li::before{content:"";position:absolute;left:3px;top:9px;width:9px;height:9px;
+    border-radius:2px;background:var(--cyan);transform:rotate(45deg)}
+  ul.pts li b{color:var(--ink);font-weight:650}
+  ol.steps{list-style:none;counter-reset:st;max-width:var(--maxw);margin:6px 0 18px}
+  ol.steps li{position:relative;padding-left:36px;margin-bottom:13px;color:var(--body)}
+  ol.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;
+    width:24px;height:24px;border-radius:7px;background:rgba(46,139,192,.14);color:var(--cyan-lt);
+    font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+  ol.steps li b{color:var(--ink);font-weight:650}
+  .lead{font-size:20px;color:var(--soft);max-width:58ch;line-height:1.5;margin-bottom:20px}
+  .lead b{color:var(--ink)}
+
+  .fig{margin:26px 0;padding:22px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;display:flex;flex-direction:column;align-items:center;
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .fig svg{width:100%;height:auto;max-width:620px}
+  .fig.wide svg{max-width:760px}
+  .fig .cap{margin-top:14px;font-size:12.5px;color:var(--soft);text-align:center;max-width:56ch}
+  .fig .cap b{color:var(--ink);font-weight:650}
+
+  .box{margin:24px 0;border-radius:14px;padding:18px 20px;font-size:16px;line-height:1.5;
+    border-left:4px solid var(--line);background:var(--panel);color:var(--body)}
+  .box .lab{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:800;margin-bottom:8px}
+  .box b{color:var(--ink);font-weight:650}
+  .box.take{border-left-color:var(--cyan);background:rgba(46,139,192,.08)}
+  .box.take .lab{color:var(--cyan-lt)}
+  .box.board{border-left-color:var(--gold);background:rgba(192,138,46,.11)}
+  .box.board .lab{color:var(--gold-lt)}
+  .box.brk{border-left-color:var(--red);background:rgba(219,74,64,.08)}
+  .box.brk .lab{color:var(--red-lt)}
+  .box.discuss{border-left-color:var(--gold);background:rgba(192,138,46,.07);border-left-style:dashed}
+  .box.discuss .lab{color:var(--gold-lt)}
+  .box .sub{display:block;margin-top:10px;font-size:14px;color:var(--soft);font-weight:400}
+  .box ul{margin:8px 0 0 0;list-style:none}
+  .box ul li{position:relative;padding-left:20px;margin-bottom:7px;font-size:15px}
+  .box ul li::before{content:"—";position:absolute;left:0;color:var(--dim)}
+
+  .term{color:var(--gold-lt);font-weight:650;border-bottom:1px dotted var(--gold);cursor:help}
+
+  .ground{margin:30px 0;border:1px solid var(--green);border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(42,162,119,.07),rgba(42,162,119,.02));
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .ground .ghead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:13px 18px;background:rgba(42,162,119,.12);border-bottom:1px solid rgba(42,162,119,.30)}
+  .ground .gtag{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;
+    color:var(--green-lt)}
+  .ground .gtag::before{content:"◆ ";color:var(--green)}
+  .ground .gfile{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);
+    background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+  .ground .gbody{padding:18px 20px}
+  .ground .gbody > p:first-child{margin-top:0}
+
+  .code{background:#F5F8FC;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+  .code .chead{display:flex;align-items:center;gap:8px;padding:8px 14px;
+    background:#E8F0F8;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+  .code .chead .dotrow{display:flex;gap:6px;margin-right:6px}
+  .code .chead .cdot{width:10px;height:10px;border-radius:50%;background:#C6D4E4}
+  .code .chead .cname{color:var(--cyan-lt)}
+  .code .chead .cbadge{margin-left:auto;color:var(--dim)}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.65;color:#2A3B4E}
+  .code pre .cm{color:#8496AC;font-style:italic}
+  .code pre .kw{color:#9A6B15}
+  .code pre .fn{color:#176390}
+  .code pre .st{color:#1C8560}
+  .code pre .warnln{background:rgba(219,74,64,.12);display:inline-block;width:100%}
+
+  .walk{margin:16px 0;border-left:2px solid var(--line);padding-left:0}
+  .walk .w{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line2)}
+  .walk .w:last-child{border-bottom:0}
+  .walk .wc{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);background:#EBF1F8;
+    border:1px solid var(--line);border-radius:6px;padding:6px 9px;height:fit-content;white-space:pre-wrap;
+    max-width:280px;overflow-x:auto}
+  .walk .wt{color:var(--body);font-size:14.5px;line-height:1.5}
+  .walk .wt b{color:var(--ink)}
+  .walk .wt .warn{color:var(--red-lt);font-weight:650}
+  @media(max-width:640px){.walk .w{grid-template-columns:1fr}.walk .wc{max-width:100%}}
+
+  .tree{font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--soft);white-space:pre;
+    background:#F5F8FC;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0;overflow-x:auto}
+  .tree .dir{color:var(--cyan-lt);font-weight:600}
+  .tree .gone{color:var(--red-lt);text-decoration:line-through;opacity:.8}
+  .tree .rep{color:var(--gold-lt);font-weight:600}
+  .tree .note{color:var(--dim)}
+
+  /* tables */
+  .tw{overflow-x:auto;margin:20px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+  th{background:var(--panel2);color:var(--ink);font-weight:750;text-align:left;
+    padding:11px 14px;border-bottom:1px solid var(--line);font-size:12.5px;
+    letter-spacing:.03em;text-transform:uppercase}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td b{color:var(--ink)}
+  td code,th code{font-family:var(--mono);font-size:12px;color:var(--cyan-lt)}
+  .num{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .tot td{background:rgba(46,139,192,.07);font-weight:750;color:var(--ink)}
+
+  /* stat strip */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .stat .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--cyan-lt);line-height:1.1}
+  .stat .v.g{color:var(--gold-lt)} .stat .v.r{color:var(--red-lt)} .stat .v.gr{color:var(--green-lt)}
+  .stat .k{font-size:12px;color:var(--soft);margin-top:6px;line-height:1.35}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .chip{font-family:var(--mono);font-size:11.5px;padding:5px 10px;border-radius:7px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--cyan-lt)}
+  .chip.g{background:rgba(192,138,46,.12);border-color:rgba(192,138,46,.35);color:var(--gold-lt)}
+  .chip.gr{background:rgba(42,162,119,.12);border-color:rgba(42,162,119,.35);color:var(--green-lt)}
+  .chip.r{background:rgba(219,74,64,.10);border-color:rgba(219,74,64,.33);color:var(--red-lt)}
+
+  /* interactive demo */
+  .demo{margin:28px 0;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .demo .dhead{padding:14px 18px 4px}
+  .demo .dhead .t{font-weight:750;color:var(--cyan-lt);font-size:15px}
+  .demo .dhead .s{font-size:13px;color:var(--soft);margin-top:3px}
+  .demo .stage{padding:6px 18px 0}
+  .demo svg{width:100%;height:auto;max-width:640px;display:block;margin:0 auto}
+  .demo .status{margin:6px 18px 4px;min-height:96px;padding:13px 15px;border-radius:10px;
+    background:#F5F8FC;border:1px solid var(--line);font-size:14px;
+    color:var(--body);line-height:1.55;transition:.2s}
+  .demo .status .ok{color:var(--green-lt);font-weight:650}
+  .demo .status .bad{color:var(--red-lt);font-weight:650}
+  .demo .status .name{color:var(--gold-lt);font-weight:700}
+  .demo .status .sm{display:block;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--soft)}
+  .demo .ctrl{display:flex;flex-wrap:wrap;gap:10px;padding:12px 18px 18px}
+  .demo button{font-family:var(--sans);font-size:13px;font-weight:650;cursor:pointer;
+    border-radius:9px;padding:9px 14px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);transition:.15s}
+  .demo button:hover{border-color:var(--cyan);color:var(--cyan-lt)}
+  .demo button.on{border-color:var(--cyan);background:rgba(46,139,192,.14);color:var(--cyan-lt)}
+  .demo button.ghost{background:transparent;color:var(--soft)}
+  /* explicit base styles so transitions never fall back to black */
+  .demo .pt{fill:#C6D4E4;stroke:#FFFFFF;stroke-width:1.2;transition:fill .3s, r .3s, opacity .3s;opacity:.75}
+  .demo .pt.lit{opacity:1;stroke-width:1.6}
+  .demo .hull{fill:none;stroke:#C6D4E4;stroke-width:2;stroke-dasharray:6 5;opacity:0;transition:opacity .3s}
+  .demo .hull.show{opacity:1}
+
+  .quote{font-family:var(--serif);font-size:clamp(24px,3.6vw,36px);line-height:1.25;
+    color:var(--ink);font-weight:600;max-width:24ch;margin:8px 0}
+  .quote .a{color:var(--gold-lt);font-style:italic}
+  .closer{margin-top:20px;padding:34px 30px;border-radius:18px;
+    background:linear-gradient(140deg,#E8F1FB,#F6FAFD);border:1px solid var(--line)}
+  .next{display:flex;align-items:center;gap:14px;margin-top:26px;padding:16px 20px;
+    border:1px solid var(--line);border-radius:14px;background:var(--panel);text-decoration:none;color:inherit;transition:.18s;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .next:hover{border-color:var(--cyan)}
+  .next .arw{font-size:24px;color:var(--cyan)}
+  .next .nl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .next .nt{color:var(--cyan-lt);font-weight:700;font-size:16px;margin-top:2px}
+  .next .nd{font-size:13px;color:var(--soft);margin-top:2px}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 10px;margin-top:40px;font-size:12.5px;color:var(--dim);line-height:1.9}
+  footer b{color:var(--soft)}
+  footer code{font-family:var(--mono);color:var(--cyan-lt);font-size:11.5px}
+  footer a{color:var(--cyan-lt);text-decoration:none;border-bottom:1px dotted var(--line2)}
+  footer a:hover{border-bottom-style:solid}
+
+  .rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  @media(max-width:1000px){
+    .shell{grid-template-columns:1fr}
+    .rail{display:none}
+    main{padding:0 22px 90px}
+  }
+
+
+  /* ============ delivery-gate additions ============ */
+
+  /* live counter in the topbar */
+  .topbar .hud{margin-left:auto;display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11.5px}
+  .topbar .hud .cl{color:var(--green-lt);font-weight:700}
+  .topbar .hud .bl{color:var(--red-lt);font-weight:700}
+  .topbar .hud .bl.clear{color:var(--green-lt)}
+  .topbar .hud .rs{background:none;border:1px solid var(--line2);border-radius:6px;color:var(--dim);
+    font-family:var(--mono);font-size:10.5px;padding:3px 8px;cursor:pointer;transition:.15s}
+  .topbar .hud .rs:hover{border-color:var(--red);color:var(--red-lt)}
+  @media(max-width:700px){.topbar .hud .rs{display:none}}
+
+  /* ---- a gate: a titled group of checkable rows ---- */
+  .gate{margin:26px 0;border:1px solid var(--line);border-radius:16px;background:var(--panel);
+    overflow:hidden;box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .gate .ghd{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;
+    background:var(--panel2);border-bottom:1px solid var(--line)}
+  .gate .ghd .gt{font-weight:750;color:var(--ink);font-size:15.5px}
+  .gate .ghd .gs{font-size:13px;color:var(--soft)}
+  .gate .ghd .gcount{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--soft);
+    background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:4px 10px;white-space:nowrap}
+  .gate .ghd .gcount.done{color:var(--green-lt);border-color:rgba(42,162,119,.45);background:rgba(42,162,119,.10)}
+  .gate .glist{padding:4px 0}
+
+  /* ---- one checkable row ---- */
+  .ck{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:start;
+    padding:13px 18px;border-bottom:1px dashed var(--line2);cursor:pointer;transition:background .15s}
+  .ck:last-child{border-bottom:0}
+  .ck:hover{background:rgba(46,139,192,.045)}
+  .ck input{position:absolute;opacity:0;width:0;height:0}
+  .ck .mk{width:19px;height:19px;border-radius:6px;border:1.5px solid var(--line2);
+    background:var(--paper);flex:none;margin-top:2px;position:relative;transition:.16s}
+  .ck .mk::after{content:"";position:absolute;left:5.5px;top:1.5px;width:5px;height:10px;
+    border:solid #fff;border-width:0 2.2px 2.2px 0;transform:rotate(42deg) scale(.4);
+    opacity:0;transition:.16s}
+  .ck input:focus-visible ~ .mk{outline:2px solid var(--cyan);outline-offset:2px}
+  .ck .ctx{min-width:0}
+  .ck .ch{display:block;font-size:14.8px;font-weight:650;color:var(--ink);line-height:1.4}
+  .ck .cd{display:block;font-size:13.5px;color:var(--soft);line-height:1.5;margin-top:4px}
+  .ck .cd b{color:var(--body);font-weight:650}
+  .ck .cd code{font-family:var(--mono);font-size:12px;color:var(--cyan-lt)}
+  .ck .cid{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-right:7px}
+  .ck.on .ch{color:var(--dim);text-decoration:line-through;text-decoration-color:var(--line2)}
+  .ck.on .cd{opacity:.62}
+  .ck.on .mk{background:var(--green);border-color:var(--green)}
+  .ck.on .mk::after{opacity:1;transform:rotate(42deg) scale(1)}
+
+  .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:2.5px 7px;border-radius:5px;vertical-align:middle;margin-left:8px;font-weight:700;white-space:nowrap}
+  .tag.b{background:rgba(219,74,64,.12);border:1px solid rgba(219,74,64,.35);color:var(--red-lt)}
+  .tag.l{background:rgba(192,138,46,.13);border:1px solid rgba(192,138,46,.38);color:var(--gold-lt)}
+
+  /* ---- the five laws ---- */
+  .laws{display:grid;gap:12px;margin:24px 0}
+  .law{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:18px 20px;background:var(--panel);
+    border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:12px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .law .ln{font-family:var(--serif);font-size:30px;color:var(--gold-lt);line-height:1;font-weight:600}
+  .law .lt{font-size:16.5px;font-weight:750;color:var(--ink);line-height:1.3;margin-bottom:7px}
+  .law .lb{font-size:14.5px;color:var(--body);line-height:1.55}
+  .law .lb b{color:var(--ink)}
+  .law .src{display:block;margin-top:9px;padding-top:9px;border-top:1px dashed var(--line2);
+    font-size:12.5px;color:var(--soft)}
+  .law .src em{color:var(--gold-lt);font-style:normal;font-weight:650}
+
+  /* ---- rubric ledger ---- */
+  .ledger input.sc{width:52px;font-family:var(--mono);font-size:13px;text-align:right;
+    padding:5px 7px;border:1px solid var(--line2);border-radius:6px;background:var(--paper);color:var(--ink)}
+  .ledger input.sc:focus{outline:none;border-color:var(--cyan)}
+  .ledger .tot td{background:rgba(46,139,192,.09)}
+  #scoreOut{font-family:var(--mono);font-weight:750;color:var(--cyan-lt);font-size:16px}
+  #scoreOut.warn{color:var(--red-lt)}
+  #scoreOut.good{color:var(--green-lt)}
+
+  /* ---- verdict banner ---- */
+  .verdict{margin:30px 0 10px;border-radius:18px;padding:30px 28px;border:1px solid var(--red);
+    background:linear-gradient(140deg,rgba(219,74,64,.10),rgba(219,74,64,.03));transition:.35s}
+  .verdict.go{border-color:var(--green);
+    background:linear-gradient(140deg,rgba(42,162,119,.13),rgba(42,162,119,.03))}
+  .verdict .vt{font-family:var(--serif);font-size:clamp(26px,4vw,38px);line-height:1.1;
+    color:var(--red-lt);font-weight:600;margin-bottom:12px}
+  .verdict.go .vt{color:var(--green-lt)}
+  .verdict .vb{font-size:16px;color:var(--body);max-width:56ch;line-height:1.55}
+  .verdict .vb b{color:var(--ink)}
+  .verdict .vbar{height:9px;border-radius:6px;background:var(--panel2);overflow:hidden;margin:20px 0 12px;
+    border:1px solid var(--line)}
+  .verdict .vfill{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--green));
+    transition:width .4s ease}
+  .verdict .vmeta{font-family:var(--mono);font-size:12.5px;color:var(--soft)}
+
+  /* ---- cross-links ---- */
+  .xlinks{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:22px 0}
+  .xlink{display:block;padding:15px 17px;border:1px solid var(--line);border-radius:13px;background:var(--panel);
+    text-decoration:none;transition:.18s;box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .xlink:hover{border-color:var(--cyan);transform:translateY(-1px)}
+  .xlink .xl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .xlink .xt{color:var(--cyan-lt);font-weight:700;font-size:14.5px;margin-top:3px}
+  .xlink .xd{font-size:12.5px;color:var(--soft);margin-top:3px;line-height:1.45}
+
+  @media print{
+    .topbar,.rail,.progress{display:none}
+    .shell{grid-template-columns:1fr;padding-top:0}
+    .ck{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="topbar">
+  <span class="course">Big Data Analytics</span>
+  <span class="sep">·</span>
+  <span class="sess">Delivery Gate</span>
+  <span class="hud">
+    <span class="cl" id="hudCleared">0 / 0 cleared</span>
+    <span class="sep">·</span>
+    <span class="bl" id="hudBlockers">0 blockers open</span>
+    <button class="rs" id="resetBtn" type="button">reset</button>
+  </span>
+</div>
+
+<div class="shell">
+<nav class="rail">
+  <div class="rlabel">The Gate</div>
+  <a href="#s1"><span class="act">Why</span>What the sample really proves</a>
+  <a href="#s2"><span class="act">Law</span>The five laws</a>
+  <a href="#s3"><span class="act">Gate 0</span>Before anything else</a>
+  <a href="#s4"><span class="act">Gate A</span>The dashboard</a>
+  <a href="#s5"><span class="act">Gate B</span>The deck &mdash; 10 slides</a>
+  <a href="#s6"><span class="act">Gate C</span>The notebook</a>
+  <a href="#s7"><span class="act">Gate D</span>The report PDF</a>
+  <a href="#s8"><span class="act">Gate E</span>Repo &amp; professionalism</a>
+  <a href="#s9"><span class="act">Red</span>The honesty kill-list</a>
+  <a href="#s10"><span class="act">Marks</span>The rubric ledger</a>
+  <a href="#s11"><span class="act">Oral</span>The viva drill</a>
+  <a href="#s12"><span class="act">Ship</span>72-hour pre-flight</a>
+</nav>
+
+<main>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <div class="eyebrow">NMIMS &middot; MBA Business Analytics &middot; Trimester IV <span class="n">&middot; Pre-submission gate</span></div>
+  <h1>Nothing ships until <em>every box</em> is ticked.</h1>
+  <p class="deck">
+    The faculty's sample project makes one thing unmistakable: <b>the deliverable is not a model.</b>
+    It trains eight of them, declares the best classifier <b>nearly useless</b>, and still ends on five
+    business decisions with a number attached to each. The models exist to earn the right to say those
+    five things. This page is the gate that checks whether <b>The Ecosystem Engine</b> has earned it too.
+  </p>
+
+  <div class="herofig">
+    <div class="fig wide">
+      <svg viewBox="0 0 760 250" role="img" aria-label="The pipeline earns 13 marks, the decision earns 5, and the 13 only count if the 5 land">
+        <defs>
+          <marker id="gar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#7E92A8"/>
+          </marker>
+          <marker id="garg" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#C08A2E"/>
+          </marker>
+        </defs>
+
+        <rect x="16"  y="64" width="112" height="54" rx="10" fill="#E9F0F8" stroke="#C6D4E4"/>
+        <text x="72"  y="86"  text-anchor="middle" font-size="13" font-weight="700" fill="#14263C">Bronze</text>
+        <text x="72"  y="104" text-anchor="middle" font-size="11" fill="#546A82">15 GB text</text>
+
+        <rect x="152" y="64" width="112" height="54" rx="10" fill="#E9F0F8" stroke="#C6D4E4"/>
+        <text x="208" y="86"  text-anchor="middle" font-size="13" font-weight="700" fill="#14263C">Silver</text>
+        <text x="208" y="104" text-anchor="middle" font-size="11" fill="#546A82">2.2 GB Parquet</text>
+
+        <rect x="288" y="64" width="112" height="54" rx="10" fill="#E9F0F8" stroke="#C6D4E4"/>
+        <text x="344" y="86"  text-anchor="middle" font-size="13" font-weight="700" fill="#14263C">Gold</text>
+        <text x="344" y="104" text-anchor="middle" font-size="11" fill="#546A82">18 MB</text>
+
+        <rect x="424" y="64" width="112" height="54" rx="10" fill="#E9F0F8" stroke="#C6D4E4"/>
+        <text x="480" y="86"  text-anchor="middle" font-size="13" font-weight="700" fill="#14263C">Models</text>
+        <text x="480" y="104" text-anchor="middle" font-size="11" fill="#546A82">MLlib &times; 3</text>
+
+        <rect x="568" y="55" width="176" height="72" rx="12" fill="rgba(192,138,46,.14)" stroke="#C08A2E" stroke-width="1.6"/>
+        <text x="656" y="82"  text-anchor="middle" font-size="14" font-weight="800" fill="#8A5E17">THE DECISION</text>
+        <text x="656" y="100" text-anchor="middle" font-size="11" fill="#8A5E17">dashboard</text>
+        <text x="656" y="115" text-anchor="middle" font-size="11" fill="#8A5E17">+ actions management takes</text>
+
+        <line x1="130" y1="91" x2="148" y2="91" stroke="#7E92A8" stroke-width="1.6" marker-end="url(#gar)"/>
+        <line x1="266" y1="91" x2="284" y2="91" stroke="#7E92A8" stroke-width="1.6" marker-end="url(#gar)"/>
+        <line x1="402" y1="91" x2="420" y2="91" stroke="#7E92A8" stroke-width="1.6" marker-end="url(#gar)"/>
+        <line x1="538" y1="91" x2="562" y2="91" stroke="#C08A2E" stroke-width="2.2" marker-end="url(#garg)"/>
+
+        <path d="M16,146 L16,157 L536,157 L536,146" fill="none" stroke="#C6D4E4" stroke-width="1.4"/>
+        <path d="M276,157 L276,165" stroke="#C6D4E4" stroke-width="1.4"/>
+        <text x="276" y="182" text-anchor="middle" font-size="11.5" fill="#546A82">Data Eng 4 &middot; Features 3 &middot; ML 4 &middot; Evaluation 2</text>
+        <text x="276" y="200" text-anchor="middle" font-size="13" font-weight="750" fill="#176390">13 marks &mdash; the machine</text>
+
+        <path d="M568,146 L568,157 L744,157 L744,146" fill="none" stroke="#C08A2E" stroke-width="1.4" opacity=".55"/>
+        <path d="M656,157 L656,165" stroke="#C08A2E" stroke-width="1.4" opacity=".55"/>
+        <text x="656" y="182" text-anchor="middle" font-size="11.5" fill="#8A5E17">Storytelling 3 &middot; Recommendations 2</text>
+        <text x="656" y="200" text-anchor="middle" font-size="13" font-weight="750" fill="#8A5E17">5 marks &mdash; the deliverable</text>
+
+        <text x="380" y="232" text-anchor="middle" font-size="12" fill="#7E92A8">Professionalism &amp; Documentation 2 &mdash; the repo, across the whole trimester</text>
+      </svg>
+      <div class="cap">The <b>13 marks only count if the 5 land.</b> A perfect pipeline that ends in a metric
+      table, not a decision, loses the storytelling and recommendation marks &mdash; and the examiner reads
+      the whole thing as an exercise.</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="v" id="stTotal">&mdash;</div><div class="k">checks in this gate</div></div>
+    <div class="stat"><div class="v r" id="stBlock">&mdash;</div><div class="k">are blockers &mdash; do not submit without them</div></div>
+    <div class="stat"><div class="v g">27</div><div class="k">days to submission &mdash; 8 Sept 2026</div></div>
+    <div class="stat"><div class="v gr">4</div><div class="k">artifacts to hand over</div></div>
+  </div>
+
+  <div class="legend">
+    <div class="li"><span class="dot" style="background:#DB4A40"></span><b>Blocker</b> &mdash; unticked means do not submit</div>
+    <div class="li"><span class="dot" style="background:#C08A2E"></span><b>Lift</b> &mdash; moves the grade, not fatal</div>
+    <div class="li"><span class="dot" style="background:#2AA277"></span><b>Cleared</b> &mdash; saved in this browser</div>
+  </div>
+
+  <div class="grounded-note">
+    Built from four sources, none invented: the faculty's sample project in <code>sample project/</code>
+    (read in full, 12 Aug 2026); the official brief in <code>docs/Big_Data_Analytics_Project_Guidelines.pdf</code>;
+    the measured facts in <code>Project/CLAUDE.md</code>; and the build steps in <code>execution-roadmap.html</code>.
+    Ticks are stored in this browser only &mdash; nothing is uploaded.
+  </div>
+</header>
+
+<!-- ===================== S1 ===================== -->
+<section id="s1" class="rv">
+  <div class="sec-eyebrow"><span class="num">01</span> Why this gate exists</div>
+  <h2>What the sample project actually proves</h2>
+
+  <p class="lead">Read past the PySpark and the sample makes an argument about <b>where the marks live</b>.
+  It is worth stating plainly, because it is not what an engineer would assume.</p>
+
+  <p>The sample &mdash; <em>Predictive Workforce Analytics</em>, on Singapore's Graduate Employment Survey &mdash;
+  spends thirteen notebook Parts marching through HDFS, MapReduce, Pig, Hive, Sqoop, Kafka, HBase and Spark
+  before it trains a single model. Then it trains eight. Then it throws the best classifier away in public:
+  <b>81.6% accuracy against an 80.9% no-skill baseline</b>, recall 98.7%, specificity 9.0%. The deck calls
+  this <em>"an 81.6% accurate model that is nearly useless"</em> and gives it a full slide.</p>
+
+  <p>And it still closes on <b>five decisions</b>, each carrying the number that forces it: retire the single
+  salary band (S$3,000 between-faculty spread), quote medians not means (S$329 gap, 57.4% of the cohort below),
+  add three faculties to the recruiting circuit (38&ndash;46% unplaced), drop the GPA cut-off (21.0% of signal
+  versus 70.3%), publish intervals (twelve programmes under thirty respondents).</p>
+
+  <div class="box take">
+    <span class="lab">The reframe</span>
+    The models are <b>scaffolding</b>. The terminal artifact is a decision surface a manager can act on.
+    Your project is currently strong exactly where the sample is weak &mdash; and untested exactly where
+    the sample is strong.
+  </div>
+
+  <div class="ground">
+    <div class="ghead">
+      <span class="gtag">Verified &mdash; read from the files, 12 Aug 2026</span>
+      <span class="gfile">sample project/</span>
+    </div>
+    <div class="gbody">
+      <ul class="pts">
+        <li><b>The aggregate statistics are genuinely real.</b> Six programmes spot-checked against
+        <code>Web-Publication-NUS-GES-2024.pdf</code> &mdash; Arts, Law, Computer Science, Biomedical Eng,
+        Music, BBA &mdash; all match the MOE publication exactly.</li>
+        <li><b>The individuals are not.</b> 4,340 profiles are sampled from log-normals fitted to each
+        programme's published quartiles. The per-programme cohort sizes that decide how many synthetic
+        people each degree gets are <b>invented</b> &mdash; they appear nowhere in the MOE PDF.</li>
+        <li><b>The notebook ships with zero saved outputs.</b> All 41 code cells unrun. Every figure in the
+        deck &mdash; 70.3%, R&sup2; 0.543, AUC 0.731 &mdash; traces to a run that is not preserved anywhere
+        in the folder. <span style="color:var(--red-lt);font-weight:650">This is the one thing you must not copy.</span></li>
+        <li><b>The <code>.py</code> is the notebook.</b> Byte-for-byte the same code cells concatenated &mdash;
+        diffed and confirmed. Not a second artifact.</li>
+        <li><b>The headline finding is partly designed in.</b> The generator's own comment reads
+        <em>"degree sets the salary BAND; GPA and internships shift position WITHIN it."</em> So
+        "degree explains 70.3%, GPA 21%" substantially restates the simulation's parameters. The deck
+        presents it as a discovery.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box board">
+    <span class="lab">Where you already win</span>
+    The sample runs on <b>4,340 synthetic rows</b>. Yours runs on <b>21,556,435 real hands</b> and
+    116.6M seat-rows, reconciling to the published count exactly. Its data is manufactured because the
+    real thing was unavailable; yours is the real thing. <b>Do not let that advantage go unstated</b> &mdash;
+    and do not squander it by shipping an unrun notebook, which is the one place the sample would beat you.
+  </div>
+</section>
+
+<!-- ===================== S2 ===================== -->
+<section id="s2" class="rv">
+  <div class="sec-eyebrow"><span class="num">02</span> Cross-cutting</div>
+  <h2>The five laws</h2>
+
+  <p class="lead">These bind <b>every</b> artifact. If a chart, slide, paragraph or dashboard panel breaks
+  one of them, it is wrong regardless of how good the underlying engineering is.</p>
+
+  <div class="laws">
+    <div class="law">
+      <div class="ln">I</div>
+      <div>
+        <div class="lt">Every finding ends in a decision, and every decision carries its number.</div>
+        <div class="lb">Not "grinders multi-table more." Instead: <b>"Cap simultaneous tables at six &mdash;
+        the top 2% of players by table count extract X bb/100 from recreational seats, worth &#8377;Y of
+        monthly rake."</b> Who acts, what changes, and the figure that forces it.</div>
+        <span class="src">Sample: <em>five recommendations, every one numbered.</em> "Retire the single graduate band &mdash;
+        between-faculty spread exceeds S$3,000."</span>
+      </div>
+    </div>
+
+    <div class="law">
+      <div class="ln">II</div>
+      <div>
+        <div class="lt">No metric appears without its no-skill baseline beside it.</div>
+        <div class="lb">An accuracy score alone is not evidence. <b>Churn classifier vs. "predict everyone
+        lapses"</b>; regression vs. predicting the mean; K-Means silhouette vs. random assignment.
+        If the model does not beat the baseline, that is a finding &mdash; report it as one.</div>
+        <span class="src">Sample: <em>81.6% against an 80.9% baseline</em> &mdash; the entire slide exists to make that
+        comparison impossible to miss.</span>
+      </div>
+    </div>
+
+    <div class="law">
+      <div class="ln">III</div>
+      <div>
+        <div class="lt">Every number on every artifact traces to a cell that ran and saved its output.</div>
+        <div class="lb">If a figure is on a slide, you can point at the notebook cell that produced it,
+        <b>with the output still attached</b>. No hand-typed numbers, no "I ran it once." The examiner will
+        pick one number and ask where it came from.</div>
+        <span class="src">Sample: <em>fails this outright</em> &mdash; 41 unrun cells. Learn it as a counterexample.</span>
+      </div>
+    </div>
+
+    <div class="law">
+      <div class="ln">IV</div>
+      <div>
+        <div class="lt">Segment the population before you model it &mdash; and prove it is not one population.</div>
+        <div class="lb">Show the two distributions that barely overlap. For you that is
+        <b>recreational vs. grinder</b>, and it is also <b>six venues that do not share an observation window
+        or money coverage</b>. A single global model over all six is the poker equivalent of one company-wide
+        salary band.</div>
+        <span class="src">Sample: <em>"The graduate market is not one market. It is two."</em> Computing sits almost
+        entirely above S$5,500; Arts between S$3,800 and S$5,200.</span>
+      </div>
+    </div>
+
+    <div class="law">
+      <div class="ln">V</div>
+      <div>
+        <div class="lt">Lead with the failure, and name the variable you wish you had.</div>
+        <div class="lb">Find the thing that did not work, put it on its own slide, and explain why the
+        failure is more useful than a flattering number. Then name the missing data:
+        <b>77.6% of hole cards are never revealed</b>; <b>iPoker records no table identity on any of its
+        6.0M hands</b>; there is <b>no ground truth for bots</b>.</div>
+        <span class="src">Sample: <em>"This is the result we almost reported as a success."</em> Then names internship
+        <em>quality</em> as the missing variable.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== S3 ===================== -->
+<section id="s3" class="rv">
+  <div class="sec-eyebrow"><span class="num">03</span> Gate 0</div>
+  <h2>Before anything else</h2>
+
+  <p>Two items that are not about quality. They are about whether the work is allowed to count at all.</p>
+
+  <div class="gate" data-gate="0">
+    <div class="ghd">
+      <span class="gt">Gate 0 &middot; Permission to proceed</span>
+      <span class="gs">unresolved as of 12 Aug 2026</span>
+      <span class="gcount">0 / 0</span>
+    </div>
+    <div class="glist">
+      <label class="ck"><input type="checkbox" data-k="g0a" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">0.1</span>The gambling dataset has been cleared with the professor<span class="tag b">Blocker</span></span>
+        <span class="cd">Open since 2 Aug in <code>CLAUDE.md</code> &mdash; a thirty-second office-hours question that
+        de-risks the entire project. Office hours Mon/Wed/Fri 10:00&ndash;10:30, booked through the CR.
+        <b>The responsible-gaming framing is the defence:</b> this is a retention and player-protection
+        problem, not a how-to-win-at-poker problem. Ask before the team invests further.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="g0b" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">0.2</span>The Databricks tier is confirmed and someone has actually logged in<span class="tag b">Blocker</span></span>
+        <span class="cd">Free Edition or a provided workspace. Community Edition <b>retired 1 Jan 2026</b>.
+        Phase 2 names Databricks explicitly &mdash; discovering the tier question on 6 Sept is not a recoverable position.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="g0c" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">0.3</span>The fork is chosen and written down<span class="tag b">Blocker</span></span>
+        <span class="cd">Step 5 of the roadmap &mdash; segmentation, lapse classification, or value regression as the
+        spine. Everything downstream is shaped by this. <b>Remember Fork B is a four-venue question</b> and must
+        exclude iPoker entirely, and must filter on <code>money_hands</code>, never <code>hands_played</code>.</span>
+      </span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== S4 ===================== -->
+<section id="s4" class="rv">
+  <div class="sec-eyebrow"><span class="num">04</span> Gate A</div>
+  <h2>The dashboard</h2>
+
+  <p class="lead">The faculty's steer, in one line: <b>the end result is a dashboard and how it changes a
+  business decision.</b> This is the artifact the sample gestures at and yours should beat outright.</p>
+
+  <div class="box discuss">
+    <span class="lab">The test to hold it to</span>
+    Hand it to someone who has never seen the project. If they cannot state <b>a decision they would make
+    differently</b> within sixty seconds, without you narrating, the dashboard has failed &mdash; no matter
+    how good the charts are.
+  </div>
+
+  <div class="gate" data-gate="A">
+    <div class="ghd">
+      <span class="gt">Gate A &middot; The decision surface</span>
+      <span class="gs">the terminal artifact</span>
+      <span class="gcount">0 / 0</span>
+    </div>
+    <div class="glist">
+      <label class="ck"><input type="checkbox" data-k="a1" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A1</span>It opens on a decision, not on a chart<span class="tag b">Blocker</span></span>
+        <span class="cd">The top of the screen states the single number an operator acts on today &mdash;
+        e.g. <b>"&#8377;X of monthly rake sits with N at-risk recreational players."</b> Charts justify that number;
+        they do not replace it.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="a2" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A2</span>Every panel answers "so what do I do?"<span class="tag b">Blocker</span></span>
+        <span class="cd">Walk each panel and say the action out loud. If a panel exists because the chart was
+        easy to draw, delete it. This is the single most common way a dashboard reads as a student exercise.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="a3" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A3</span>Filters change the decision, not the decoration<span class="tag b">Blocker</span></span>
+        <span class="cd">At minimum <b>venue, segment and stake</b>. Venue is mandatory, not optional &mdash;
+        the six venues do not share an observation window or money coverage, so a global view silently
+        mixes incomparable populations.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="a4" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A4</span>iPoker is excluded or visibly flagged wherever money or table-count appears<span class="tag b">Blocker</span></span>
+        <span class="cd">iPoker reconciles on <b>none</b> of its 6.0M hands and writes the literal string
+        <code>'HandHQ'</code> into all 5,996,194 table fields. Where <code>tables_recorded = false</code>, the
+        dashboard must say so &mdash; a greyed cell, a footnote, an exclusion chip. <b>Never render it as 1.</b>
+        That is a missing value wearing a plausible number, and it would file all 15,549 iPoker players as
+        recreational single-tablers.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="a5" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A5</span>Every number traces to a Gold-table column<span class="tag b">Blocker</span></span>
+        <span class="cd">No hand-typed figures anywhere in the markup. If a number is on screen, name the
+        column in <code>gold/player_features</code> or <code>gold/hand_features</code> it came from.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="a6" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A6</span>Time windows are venue-relative, never a global calendar cut<span class="tag b">Blocker</span></span>
+        <span class="cd">Use <code>days_since_last</code> against each venue's own <code>site_last_day</code>.
+        A global "played in the last week?" rule labels every ABS and PS player as lapsed by construction &mdash;
+        9.55M hands, <b>44% of the dataset</b> &mdash; because their data simply stops.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="a7" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A7</span>Someone who is not you opened it and reached a decision unaided<span class="tag b">Blocker</span></span>
+        <span class="cd">Actually do this. A teammate, on their machine, without narration. Write down what
+        they said first &mdash; if it was a question about the chart rather than a statement about the business,
+        fix the dashboard.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="a8" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A8</span>There is a money-weighted view, not just a count view<span class="tag l">Lift</span></span>
+        <span class="cd">"2,300 players at risk" is analytics. <b>"&#8377;X of monthly rake at risk"</b> is a
+        business case. The operator earns only rake &mdash; weight the headline by it and the whole project
+        lands in the language of the P&amp;L.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="a9" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A9</span>You can drill from segment &rarr; player list &rarr; the action to take<span class="tag l">Lift</span></span>
+        <span class="cd">The path from an aggregate to a named list of accounts is what separates a report
+        from an operational tool. This is the thing a retention manager would use on Monday.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="a10" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">A10</span>It is self-contained and opens from a file, with no server<span class="tag l">Lift</span></span>
+        <span class="cd">Same discipline as the four guides in <code>docs/</code>. A dashboard that needs a
+        running cluster to demo is a dashboard that will fail in the presentation room.</span>
+      </span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== S5 ===================== -->
+<section id="s5" class="rv">
+  <div class="sec-eyebrow"><span class="num">05</span> Gate B</div>
+  <h2>The deck &mdash; ten slides, no more</h2>
+
+  <p>The brief is explicit: <b>maximum 10 slides including title and thank-you</b>. That is eight working
+  slides. The sample uses eleven screens and spends four of them on findings and one on the failure.</p>
+
+  <div class="gate" data-gate="B">
+    <div class="ghd">
+      <span class="gt">Gate B &middot; Executive deck</span>
+      <span class="gs">&le;10 slides incl. title &amp; thank-you</span>
+      <span class="gcount">0 / 0</span>
+    </div>
+    <div class="glist">
+      <label class="ck"><input type="checkbox" data-k="b1" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">B1</span>You counted the slides<span class="tag b">Blocker</span></span>
+        <span class="cd">Literally count them, including title and thank-you. Eleven slides is a rubric
+        violation on a named constraint &mdash; the cheapest mark anyone ever loses.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="b2" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">B2</span>The business problem lands before any technology<span class="tag b">Blocker</span></span>
+        <span class="cd">Rake, recreational churn, ecosystem collapse &mdash; in the operator's language. No
+        Spark, no Parquet, no medallion architecture until the reader already cares.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="b3" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">B3</span>The architecture appears exactly once, as one diagram<span class="tag b">Blocker</span></span>
+        <span class="cd">One slide, one picture, with the compression story on it: <b>116,619,267 seat-rows in,
+        18 MB out.</b> "ML never touches the big data" is the single best line in your architecture argument.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="b4" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">B4</span>The failure has its own slide<span class="tag b">Blocker</span></span>
+        <span class="cd">Not a bullet in the appendix. A slide. With the baseline comparison on it. This is
+        the move the sample makes its centrepiece and it is what makes an examiner trust everything else.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="b5" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">B5</span>The closing slide is decisions, each with its number and its owner<span class="tag b">Blocker</span></span>
+        <span class="cd">The sample's format works: a short imperative title, one sentence, one figure.
+        <em>"Add three faculties to the circuit &mdash; 38&ndash;46% unplaced, no bidding war attached."</em>
+        Write yours in that shape.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="b6" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">B6</span>No slide needs you to speak for it to make sense<span class="tag b">Blocker</span></span>
+        <span class="cd">It gets read without you in the room. Every slide's title states its conclusion,
+        not its topic &mdash; "Grinders extract 4&times; the rake they generate", not "Player segmentation".</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="b7" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">B7</span>One number is the headline of the whole deck<span class="tag l">Lift</span></span>
+        <span class="cd">The sample picks <b>2.01&times;</b> and builds everything around it. Candidates for you:
+        the extraction ratio between segments, the share of rake originating from players who lapse, or
+        <b>116M &rarr; 18 MB</b>. Pick one and repeat it.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="b8" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">B8</span>The dashboard appears in the deck as a screenshot with a caption<span class="tag l">Lift</span></span>
+        <span class="cd">Closes the loop between "we built a thing" and "here is the thing". Caption it with
+        the decision it drives, not with what it displays.</span>
+      </span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== S6 ===================== -->
+<section id="s6" class="rv">
+  <div class="sec-eyebrow"><span class="num">06</span> Gate C</div>
+  <h2>The notebook</h2>
+
+  <p>"Fully executable" is the brief's word. The sample's notebook is the one place it is beatable &mdash;
+  it ships unrun. Yours must not.</p>
+
+  <div class="gate" data-gate="C">
+    <div class="ghd">
+      <span class="gt">Gate C &middot; Executable notebook</span>
+      <span class="gs">Databricks / PySpark</span>
+      <span class="gcount">0 / 0</span>
+    </div>
+    <div class="glist">
+      <label class="ck"><input type="checkbox" data-k="c1" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C1</span>It ships <em>with</em> all outputs saved<span class="tag b">Blocker</span></span>
+        <span class="cd">Open the committed <code>.ipynb</code> and confirm the outputs are physically in the
+        file. <b>This is the sample's one real failure &mdash; do not inherit it.</b> An unrun notebook makes
+        every number in your deck unverifiable.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="c2" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C2</span>It runs top-to-bottom on a fresh kernel &mdash; observed, not assumed<span class="tag b">Blocker</span></span>
+        <span class="cd">Restart, Run All, watch it finish. Hidden state that only exists because you ran cell 12
+        twice is the classic way this dies in front of an examiner.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="c3" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C3</span>Both correctness tests print in the saved output<span class="tag b">Blocker</span></span>
+        <span class="cd">The zero-sum identity <b>&Sigma; net_bb = &minus;&Sigma; rake_bb</b> (measured
+        &minus;2,064,330 vs &minus;2,064,329, ratio 1.0000) and <b>big-blind VPIP &asymp; 31.3%</b>, nowhere near 100%.
+        These are the two tests that caught real bugs. They are also your best answer to "how do I know your
+        parser is right?"</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="c4" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C4</span>The reconciliation is printed, not just claimed<span class="tag b">Blocker</span></span>
+        <span class="cd"><b>21,556,435 distinct + 49,252 dropped = 21,605,687</b>, the published count, exactly.
+        Every hand either parsed or dropped with a recorded reason; total loss 0.23%. This single line is worth
+        more than any model metric in the Data Engineering mark.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="c5" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C5</span>At least two ML approaches per task, metrics compared side by side<span class="tag b">Blocker</span></span>
+        <span class="cd">Named Phase 3 requirement. The sample does four regressors and four classifiers in one
+        table each &mdash; copy the table format, it makes the comparison instant.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="c6" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C6</span>Every dropped row is counted and printed with a reason<span class="tag b">Blocker</span></span>
+        <span class="cd">You already have the pattern: <code>{'no_big_blind': 49119, 'no_hand_id': 133}</code>,
+        plus the 147 colliding <code>hand_uid</code>s covering 547 rows. <b>Silent data loss is exactly what
+        "justify each decision" tests.</b></span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="c7" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C7</span>Every engineering choice carries a written justification<span class="tag b">Blocker</span></span>
+        <span class="cd">Markdown above the cell, in plain language. Why 96 shuffle partitions and not 200.
+        Why the 100-hand threshold. Why iPoker is excluded from money questions. Why <code>hand_uid</code>
+        collisions are dropped rather than deduplicated arbitrarily. The brief says <em>justify every decision</em> &mdash;
+        that is a scored instruction, not advice.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="c8" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C8</span>No <code>.collect()</code> or <code>.toPandas()</code> outside the Gold table<span class="tag b">Blocker</span></span>
+        <span class="cd">On a laptop the driver <em>is</em> your 16 GB. Grep the notebook for both calls and
+        check every hit sits downstream of Gold.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="c9" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C9</span>It has actually been run on Databricks, not only locally<span class="tag l">Lift</span></span>
+        <span class="cd">Phase 2 names Databricks explicitly. A notebook that has only ever seen
+        <code>local[8]</code> is a risk you can retire cheaply on the Gold table, which is 18 MB.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="c10" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">C10</span>Missing values, outliers, encoding and scaling are each visibly handled<span class="tag l">Lift</span></span>
+        <span class="cd">All four are named in the Phase 2 brief. You have genuine instances of each &mdash;
+        the null <code>max_tables</code>, the <code>bb_per_100</code> tail (6.4% beyond &plusmn;200, a
+        sample-size artifact not talent), categorical venue, and money normalised to big blinds.
+        <b>Show them being handled, do not just mention them.</b></span>
+      </span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== S7 ===================== -->
+<section id="s7" class="rv">
+  <div class="sec-eyebrow"><span class="num">07</span> Gate D</div>
+  <h2>The report PDF</h2>
+
+  <p>Nine named sections. The brief names them; use its words as your headings so the examiner can find
+  each one without hunting.</p>
+
+  <div class="gate" data-gate="D">
+    <div class="ghd">
+      <span class="gt">Gate D &middot; Consulting report</span>
+      <span class="gs">nine sections, three appendix items</span>
+      <span class="gcount">0 / 0</span>
+    </div>
+    <div class="glist">
+      <label class="ck"><input type="checkbox" data-k="d1" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">D1</span>All nine sections present, named as the brief names them<span class="tag b">Blocker</span></span>
+        <span class="cd">Exec Summary &middot; Business Context &middot; Data Understanding (5 Vs) &middot;
+        Enterprise Architecture &middot; Data Engineering &middot; ML &middot; Business Insights &middot;
+        Strategic Recommendations &middot; Appendix.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="d2" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">D2</span>The appendix contains all three named items<span class="tag b">Blocker</span></span>
+        <span class="cd"><b>References</b>, <b>AI-usage disclosure</b>, and <b>team contributions</b>. All three
+        are explicitly required. Two out of three is a lost mark for a thing that takes ten minutes.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="d3" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">D3</span>The 5 Vs are answered with your measured numbers, not definitions<span class="tag b">Blocker</span></span>
+        <span class="cd"><b>Volume</b> 21.6M hands, 15 GB &rarr; 2.2 GB, 6.8&times; compression.
+        <b>Variety</b> six venues, TOML, string vs int hand IDs. <b>Veracity</b> the value-dependent
+        int/float defect, the 147 colliding uids, money coverage as a venue property. <b>Velocity</b> the
+        streaming argument. <b>Value</b> the rake at risk. Anyone can quote the textbook; only you can quote these.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="d4" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">D4</span>The dataset is cited properly<span class="tag b">Blocker</span></span>
+        <span class="cd">Kim, Juho. <em>"Recording and Describing Poker Hands."</em> IEEE CoG 2024,
+        DOI <code>10.1109/CoG60054.2024.10645611</code>; Zenodo DOI <code>10.5281/zenodo.17136841</code>,
+        CC BY 4.0. Licence compliance is part of professionalism.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="d5" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">D5</span>The exec summary works for someone who reads nothing else<span class="tag b">Blocker</span></span>
+        <span class="cd">Problem, what you found, what to do, in that order, on one page. Assume it is the
+        only page read.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="d6" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">D6</span>Recommendations are costed or quantified, not aspirational<span class="tag b">Blocker</span></span>
+        <span class="cd">"Improve retention" is not a recommendation. "Cap tables at six; the affected 2%
+        of accounts generate &#8377;X of rake but remove &#8377;Y from recreational balances" is.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="d7" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">D7</span>There is a CLO &rarr; evidence mapping table<span class="tag l">Lift</span></span>
+        <span class="cd">The sample's problem statement carries one, and it is a quietly effective device:
+        it hands the examiner the marking scheme already filled in. Two columns &mdash; the objective, and
+        the artifact that proves it.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="d8" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">D8</span>The 2009 date is addressed in the body, not buried<span class="tag l">Lift</span></span>
+        <span class="cd">Argue the <b>method</b> transfers: rake economics, multi-tabling and recreational
+        churn are structural, not era-specific. Raising it yourself is strength; being caught by it is not.</span>
+      </span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== S8 ===================== -->
+<section id="s8" class="rv">
+  <div class="sec-eyebrow"><span class="num">08</span> Gate E</div>
+  <h2>Repo &amp; professionalism</h2>
+
+  <p>Two marks, and the easiest two on the sheet &mdash; <b>the GitHub repo with commit history across the
+  trimester is explicitly graded.</b></p>
+
+  <div class="gate" data-gate="E">
+    <div class="ghd">
+      <span class="gt">Gate E &middot; The repository</span>
+      <span class="gs">2 marks, fully controllable</span>
+      <span class="gcount">0 / 0</span>
+    </div>
+    <div class="glist">
+      <label class="ck"><input type="checkbox" data-k="e1" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">E1</span>Commit history genuinely spans the trimester<span class="tag b">Blocker</span></span>
+        <span class="cd">Not one commit on 7 Sept. Yours already runs from the plan through the Silver
+        pipeline to the Gold features &mdash; keep committing at that cadence through the dashboard and deck.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="e2" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">E2</span>The team table in <code>README.md</code> is filled in<span class="tag b">Blocker</span></span>
+        <span class="cd">Currently a TODO. It is also one of the three required appendix items, so it is
+        worth marks twice.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="e3" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">E3</span>A stranger can reproduce the pipeline from the README alone<span class="tag b">Blocker</span></span>
+        <span class="cd">Both download routes, the <code>python3.13</code> invocation, the run order
+        <code>parse_phh &rarr; build_silver &rarr; features</code>, and the expected runtimes
+        (27.7 min Silver, 4.6 min Gold). Test it by following your own instructions literally.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="e4" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">E4</span>No data committed; the <code>.gitkeep</code> structure is intact<span class="tag b">Blocker</span></span>
+        <span class="cd">A 15 GB accident in the history is unrecoverable and looks careless. Confirm
+        <code>git status</code> is clean and the lake structure is still represented.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="e5" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">E5</span>All five docs pages are linked from the README<span class="tag l">Lift</span></span>
+        <span class="cd">Plan, poker explainer, pipeline guide, roadmap, and this gate. They only work
+        together &mdash; they cross-link by bare filename and must stay in one folder.</span>
+      </span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== S9 ===================== -->
+<section id="s9" class="rv">
+  <div class="sec-eyebrow"><span class="num">09</span> Honesty</div>
+  <h2>The kill-list</h2>
+
+  <p class="lead">These are not risks to manage privately. Each one must be <b>visible in a deliverable</b>.
+  The professor will probe; every item you raise first is an item that cannot be used against you.</p>
+
+  <div class="box brk">
+    <span class="lab">Say these out loud, before you are asked</span>
+    The sample's own interview-prep slide gives the rule: <em>"Your data is synthetic." &mdash; Say so first,
+    unprompted.</em> Same discipline applies to every line below.
+  </div>
+
+  <div class="gate" data-gate="H">
+    <div class="ghd">
+      <span class="gt">Gate H &middot; Disclosed in a deliverable</span>
+      <span class="gs">not merely known by you</span>
+      <span class="gcount">0 / 0</span>
+    </div>
+    <div class="glist">
+      <label class="ck"><input type="checkbox" data-k="h1" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">H1</span>The data is from July 2009 &mdash; seventeen years old<span class="tag b">Blocker</span></span>
+        <span class="cd">Stated plainly, with the argument that the method transfers. Do not hide the date.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="h2" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">H2</span>Rake is <em>derived</em>, not a recorded column<span class="tag b">Blocker</span></span>
+        <span class="cd">And the derivation needs the uncalled-bet correction. Preflop-only hands rake exactly
+        $0.00 (109/109 &mdash; "no flop, no drop"); flop hands median 3.7%. That evidence is what makes the
+        estimate credible rather than convenient.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="h3" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">H3</span>It is called <b>short-horizon lapse</b>, never "churn"<span class="tag b">Blocker</span></span>
+        <span class="cd">The window is 26 days. Twenty-six days cannot evidence churn, and claiming it invites
+        the one question you cannot answer. Search every deliverable for the word "churn" and fix each hit.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="h4" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">H4</span>There is no ground truth for bots<span class="tag b">Blocker</span></span>
+        <span class="cd">Which is precisely why lapse is the supervised label and bot-detection is not. State
+        the reasoning &mdash; it turns an absence into a design decision.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="h5" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">H5</span>Player IDs are never merged across venues<span class="tag b">Blocker</span></span>
+        <span class="cd">A human on two sites is two rows and must stay two rows. The 91.7% ID-stability
+        figure was measured <em>within</em> PokerStars only &mdash; do not let it imply more than it does.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="h6" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">H6</span>Money coverage is disclosed as a venue property<span class="tag b">Blocker</span></span>
+        <span class="cd">ONG 99.1% &middot; ABS 82.0% &middot; PS 27.3% &middot; FTP 27.2% &middot; PTY present but 14%
+        reconciling &middot; <b>IPN 0.0%</b>. Behavioural features work on 100% of hands; money features do not.
+        Say so, and never impute the zeros &mdash; that invents a break-even player who never existed.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="h7" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">H7</span><code>hand_uid</code> is disclosed as non-unique<span class="tag b">Blocker</span></span>
+        <span class="cd">147 uids covering 547 rows &mdash; 0.002%. It is the right join key and it is not unique;
+        both facts belong in the Data Engineering section, along with why you dropped them rather than
+        keeping one arbitrarily.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="h8" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">H8</span>The <code>bb_per_100</code> tail is explained as a sample-size artifact<span class="tag b">Blocker</span></span>
+        <span class="cd">Median &minus;5.3 (rake drag) but 6.4% of players beyond &plusmn;200, because the
+        100-hand threshold is on <code>hands_played</code>, not usable money hands &mdash; median
+        <code>money_hands</code> is just 92. <b>Not talent.</b> Handling this visibly is worth more than
+        hiding it with a clip.</span>
+      </span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== S10 ===================== -->
+<section id="s10" class="rv">
+  <div class="sec-eyebrow"><span class="num">10</span> Marks</div>
+  <h2>The rubric ledger</h2>
+
+  <p>Score yourself honestly before someone else does. Anything you cannot justify to a sceptic, mark down &mdash;
+  then go fix it while there is still time.</p>
+
+  <div class="tw ledger">
+    <table>
+      <thead>
+        <tr><th>Rubric line</th><th class="num">Marks</th><th>Carried by</th><th>Earned by</th><th class="num">Self</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Business problem &amp; storytelling</b></td><td class="num">3</td>
+          <td>Deck &middot; Dashboard</td>
+          <td>Law I &amp; V &middot; B2, B5, B6 &middot; A1</td>
+          <td class="num"><input class="sc" type="number" min="0" max="3" step="0.5" data-max="3"></td>
+        </tr>
+        <tr>
+          <td><b>Data Engineering &amp; Architecture</b></td><td class="num">4</td>
+          <td>Notebook &middot; Report</td>
+          <td>C4, C6, C7, C8 &middot; D3 &middot; the 6.8&times; compression story</td>
+          <td class="num"><input class="sc" type="number" min="0" max="4" step="0.5" data-max="4"></td>
+        </tr>
+        <tr>
+          <td><b>Feature Engineering</b></td><td class="num">3</td>
+          <td>Notebook</td>
+          <td>C10 &middot; the multi-tabling detector &middot; H6, H8</td>
+          <td class="num"><input class="sc" type="number" min="0" max="3" step="0.5" data-max="3"></td>
+        </tr>
+        <tr>
+          <td><b>ML Implementation</b></td><td class="num">4</td>
+          <td>Notebook</td>
+          <td>C5 &middot; C1, C2 &middot; at least two approaches per task</td>
+          <td class="num"><input class="sc" type="number" min="0" max="4" step="0.5" data-max="4"></td>
+        </tr>
+        <tr>
+          <td><b>Model Evaluation</b></td><td class="num">2</td>
+          <td>Notebook &middot; Deck</td>
+          <td>Law II &middot; B4 &middot; baselines beside every metric</td>
+          <td class="num"><input class="sc" type="number" min="0" max="2" step="0.5" data-max="2"></td>
+        </tr>
+        <tr>
+          <td><b>Business Recommendations</b></td><td class="num">2</td>
+          <td>Dashboard &middot; Report</td>
+          <td>Law I &middot; A2, A8 &middot; D6</td>
+          <td class="num"><input class="sc" type="number" min="0" max="2" step="0.5" data-max="2"></td>
+        </tr>
+        <tr>
+          <td><b>Professionalism &amp; Documentation</b></td><td class="num">2</td>
+          <td>Repo &middot; Report</td>
+          <td>E1&ndash;E4 &middot; D1, D2, D4</td>
+          <td class="num"><input class="sc" type="number" min="0" max="2" step="0.5" data-max="2"></td>
+        </tr>
+        <tr class="tot">
+          <td><b>Total</b></td><td class="num">20</td>
+          <td colspan="2">Your honest self-score, before submission</td>
+          <td class="num"><span id="scoreOut">&mdash;</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box take">
+    <span class="lab">Read the ledger sideways</span>
+    Notice that <b>the notebook carries 13 of the 20 marks</b> and the dashboard and deck carry 5 &mdash;
+    but the 5 are the ones that decide whether the examiner believes the 13. The sample proves the point
+    in reverse: its engineering is unremarkable and its notebook never ran, yet its decision layer is
+    strong enough that it was worth handing to you as the model.
+  </div>
+</section>
+
+<!-- ===================== S11 ===================== -->
+<section id="s11" class="rv">
+  <div class="sec-eyebrow"><span class="num">11</span> Oral</div>
+  <h2>The viva drill</h2>
+
+  <p>The sample devotes a whole screen to <em>"Answering the four questions you will get."</em> Steal the
+  device. Here are yours &mdash; tick each only once you have said the answer out loud, in under thirty seconds.</p>
+
+  <div class="gate" data-gate="V">
+    <div class="ghd">
+      <span class="gt">Gate V &middot; Rehearsed answers</span>
+      <span class="gs">out loud, under 30 seconds each</span>
+      <span class="gcount">0 / 0</span>
+    </div>
+    <div class="glist">
+      <label class="ck"><input type="checkbox" data-k="v1" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">V1</span>"Why is a gambling dataset appropriate for this course?"<span class="tag b">Blocker</span></span>
+        <span class="cd">Responsible gaming. It is a <b>player-protection and retention</b> problem &mdash;
+        identifying recreational players being drained and intervening before they are. Lead with that,
+        not with the size of the dataset.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="v2" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">V2</span>"Your data is from 2009."<span class="tag b">Blocker</span></span>
+        <span class="cd">Say it before they do. The rake model, multi-tabling and recreational churn are
+        structural features of the business, not of 2009. The method is the deliverable.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="v3" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">V3</span>"You have 26 days. How is that churn?"<span class="tag b">Blocker</span></span>
+        <span class="cd">It is not, and you never called it that. Short-horizon lapse, measured backwards
+        from <b>each venue's own last day</b> &mdash; because ABS and PS stop on day 20 and a global rule
+        would label 44% of the dataset lapsed by construction.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="v4" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">V4</span>"Rake isn't in your data. How do you know it's right?"<span class="tag b">Blocker</span></span>
+        <span class="cd">Poker is zero-sum apart from the rake, so <b>&Sigma; net_bb must equal &minus;&Sigma; rake_bb</b>.
+        Measured &minus;2,064,330 vs &minus;2,064,329, ratio 1.0000, across 21.5M hands. That identity is also what
+        caught the uncalled-bet bug &mdash; which had made every high-volume player look like they lost a full
+        big blind per hand.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="v5" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">V5</span>"Show me your model is better than guessing."<span class="tag b">Blocker</span></span>
+        <span class="cd">Give the baseline before the metric, every time. If it barely beats the baseline,
+        say so first and explain what that reveals about the data &mdash; the sample gets its strongest slide
+        out of exactly this.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="v6" data-b="1"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">V6</span>"Why should I trust a parser you wrote yourself?"<span class="tag b">Blocker</span></span>
+        <span class="cd">Because it reconciles to the published figure exactly: 21,556,435 + 49,252 =
+        <b>21,605,687</b>. Plus the BB-VPIP test at 31.3% and the zero-sum identity. Three independent checks,
+        all printed on every run.</span>
+      </span></label>
+
+      <label class="ck"><input type="checkbox" data-k="v7" data-b="0"><span class="mk"></span><span class="ctx">
+        <span class="ch"><span class="cid">V7</span>"What would you collect next?"<span class="tag l">Lift</span></span>
+        <span class="cd">The sample's answer is internship quality. Yours is stronger: <b>77.6% of hole cards
+        are never revealed</b>, so you are inferring skill from betting patterns alone; and iPoker's table
+        identity is absent on 6.0M hands. Name both.</span>
+      </span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== S12 ===================== -->
+<section id="s12" class="rv">
+  <div class="sec-eyebrow"><span class="num">12</span> Ship</div>
+  <h2>The 72-hour pre-flight</h2>
+
+  <p>Mechanical, unglamorous, and the source of most avoidable losses. Do these in the last three days,
+  in this order.</p>
+
+  <ol class="steps">
+    <li><b>Restart-and-run-all the notebook</b>, watch it finish, and confirm the outputs are saved in the
+    committed file.</li>
+    <li><b>Count the slides.</b> Including title and thank-you. Ten or fewer.</li>
+    <li><b>Open the dashboard on a machine that is not yours</b>, from the file, with no server running.</li>
+    <li><b>Export the report to PDF and read it in the exported form</b> &mdash; tables break, figures move,
+    headings orphan.</li>
+    <li><b>Grep every deliverable for the word "churn"</b> and replace with short-horizon lapse.</li>
+    <li><b>Pick three numbers at random from the deck</b> and trace each to its notebook cell. If any one
+    fails, assume others will too.</li>
+    <li><b>Read the appendix checklist</b>: references, AI-usage disclosure, team contributions. All three.</li>
+    <li><b>Push, then clone the repo fresh into a new folder</b> and follow your own README from scratch.</li>
+  </ol>
+
+  <div class="verdict" id="verdict">
+    <div class="vt" id="vTitle">Not ready to submit</div>
+    <div class="vb" id="vBody">Work through the gates above. This banner turns green only when every
+    <b>blocker</b> is cleared. Lift items are not required to ship, but each one moves the grade.</div>
+    <div class="vbar"><div class="vfill" id="vFill"></div></div>
+    <div class="vmeta" id="vMeta">0 of 0 checks cleared &middot; 0 blockers outstanding</div>
+  </div>
+
+  <div class="closer">
+    <div class="quote">The models are how you earn the right<span class="a"> to say the five things.</span></div>
+    <p style="margin-top:18px;margin-bottom:0">The sample project trains eight models and throws its best
+    classifier away in public &mdash; and it is still the piece of work your faculty chose to hand you as
+    the standard. Not because of the eight models. Because of the five decisions at the end, and because
+    every one of them carries a number.</p>
+  </div>
+
+  <div class="xlinks">
+    <a class="xlink" href="poker-project-plan.html">
+      <div class="xl">Companion</div><div class="xt">The plan</div>
+      <div class="xd">Business case, architecture, the three phases, rubric map.</div>
+    </a>
+    <a class="xlink" href="execution-roadmap.html">
+      <div class="xl">Companion</div><div class="xt">Execution roadmap</div>
+      <div class="xd">Steps 0&ndash;9 &mdash; how to build it. This page checks what you built.</div>
+    </a>
+    <a class="xlink" href="poker-explained.html">
+      <div class="xl">Companion</div><div class="xt">Poker from zero</div>
+      <div class="xd">Game &rarr; data &rarr; business. Every column explained.</div>
+    </a>
+    <a class="xlink" href="data-pipeline-guide.html">
+      <div class="xl">Companion</div><div class="xt">Pipeline guide</div>
+      <div class="xd">The 20 GB pipeline and Spark from scratch, with commands.</div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <b>Delivery Gate v1</b> &mdash; 12 Aug 2026 &middot; The Ecosystem Engine, BDA MBA group project.<br>
+  <b>Measured, not assumed:</b> everything said about the sample project was read from the files in
+  <code>sample project/</code> &mdash; 30 programmes and a 4,340 cohort sum computed from its own
+  <code>GES_2024</code> literal; 41 code cells confirmed to carry zero saved outputs; the <code>.py</code>
+  diffed against the notebook's code cells and found identical; six programmes' aggregate statistics
+  checked line-by-line against <code>Web-Publication-NUS-GES-2024.pdf</code> and found to match exactly.<br>
+  <b>Quoted from the project's own measurements:</b> the Silver and Gold build figures, the reconciliation
+  to 21,605,687, the zero-sum rake identity, per-venue money coverage and observation windows, and the
+  <code>hand_uid</code> collision count &mdash; all previously measured and recorded in
+  <code>Project/CLAUDE.md</code>.<br>
+  <b>Not yet measured:</b> anything about the dashboard, deck or report, because they do not exist yet.
+  Every Gate A, B and D item is a specification to be met, not a result.<br>
+  Ticks and self-scores are stored in this browser's <code>localStorage</code> only. Clearing site data
+  clears the gate.
+</footer>
+
+</main>
+</div>
+
+<script>
+/* ---------- reading progress ---------- */
+const prog = document.getElementById('progress');
+function onScroll(){
+  const h = document.documentElement;
+  const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  prog.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+document.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+/* ---------- scroll-spy rail ---------- */
+const links = [...document.querySelectorAll('.rail a')];
+const map = {};
+links.forEach(a => map[a.getAttribute('href').slice(1)] = a);
+const sections = [...document.querySelectorAll('section')];
+let spyActive = null;
+function setActive(){
+  const line = 150;
+  let current = sections[0];
+  for(const s of sections){
+    if(s.getBoundingClientRect().top <= line) current = s;
+  }
+  if(current.id === spyActive) return;
+  spyActive = current.id;
+  links.forEach(l=>l.classList.remove('on'));
+  const a = map[current.id];
+  if(a) a.classList.add('on');
+}
+document.addEventListener('scroll', setActive, {passive:true});
+window.addEventListener('resize', setActive, {passive:true});
+setActive();
+
+/* ---------- reveal on scroll (scroll-driven, never stuck hidden) ---------- */
+const rvEls = [...document.querySelectorAll('.rv')];
+function revealInView(){
+  const vh = window.innerHeight;
+  for(const el of rvEls){
+    if(el.classList.contains('in')) continue;
+    if(el.getBoundingClientRect().top < vh * 0.92) el.classList.add('in');
+  }
+}
+document.addEventListener('scroll', revealInView, {passive:true});
+window.addEventListener('resize', revealInView, {passive:true});
+window.addEventListener('hashchange', ()=>{ [80,300,600].forEach(t=>setTimeout(revealInView, t)); });
+revealInView();
+
+/* ---------- the gate ---------- */
+const STORE = 'bda-delivery-gate-v1';
+const boxes = [...document.querySelectorAll('.ck input[type=checkbox]')];
+const scores = [...document.querySelectorAll('input.sc')];
+
+function load(){
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch(e){ s = {}; }
+  return s;
+}
+function save(){
+  const s = {ck:{}, sc:{}};
+  boxes.forEach(b => { if(b.checked) s.ck[b.dataset.k] = 1; });
+  scores.forEach((n,i) => { if(n.value !== '') s.sc[i] = n.value; });
+  try { localStorage.setItem(STORE, JSON.stringify(s)); } catch(e){}
+}
+
+function render(){
+  /* per-row state */
+  boxes.forEach(b => b.closest('.ck').classList.toggle('on', b.checked));
+
+  /* per-gate counters */
+  document.querySelectorAll('.gate').forEach(g => {
+    const bs = [...g.querySelectorAll('.ck input[type=checkbox]')];
+    const done = bs.filter(b => b.checked).length;
+    const el = g.querySelector('.gcount');
+    el.textContent = done + ' / ' + bs.length;
+    el.classList.toggle('done', done === bs.length && bs.length > 0);
+  });
+
+  /* totals */
+  const total = boxes.length;
+  const done = boxes.filter(b => b.checked).length;
+  const blockers = boxes.filter(b => b.dataset.b === '1');
+  const openBlockers = blockers.filter(b => !b.checked).length;
+
+  document.getElementById('stTotal').textContent = total;
+  document.getElementById('stBlock').textContent = blockers.length;
+
+  document.getElementById('hudCleared').textContent = done + ' / ' + total + ' cleared';
+  const hb = document.getElementById('hudBlockers');
+  hb.textContent = openBlockers === 0 ? 'all blockers cleared' : openBlockers + ' blockers open';
+  hb.classList.toggle('clear', openBlockers === 0);
+
+  const pct = total ? (done / total * 100) : 0;
+  document.getElementById('vFill').style.width = pct.toFixed(1) + '%';
+  document.getElementById('vMeta').textContent =
+    done + ' of ' + total + ' checks cleared · ' +
+    (openBlockers === 0 ? 'no blockers outstanding' : openBlockers + ' blockers outstanding');
+
+  const v = document.getElementById('verdict');
+  const go = openBlockers === 0 && total > 0;
+  v.classList.toggle('go', go);
+  document.getElementById('vTitle').textContent = go ? 'Cleared to submit' : 'Not ready to submit';
+  document.getElementById('vBody').innerHTML = go
+    ? 'Every blocker is ticked. ' + (total - done) + ' lift item' + ((total-done)===1?'':'s') +
+      ' remain unticked — none of them stop you shipping, but each one moves the grade. ' +
+      'Run the 72-hour pre-flight above before you hand anything over.'
+    : 'Work through the gates above. This banner turns green only when every <b>blocker</b> is cleared. ' +
+      'Lift items are not required to ship, but each one moves the grade.';
+
+  /* self-score total */
+  let sum = 0, any = false;
+  scores.forEach(n => { if(n.value !== ''){ any = true; sum += parseFloat(n.value) || 0; } });
+  const out = document.getElementById('scoreOut');
+  out.textContent = any ? (Math.round(sum * 10) / 10) + ' / 20' : '—';
+  out.classList.toggle('good', any && sum >= 16);
+  out.classList.toggle('warn', any && sum < 12);
+}
+
+/* restore */
+(function restore(){
+  const s = load();
+  const ck = s.ck || {};
+  boxes.forEach(b => { if(ck[b.dataset.k]) b.checked = true; });
+  const sc = s.sc || {};
+  scores.forEach((n,i) => { if(sc[i] !== undefined) n.value = sc[i]; });
+  render();
+})();
+
+boxes.forEach(b => b.addEventListener('change', () => { save(); render(); }));
+scores.forEach(n => n.addEventListener('input', () => {
+  const mx = parseFloat(n.dataset.max);
+  if(n.value !== '' && parseFloat(n.value) > mx) n.value = mx;
+  if(n.value !== '' && parseFloat(n.value) < 0) n.value = 0;
+  save(); render();
+}));
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  boxes.forEach(b => b.checked = false);
+  scores.forEach(n => n.value = '');
+  save(); render();
+  window.scrollTo({top:0, behavior:'auto'});
+});
+</script>
+</body>
+
+</html>
