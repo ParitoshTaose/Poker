@@ -1,0 +1,623 @@
+{
+  "infinities_found": {
+    "player_features": {
+      "avg_stack_bb": 15549
+    },
+    "hand_features_sample": {
+      "avg_stack_bb": 166589,
+      "min_stack_bb": 166589
+    }
+  },
+  "gold_players": 106977,
+  "kmeans": {
+    "grain": "player",
+    "runs": {
+      "all_venues_core_only": {
+        "n": 106977,
+        "features": [
+          "vpip",
+          "pfr",
+          "fold_rate",
+          "wtsd",
+          "aggression_factor",
+          "vpip_pfr_gap",
+          "avg_invested_bb",
+          "distinct_stakes",
+          "max_stake",
+          "btn_share",
+          "bb_vpip_rate"
+        ],
+        "k": {
+          "2": {
+            "silhouette": 0.2792197402426671,
+            "inertia": 841581.6269285392,
+            "shares_pct": [
+              39.1,
+              60.9
+            ]
+          },
+          "3": {
+            "silhouette": 0.25346789417863747,
+            "inertia": 730575.0858096585,
+            "shares_pct": [
+              50.3,
+              30.7,
+              19.0
+            ]
+          },
+          "4": {
+            "silhouette": 0.1997585547138171,
+            "inertia": 651994.9065089583,
+            "shares_pct": [
+              36.0,
+              15.9,
+              16.9,
+              31.2
+            ]
+          },
+          "5": {
+            "silhouette": 0.20079297539398966,
+            "inertia": 595939.9180636235,
+            "shares_pct": [
+              30.3,
+              12.5,
+              15.0,
+              8.7,
+              33.5
+            ]
+          },
+          "6": {
+            "silhouette": 0.18963158740038172,
+            "inertia": 555045.150815272,
+            "shares_pct": [
+              13.7,
+              20.3,
+              21.3,
+              10.3,
+              25.9,
+              8.4
+            ]
+          },
+          "7": {
+            "silhouette": 0.1907365832527428,
+            "inertia": 523214.5414461682,
+            "shares_pct": [
+              10.1,
+              21.0,
+              13.7,
+              25.3,
+              8.3,
+              1.5,
+              20.2
+            ]
+          },
+          "8": {
+            "silhouette": 0.19113956116449202,
+            "inertia": 497606.14669251925,
+            "shares_pct": [
+              24.7,
+              19.6,
+              7.8,
+              1.5,
+              6.7,
+              9.3,
+              9.9,
+              20.5
+            ]
+          }
+        }
+      },
+      "five_venues_stacks_and_tables": {
+        "n": 91428,
+        "features": [
+          "vpip",
+          "pfr",
+          "fold_rate",
+          "wtsd",
+          "aggression_factor",
+          "vpip_pfr_gap",
+          "avg_invested_bb",
+          "distinct_stakes",
+          "max_stake",
+          "btn_share",
+          "bb_vpip_rate",
+          "avg_stack_bb",
+          "max_tables",
+          "avg_tables",
+          "distinct_tables"
+        ],
+        "k": {
+          "2": {
+            "silhouette": 0.22062990962928467,
+            "inertia": 1061929.5633226796,
+            "shares_pct": [
+              43.3,
+              56.7
+            ]
+          },
+          "3": {
+            "silhouette": 0.22988390516861792,
+            "inertia": 932462.3002491072,
+            "shares_pct": [
+              36.8,
+              57.1,
+              6.1
+            ]
+          },
+          "4": {
+            "silhouette": 0.22338578074366006,
+            "inertia": 842509.5935466028,
+            "shares_pct": [
+              16.8,
+              48.4,
+              29.5,
+              5.2
+            ]
+          },
+          "5": {
+            "silhouette": 0.16154222766403165,
+            "inertia": 773463.048362196,
+            "shares_pct": [
+              14.9,
+              33.1,
+              32.6,
+              3.8,
+              15.6
+            ]
+          },
+          "6": {
+            "silhouette": 0.16106697790169375,
+            "inertia": 722972.1169203203,
+            "shares_pct": [
+              32.9,
+              7.7,
+              14.7,
+              28.2,
+              13.2,
+              3.3
+            ]
+          },
+          "7": {
+            "silhouette": 0.15945137274401575,
+            "inertia": 685547.3944430316,
+            "shares_pct": [
+              12.0,
+              3.4,
+              21.1,
+              12.3,
+              7.0,
+              28.6,
+              15.5
+            ]
+          },
+          "8": {
+            "silhouette": 0.15577487887428287,
+            "inertia": 652482.9035330239,
+            "shares_pct": [
+              16.2,
+              10.6,
+              0.9,
+              6.2,
+              20.8,
+              6.8,
+              26.2,
+              12.2
+            ]
+          }
+        }
+      }
+    },
+    "k4_centroids": [
+      {
+        "cluster": 0,
+        "share_pct": 36.0,
+        "vpip": 0.22267388060385196,
+        "pfr": 0.10333936569627833,
+        "fold_rate": 0.83447538569787,
+        "wtsd": 0.04839333701715531,
+        "aggression_factor": 3.253914548959183,
+        "vpip_pfr_gap": 0.11933451490757355,
+        "avg_invested_bb": 1.697823558614871,
+        "distinct_stakes": 1.2524519368349738,
+        "max_stake": 1.223939228387813,
+        "btn_share": 0.15121063473001237,
+        "bb_vpip_rate": 0.22665091238122734
+      },
+      {
+        "cluster": 1,
+        "share_pct": 15.9,
+        "vpip": 0.612312798111889,
+        "pfr": 0.20835247372391807,
+        "fold_rate": 0.524517497489428,
+        "wtsd": 0.17671481443980055,
+        "aggression_factor": 2.3438490637529794,
+        "vpip_pfr_gap": 0.4039603243879706,
+        "avg_invested_bb": 5.6706761214137416,
+        "distinct_stakes": 1.6004829779714933,
+        "max_stake": 2.3970726822947315,
+        "btn_share": 0.17184468073876275,
+        "bb_vpip_rate": 0.5243388961001
+      },
+      {
+        "cluster": 2,
+        "share_pct": 16.9,
+        "vpip": 0.35407962837667784,
+        "pfr": 0.17779530299561175,
+        "fold_rate": 0.7169440074605083,
+        "wtsd": 0.07376099792787418,
+        "aggression_factor": 2.7259320118453156,
+        "vpip_pfr_gap": 0.17628432538106603,
+        "avg_invested_bb": 3.1064702353978824,
+        "distinct_stakes": 2.758696852567649,
+        "max_stake": 7.847142462727916,
+        "btn_share": 0.18271110162058193,
+        "bb_vpip_rate": 0.32345393580200665
+      },
+      {
+        "cluster": 3,
+        "share_pct": 31.2,
+        "vpip": 0.41630530896896834,
+        "pfr": 0.10828082187458578,
+        "fold_rate": 0.7188310746070418,
+        "wtsd": 0.11183693125019754,
+        "aggression_factor": 2.2154803604323643,
+        "vpip_pfr_gap": 0.3080244870943824,
+        "avg_invested_bb": 3.0913739576127015,
+        "distinct_stakes": 1.2672944693572383,
+        "max_stake": 1.061248131539592,
+        "btn_share": 0.16260415835743153,
+        "bb_vpip_rate": 0.39418350620323045
+      }
+    ]
+  },
+  "fork_a_lapse": {
+    "grain": "player",
+    "n_train": 74038,
+    "n_test": 24680,
+    "prevalence_lapsed": 0.6250329220608197,
+    "features": [
+      "vpip",
+      "pfr",
+      "fold_rate",
+      "wtsd",
+      "aggression_factor",
+      "vpip_pfr_gap",
+      "avg_invested_bb",
+      "distinct_stakes",
+      "max_stake",
+      "btn_share",
+      "bb_vpip_rate",
+      "hands_prior",
+      "tenure_days"
+    ],
+    "baseline": {
+      "rule": "majority class (predict lapsed for everyone)",
+      "precision": 0.6250405186385738,
+      "recall": 1.0,
+      "f1": 0.7692614571385827,
+      "roc_auc": 0.5,
+      "pr_auc": 0.6250405186385738
+    },
+    "models": {
+      "logistic_l2": {
+        "precision": 0.7748288867160218,
+        "recall": 0.7191754181252431,
+        "f1": 0.7459655728886498,
+        "roc_auc": 0.7364287209183824,
+        "pr_auc": 0.8017591360208403,
+        "fit_seconds": 0.2
+      },
+      "hist_gbm": {
+        "precision": 0.8670442688925324,
+        "recall": 0.7541812524309607,
+        "f1": 0.8066842324226876,
+        "roc_auc": 0.877421195542452,
+        "pr_auc": 0.9265612063636682,
+        "fit_seconds": 2.9
+      }
+    },
+    "top_coefficients": [
+      {
+        "feature": "distinct_stakes",
+        "coef": -0.5740863227721451
+      },
+      {
+        "feature": "tenure_days",
+        "coef": 0.4283748795155183
+      },
+      {
+        "feature": "wtsd",
+        "coef": 0.24213323123164118
+      },
+      {
+        "feature": "max_stake",
+        "coef": -0.20374460907082476
+      },
+      {
+        "feature": "hands_prior",
+        "coef": -0.19368756436376458
+      },
+      {
+        "feature": "vpip_pfr_gap",
+        "coef": 0.10690760346492392
+      },
+      {
+        "feature": "fold_rate",
+        "coef": 0.0999708897030577
+      },
+      {
+        "feature": "btn_share",
+        "coef": -0.09891864530240072
+      }
+    ],
+    "ablation": {
+      "prior_window_only": {
+        "features": 2,
+        "pr_auc": 0.7982520031384195
+      },
+      "lifetime_rates_only": {
+        "features": 11,
+        "pr_auc": 0.8862536973646218
+      },
+      "both (headline)": {
+        "features": 13,
+        "pr_auc": 0.9265612063636682
+      }
+    }
+  },
+  "fork_b_money": {
+    "n_train": 49299,
+    "n_test": 16433,
+    "baseline": {
+      "rmse": 82.6400737521611,
+      "mae": 43.501879589982536
+    },
+    "models": {
+      "ridge": {
+        "rmse": 81.52746953925755,
+        "mae": 42.84104675264313,
+        "skill_vs_baseline": 0.02674524662859823
+      },
+      "hist_gbm": {
+        "rmse": 72.81912575335438,
+        "mae": 38.94328756533845,
+        "skill_vs_baseline": 0.22355708924758388
+      }
+    },
+    "grain": "player",
+    "target": "bb_per_100",
+    "money_hands_min": 50,
+    "venues_excluded": [
+      "IPN"
+    ],
+    "threshold_sweep": {
+      "1": {
+        "n": 88655,
+        "median_bb_per_100": -5.329949238578675,
+        "pct_beyond_200": 6.368507134397383
+      },
+      "30": {
+        "n": 81853,
+        "median_bb_per_100": -5.009047540713933,
+        "pct_beyond_200": 4.367585794045422
+      },
+      "50": {
+        "n": 65732,
+        "median_bb_per_100": -5.046012702893437,
+        "pct_beyond_200": 2.825108014361346
+      },
+      "100": {
+        "n": 41654,
+        "median_bb_per_100": -5.573887143434847,
+        "pct_beyond_200": 1.5868824122533252
+      },
+      "200": {
+        "n": 23870,
+        "median_bb_per_100": -5.7789450862803875,
+        "pct_beyond_200": 0.7457059069962296
+      }
+    },
+    "features": [
+      "vpip",
+      "pfr",
+      "fold_rate",
+      "wtsd",
+      "aggression_factor",
+      "vpip_pfr_gap",
+      "avg_invested_bb",
+      "distinct_stakes",
+      "max_stake",
+      "btn_share",
+      "bb_vpip_rate",
+      "avg_stack_bb",
+      "max_tables",
+      "avg_tables",
+      "distinct_tables",
+      "hands_per_day",
+      "site"
+    ],
+    "target_sd": 83.97123408507878,
+    "coverage_pct_of_gold": 61.4,
+    "per_venue": {
+      "ABS": {
+        "n": 2240,
+        "baseline_rmse": 48.72697937756256,
+        "ridge_rmse": 51.196578565829356,
+        "hist_gbm_rmse": 45.50966525300726,
+        "hist_gbm_skill": 0.12769511982534887
+      },
+      "FTP": {
+        "n": 1691,
+        "baseline_rmse": 48.287052098202956,
+        "ridge_rmse": 48.28371657778924,
+        "hist_gbm_rmse": 46.43210807499408,
+        "hist_gbm_skill": 0.07535416497998115
+      },
+      "ONG": {
+        "n": 1150,
+        "baseline_rmse": 54.95718614868249,
+        "ridge_rmse": 52.231231343103715,
+        "hist_gbm_rmse": 53.30022300666372,
+        "hist_gbm_skill": 0.05939111796024166
+      },
+      "PS": {
+        "n": 9459,
+        "baseline_rmse": 40.85144152707725,
+        "ridge_rmse": 40.1472607615249,
+        "hist_gbm_rmse": 37.23549145502985,
+        "hist_gbm_skill": 0.16919441314996186
+      },
+      "PTY": {
+        "n": 1893,
+        "baseline_rmse": 210.28376034804808,
+        "ridge_rmse": 206.89237190196255,
+        "hist_gbm_rmse": 181.6622627842276,
+        "hist_gbm_skill": 0.2536922187344395
+      }
+    }
+  },
+  "fork_b_volume": {
+    "n_train": 74038,
+    "n_test": 24680,
+    "baseline": {
+      "rmse": 2.4638695593267657,
+      "mae": 2.113980885065819
+    },
+    "models": {
+      "ridge": {
+        "rmse": 2.2428653469699404,
+        "mae": 1.8355357190418358,
+        "skill_vs_baseline": 0.17135029881415675
+      },
+      "hist_gbm": {
+        "rmse": 1.8658105643789673,
+        "mae": 1.3413905318336652,
+        "skill_vs_baseline": 0.4265445670550494
+      }
+    },
+    "grain": "player",
+    "target": "log1p(hands_final7)",
+    "zero_share": 0.6250329220608197,
+    "features": [
+      "vpip",
+      "pfr",
+      "fold_rate",
+      "wtsd",
+      "aggression_factor",
+      "vpip_pfr_gap",
+      "avg_invested_bb",
+      "distinct_stakes",
+      "max_stake",
+      "btn_share",
+      "bb_vpip_rate",
+      "hands_prior",
+      "tenure_days",
+      "site"
+    ],
+    "target_sd": 2.618339284596414,
+    "coverage_pct_of_gold": 92.3,
+    "leakage_note": "BEHAVIOUR columns are lifetime averages that include the final week, so they leak the label window. Closing this means extending features.py to compute rate columns restricted to day <= cutoff. NOT closed in this run.",
+    "raw_scale_rmse": {
+      "baseline": 799.2860389314496,
+      "ridge": 1034.0995212368448,
+      "hist_gbm": 699.6789572571644
+    },
+    "ablation": {
+      "prior_window_only": {
+        "features": 2,
+        "r2_vs_global_mean": 0.2839811463003791
+      },
+      "lifetime_rates_only": {
+        "features": 11,
+        "r2_vs_global_mean": 0.3201608435975638
+      },
+      "both (headline)": {
+        "features": 13,
+        "r2_vs_global_mean": 0.46998657033343794
+      }
+    }
+  },
+  "fork_c_pot": {
+    "n_train": 539431,
+    "n_test": 60569,
+    "baseline": {
+      "rmse": 36.924389095496146,
+      "mae": 14.785827122662113
+    },
+    "models": {
+      "ridge": {
+        "rmse": 36.8441363472509,
+        "mae": 14.557620053313945,
+        "skill_vs_baseline": 0.004342145565865874
+      },
+      "hist_gbm": {
+        "rmse": 36.85812736135102,
+        "mae": 14.722461025792944,
+        "skill_vs_baseline": 0.0035858293990641554
+      }
+    },
+    "grain": "hand",
+    "target": "pot_bb",
+    "hands_with_pot": 21556288,
+    "sampled": 600000,
+    "split": "by time \u2014 last 4 days per venue held out",
+    "features": [
+      "day",
+      "hour",
+      "minute_of_day",
+      "is_weekend",
+      "stake",
+      "big_blind",
+      "n_players",
+      "seat_count",
+      "avg_stack_bb",
+      "min_stack_bb",
+      "site"
+    ],
+    "target_sd": 36.923631240549035,
+    "excluded_as_leakage": [
+      "saw_flop",
+      "showdown",
+      "rake_bb",
+      "money_status",
+      "money_ok"
+    ],
+    "per_stake": {
+      "0.25": {
+        "n": 1103,
+        "baseline_rmse": 38.58510729310557,
+        "hist_gbm_rmse": 38.48821294899859
+      },
+      "0.5": {
+        "n": 8728,
+        "baseline_rmse": 29.101017682753845,
+        "hist_gbm_rmse": 28.885678335152527
+      },
+      "1.0": {
+        "n": 6630,
+        "baseline_rmse": 43.677235996222656,
+        "hist_gbm_rmse": 43.4770501230995
+      },
+      "2.0": {
+        "n": 12763,
+        "baseline_rmse": 40.15111008458257,
+        "hist_gbm_rmse": 40.15235562903564
+      },
+      "4.0": {
+        "n": 13489,
+        "baseline_rmse": 34.841866946503934,
+        "hist_gbm_rmse": 34.82989666360788
+      },
+      "6.0": {
+        "n": 8337,
+        "baseline_rmse": 39.70962372269848,
+        "hist_gbm_rmse": 39.51165420593169
+      },
+      "10.0": {
+        "n": 9519,
+        "baseline_rmse": 33.68663250890127,
+        "hist_gbm_rmse": 33.80726369349022
+      }
+    }
+  }
+}

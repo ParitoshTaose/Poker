@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fork Specs · The Ecosystem Engine — BDA Group Project</title>
+<style>
+  :root{
+    --bg:#EDF2F8; --paper:#FFFFFF; --panel:#FFFFFF; --panel2:#E9F0F8; --line:#D5E0ED; --line2:#C6D4E4;
+    --cyan:#2E8BC0; --cyan-lt:#176390;
+    --gold:#C08A2E; --gold-lt:#8A5E17;
+    --red:#DB4A40;  --red-lt:#C0392E;
+    --green:#2AA277; --green-lt:#1C8560;
+    --ink:#14263C; --body:#2B3D52; --soft:#546A82; --dim:#7E92A8;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+    --maxw:64ch;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    background:
+      radial-gradient(1100px 650px at 80% -10%, rgba(46,139,192,.10) 0%, rgba(237,242,248,0) 55%),
+      var(--bg);
+    color:var(--ink); font-family:var(--sans); line-height:1.6;
+    font-size:17px; -webkit-font-smoothing:antialiased;
+  }
+
+  .progress{position:fixed;top:0;left:0;height:3px;width:0%;z-index:60;
+    background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .12s linear}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:50;
+    display:flex;align-items:center;gap:14px;padding:0 20px;
+    background:rgba(237,242,248,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);font-size:12.5px}
+  .topbar .course{color:var(--cyan-lt);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .topbar .sep{color:var(--dim)}
+  .topbar .sess{color:var(--gold-lt);font-weight:700}
+  .topbar .right{margin-left:auto;color:var(--soft)}
+
+  .shell{display:grid;grid-template-columns:238px minmax(0,1fr);gap:0;
+    max-width:1180px;margin:0 auto;padding-top:52px}
+  .rail{position:sticky;top:52px;align-self:start;height:calc(100vh - 52px);
+    padding:30px 18px 30px 24px;overflow-y:auto}
+  .rail .rlabel{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dim);font-weight:800;margin:0 0 14px 8px}
+  .rail a{display:block;text-decoration:none;color:var(--soft);font-size:13px;
+    padding:6px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0;
+    transition:.18s;line-height:1.35}
+  .rail a .act{display:block;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:1px}
+  .rail a:hover{color:var(--ink);background:rgba(46,139,192,.09)}
+  .rail a.on{color:var(--cyan-lt);border-left-color:var(--cyan);background:rgba(46,139,192,.12);font-weight:700}
+  .rail a.on .act{color:var(--gold-lt)}
+
+  main{padding:0 clamp(20px,5vw,64px) 120px;min-width:0}
+
+  .hero{padding:56px 0 30px}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;
+    color:var(--cyan-lt);margin-bottom:20px}
+  .eyebrow .n{color:var(--gold-lt)}
+  .hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(38px,6.4vw,68px);
+    line-height:1.02;letter-spacing:-.01em;color:var(--ink);margin-bottom:22px}
+  .hero h1 em{font-style:italic;color:var(--gold-lt)}
+  .hero .deck{font-size:19.5px;color:var(--soft);max-width:60ch;line-height:1.5}
+  .hero .deck b{color:var(--ink);font-weight:600}
+  .grounded-note{margin-top:26px;font-size:13px;color:var(--dim);
+    border-top:1px solid var(--line);padding-top:16px;line-height:1.7}
+  .grounded-note code{font-family:var(--mono);color:var(--cyan-lt);font-size:12px}
+
+  section{padding:52px 0;border-top:1px solid var(--line);scroll-margin-top:64px}
+  .sec-eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+    color:var(--gold-lt);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .sec-eyebrow .num{font-family:var(--mono);color:var(--cyan);font-size:12px}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(27px,3.8vw,40px);
+    line-height:1.08;letter-spacing:-.01em;color:var(--ink);margin-bottom:18px}
+  h3{font-size:19px;font-weight:750;color:var(--cyan-lt);margin:30px 0 10px}
+  h4{font-size:15.5px;font-weight:750;color:var(--ink);margin:22px 0 8px}
+  p{max-width:var(--maxw);margin-bottom:16px;color:var(--body)}
+  p b{color:var(--ink);font-weight:650}
+  p .hl{color:var(--gold-lt);font-weight:650}
+  ul.pts{list-style:none;max-width:var(--maxw);margin:6px 0 18px}
+  ul.pts li{position:relative;padding-left:26px;margin-bottom:11px;color:var(--body)}
+  ul.pts li::before{content:"";position:absolute;left:3px;top:9px;width:9px;height:9px;
+    border-radius:2px;background:var(--cyan);transform:rotate(45deg)}
+  ul.pts li b{color:var(--ink);font-weight:650}
+  ol.steps{list-style:none;counter-reset:st;max-width:var(--maxw);margin:6px 0 18px}
+  ol.steps li{position:relative;padding-left:36px;margin-bottom:13px;color:var(--body)}
+  ol.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;
+    width:24px;height:24px;border-radius:7px;background:rgba(46,139,192,.14);color:var(--cyan-lt);
+    font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+  ol.steps li b{color:var(--ink);font-weight:650}
+  .lead{font-size:20px;color:var(--soft);max-width:58ch;line-height:1.5;margin-bottom:20px}
+  .lead b{color:var(--ink)}
+
+  .box{margin:24px 0;border-radius:14px;padding:18px 20px;font-size:16px;line-height:1.5;
+    border-left:4px solid var(--line);background:var(--panel);color:var(--body)}
+  .box .lab{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:800;margin-bottom:8px}
+  .box b{color:var(--ink);font-weight:650}
+  .box.take{border-left-color:var(--cyan);background:rgba(46,139,192,.08)}
+  .box.take .lab{color:var(--cyan-lt)}
+  .box.board{border-left-color:var(--gold);background:rgba(192,138,46,.11)}
+  .box.board .lab{color:var(--gold-lt)}
+  .box.brk{border-left-color:var(--red);background:rgba(219,74,64,.08)}
+  .box.brk .lab{color:var(--red-lt)}
+  .box.discuss{border-left-color:var(--gold);background:rgba(192,138,46,.07);border-left-style:dashed}
+  .box.discuss .lab{color:var(--gold-lt)}
+  .box .sub{display:block;margin-top:10px;font-size:14px;color:var(--soft);font-weight:400}
+  .box ul{margin:8px 0 0 0;list-style:none}
+  .box ul li{position:relative;padding-left:20px;margin-bottom:7px;font-size:15px}
+  .box ul li::before{content:"—";position:absolute;left:0;color:var(--dim)}
+
+  .ground{margin:30px 0;border:1px solid var(--green);border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(42,162,119,.07),rgba(42,162,119,.02));
+    box-shadow:0 1px 3px rgba(20,38,60,.05)}
+  .ground .ghead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:13px 18px;background:rgba(42,162,119,.12);border-bottom:1px solid rgba(42,162,119,.30)}
+  .ground .gtag{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;
+    color:var(--green-lt)}
+  .ground .gtag::before{content:"◆ ";color:var(--green)}
+  .ground .gfile{font-family:var(--mono);font-size:12px;color:var(--cyan-lt);
+    background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+  .ground .gbody{padding:18px 20px}
+  .ground .gbody > p:first-child{margin-top:0}
+
+  .code{background:#F5F8FC;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+  .code .chead{display:flex;align-items:center;gap:8px;padding:8px 14px;
+    background:#E8F0F8;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+  .code .chead .dotrow{display:flex;gap:6px;margin-right:6px}
+  .code .chead .cdot{width:10px;height:10px;border-radius:50%;background:#C6D4E4}
+  .code .chead .cname{color:var(--cyan-lt)}
+  .code .chead .cbadge{margin-left:auto;color:var(--dim)}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.65;color:#2A3B4E}
+  .code pre .cm{color:#8496AC;font-style:italic}
+  .code pre .kw{color:#9A6B15}
+  .code pre .fn{color:#176390}
+  .code pre .st{color:#1C8560}
+
+  /* tables */
+  .tw{overflow-x:auto;margin:20px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+  th{background:var(--panel2);color:var(--ink);font-weight:750;text-align:left;
+    padding:11px 14px;border-bottom:1px solid var(--line);font-size:12.5px;
+    letter-spacing:.03em;text-transform:uppercase}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td b{color:var(--ink)}
+  td code,th code{font-family:var(--mono);font-size:12px;color:var(--cyan-lt)}
+  .num{font-family:var(--mono);text-align:right;white-space:nowrap}
+
+  /* stat strip */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .stat .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--cyan-lt);line-height:1.1}
+  .stat .v.g{color:var(--gold-lt)} .stat .v.r{color:var(--red-lt)} .stat .v.gr{color:var(--green-lt)}
+  .stat .k{font-size:12px;color:var(--soft);margin-top:6px;line-height:1.35}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .chip{font-family:var(--mono);font-size:11.5px;padding:5px 10px;border-radius:7px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--cyan-lt)}
+  .chip.g{background:rgba(192,138,46,.12);border-color:rgba(192,138,46,.35);color:var(--gold-lt)}
+  .chip.gr{background:rgba(42,162,119,.12);border-color:rgba(42,162,119,.35);color:var(--green-lt)}
+  .chip.r{background:rgba(219,74,64,.10);border-color:rgba(219,74,64,.33);color:var(--red-lt)}
+
+  .fork-hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .fork-tag{font-family:var(--mono);font-size:12px;font-weight:800;letter-spacing:.04em;
+    padding:4px 10px;border-radius:7px;color:#fff}
+  .fork-tag.a{background:var(--cyan)}
+  .fork-tag.b{background:var(--gold)}
+  .fork-tag.c{background:var(--soft)}
+
+  .closer{margin-top:20px;padding:34px 30px;border-radius:18px;
+    background:linear-gradient(140deg,#E8F1FB,#F6FAFD);border:1px solid var(--line)}
+  .next{display:flex;align-items:center;gap:14px;margin-top:26px;padding:16px 20px;
+    border:1px solid var(--line);border-radius:14px;background:var(--panel);text-decoration:none;color:inherit;transition:.18s;
+    box-shadow:0 1px 2px rgba(20,38,60,.04)}
+  .next:hover{border-color:var(--cyan)}
+  .next .arw{font-size:24px;color:var(--cyan)}
+  .next .nl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .next .nt{color:var(--cyan-lt);font-weight:700;font-size:16px;margin-top:2px}
+  .next .nd{font-size:13px;color:var(--soft);margin-top:2px}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 10px;margin-top:40px;font-size:12.5px;color:var(--dim);line-height:1.9}
+  footer b{color:var(--soft)}
+  footer code{font-family:var(--mono);color:var(--cyan-lt);font-size:11.5px}
+  footer a{color:var(--cyan-lt);text-decoration:none;border-bottom:1px dotted var(--line2)}
+  footer a:hover{border-bottom-style:solid}
+
+  .rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  @media(max-width:1000px){
+    .shell{grid-template-columns:1fr}
+    .rail{display:none}
+    main{padding:0 22px 90px}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="topbar">
+  <span class="course">Big Data Analytics</span>
+  <span class="sep">·</span>
+  <span class="sess">MBA Group Project — 20 marks</span>
+  <span class="right">Fork Specs v1 · 12 Aug 2026</span>
+</div>
+
+<div class="shell">
+<nav class="rail">
+  <div class="rlabel">Fork Specs</div>
+  <a href="#s1"><span class="act">Read first</span>What this page is</a>
+  <a href="#s2"><span class="act">Shared</span>The two Gold tables</a>
+  <a href="#s3"><span class="act">Open decision</span>One spine, or several?</a>
+  <a href="#s4"><span class="act">Fork A</span>Lapse classification</a>
+  <a href="#s5"><span class="act">Fork B</span>Player value regression</a>
+  <a href="#s6"><span class="act">Fork C</span>Hand economics regression</a>
+  <a href="#s7"><span class="act">Bake-off</span>Scorecard &amp; next step</a>
+</nav>
+
+<main>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <div class="eyebrow">NMIMS · MBA Business Analytics · Trimester IV <span class="n">· Fork Specs</span></div>
+  <h1>Three questions, <em>on paper first</em></h1>
+  <p class="deck">
+    <code style="font-family:var(--mono);font-size:16px">docs/execution-roadmap.html</code> Step 5 says: prototype
+    three candidate ML questions cheaply, score them, carry one winner forward. This page is what gets written
+    <b>before any code runs</b> — the exact target, the exact feature list, the model, and the honest risk for
+    each fork — so whoever builds Fork A doesn't have to reverse-engineer the label from <code style="font-family:var(--mono);font-size:16px">features.py</code>,
+    and the team can catch a leaky feature or an unfair baseline on paper instead of after training.
+  </p>
+  <p class="deck" style="margin-top:16px">
+    This is also how <b>Gate 0.3</b> in <code style="font-family:var(--mono);font-size:16px">delivery-gate.html</code>
+    ("the fork is chosen and written down") gets cleared with real content instead of a one-line pick.
+  </p>
+  <div class="grounded-note">
+    <b>Nothing here is a result.</b> No fork has run yet. Every number below is either a measured fact about the
+    Gold tables (cited from <code>Project/CLAUDE.md</code> or <code>src/features.py</code>) or an open decision
+    the team still has to make — marked as such, not guessed at.
+  </div>
+</header>
+
+<!-- ===================== S2 — SHARED ===================== -->
+<section id="s2">
+  <div class="sec-eyebrow"><span class="num">01</span> Shared foundation</div>
+  <h2>The two Gold tables every fork reads</h2>
+  <p class="lead">All three forks read from the same two tables — nobody touches Silver or Bronze again. That's
+  the point of the medallion layout: <b>116.6M seat-rows in, a few hundred thousand rows out.</b></p>
+
+  <div class="stats rv">
+    <div class="stat"><div class="v">106,977</div><div class="k"><code>gold/player_features</code> rows — one per (site, player), ≥100 hands. 41 cols, 18 MB.</div></div>
+    <div class="stat"><div class="v g">21,556,288</div><div class="k"><code>gold/hand_features</code> rows — one per hand. 20 cols, 389 MB.</div></div>
+    <div class="stat"><div class="v gr">61.8%</div><div class="k">of the 280,363 players ever seen were dropped at the &lt;100-hand filter — a floor, not a rounding error.</div></div>
+  </div>
+
+  <div class="box brk rv"><span class="lab">Where it breaks — <code>player_features</code> is a lifetime average, not a before/after split</span>
+    Every rate column in <code>player_features</code> — <code>vpip</code>, <code>pfr</code>, <code>fold_rate</code>,
+    <code>wtsd</code>, <code>aggression_factor</code>, <code>bb_per_100</code>, <code>hands_per_day</code>,
+    <code>max_tables</code> — is averaged over a player's <b>entire</b> recorded history, including whatever
+    happened in the final week. <code>features.py</code> only splits activity <i>counts</i> into
+    <code>hands_prior</code> / <code>hands_final7</code>; it does not compute a "rates up to the cutoff only"
+    version of anything else.
+    <span class="sub"><b>Consequence:</b> any fork that predicts something about the <i>future</i> from
+    <i>past</i> behaviour (Fork A's lapse label, Fork B's next-week-volume variant) is at risk of quietly
+    training on data from inside the window it's trying to predict. This is the same class of bug the uncalled-bet
+    fix and the <code>pot_bb</code> leakage guard in <code>features.py</code> already catch elsewhere in this
+    project — it just hasn't been closed here yet. Each fork section below flags exactly where this bites and
+    what the fix would cost.</span>
+  </div>
+
+  <div class="tw rv"><table>
+    <tr><th>Fork</th><th>Reads</th><th>Grain</th><th>Forward-looking?</th></tr>
+    <tr><td><b>A · Lapse classification</b></td><td><code>player_features</code></td><td>one row per player</td><td class="num">yes — leakage risk above applies</td></tr>
+    <tr><td><b>B · Player value regression</b></td><td><code>player_features</code></td><td>one row per player</td><td class="num">money variant: no · volume variant: yes</td></tr>
+    <tr><td><b>C · Hand economics regression</b></td><td><code>hand_features</code></td><td>one row per hand</td><td class="num">no — cleanest of the three</td></tr>
+  </table></div>
+</section>
+
+<!-- ===================== S3 — OPEN DECISION ===================== -->
+<section id="s3">
+  <div class="sec-eyebrow"><span class="num">02</span> Open decision</div>
+  <h2>One spine, or several?</h2>
+  <p class="lead">This isn't fully open — <code>delivery-gate.html</code> Gate 0.3 already commits the team to
+  picking <b>one</b> spine. But it's worth spelling out what that means before the bake-off, because it changes
+  how much modelling work each fork actually needs.</p>
+
+  <div class="box discuss rv"><span class="lab">What Gate 0.3 already decided (12 Aug 2026, unresolved as of writing)</span>
+    <i>"0.3 — The fork is chosen and written down: <b>segmentation, lapse classification, or value regression as
+    the spine.</b>"</i> Read literally, K-Means segmentation is itself an eligible candidate for the spine slot —
+    not just a guaranteed side-model that runs regardless of which fork wins. And <b>"at least two ML approaches,
+    compare metrics"</b> (the brief, Phase 3) is satisfied <i>inside</i> whichever single spine is chosen: two
+    different algorithms trained on the same target, scored against each other and against a no-skill baseline.
+    <span class="sub">Fork C isn't named in that gate line — worth confirming with the team whether that's
+    deliberate (Fork C dropped as a candidate) or just shorthand.</span>
+  </div>
+
+  <div class="tw rv"><table>
+    <tr><th>If the spine is…</th><th>What ships in Step 8</th><th>Where it's strong</th><th>Where it's thin</th></tr>
+    <tr><td><b>Segmentation</b><br>(K-Means)</td><td>≥2 clustering configurations (e.g. K-Means vs. a different K, or vs. hierarchical), silhouette compared</td><td>Already has a working demo — the segment explorer in <code>poker-project-plan.html</code></td><td>Unsupervised only; no classification/regression rubric line touched directly</td></tr>
+    <tr><td><b>Fork A</b><br>(classification)</td><td>2 MLlib classifiers on the lapse label, ROC/PR compared</td><td>Clear operator action (a retention list); 100% behavioural coverage</td><td>Leakage risk above; "23 days" must stay framed as short-horizon lapse, not churn</td></tr>
+    <tr><td><b>Fork B</b><br>(regression)</td><td>2 MLlib regressors on player value, RMSE/MAE/R² compared</td><td>Direct rake-and-retention story — money, not a proxy</td><td>Money variant is a 4–5 venue question; volume variant inherits the leakage risk</td></tr>
+    <tr><td><b>Fork C</b><br>(regression)</td><td>2 MLlib regressors on <code>pot_bb</code>, RMSE/MAE/R² compared</td><td>No leakage, ~100% coverage, cleanest methodology of the three</td><td>Reads as "poker analytics" unless framed hard as revenue-per-seat forecasting</td></tr>
+  </table></div>
+
+  <p>The rest of this page specs Fork A, B, and C in full — each written as if it might be the one spine, so
+  whichever wins the bake-off already has a complete build spec, and the two that lose become the report's
+  "alternatives considered" paragraph almost verbatim (per the roadmap's own framing).</p>
+</section>
+
+<!-- ===================== S4 — FORK A ===================== -->
+<section id="s4">
+  <div class="sec-eyebrow"><span class="num">03</span> Fork A</div>
+  <div class="fork-hd"><span class="fork-tag a">FORK A</span><h2 style="margin-bottom:0">Lapse classification</h2></div>
+  <p class="lead" style="margin-top:14px">Flag players who are about to go quiet on a venue <b>before</b> their
+  data simply stops — an early-warning list a retention team can act on, aimed at the recreational players who
+  actually fund the rake.</p>
+
+  <h3>Problem it solves</h3>
+  <p>The operator earns rake only while people keep sitting down. Recreational players who quietly stop showing
+  up are lost revenue that nobody notices until it's already gone. A model that scores <i>currently active</i>
+  players by risk-of-lapsing turns "we lost some players last month" into "these 500 specific accounts are
+  drifting — here's what a targeted offer to them is worth."</p>
+
+  <div class="box brk rv"><span class="lab">Honesty flag — this is lapse, not churn</span>
+    The dataset covers at most 26 days per venue. <b>"Zero hands in the trailing week" is a short-horizon lapse
+    signal, not proof anyone has permanently left.</b> Say so every time this fork is presented — it's one of the
+    named honesty rules for this project.
+  </div>
+
+  <h3>Target &amp; label definition</h3>
+  <p>Grounded in <code>features.py</code>'s existing columns — no new Gold columns needed to build the label:</p>
+
+  <div class="ground rv">
+    <div class="ghead"><span class="gtag">Grounded</span><span class="gfile">src/features.py — LAPSE_WINDOW, hands_final7, hands_prior, site_last_day</span></div>
+    <div class="gbody">
+      <p><code>label = 1 if hands_final7 == 0 else 0</code>, restricted to players with <code>hands_prior &gt; 0</code>
+      (i.e. <code>first_day &lt;= site_last_day − 7</code>) — a player who only shows up in the final week hasn't
+      lapsed, they're new, and including them would mislabel arrivals as departures.</p>
+      <p>The trailing window is measured <b>per venue, from that venue's own last observed day</b>
+      (ABS/PS day 20 · FTP day 23 · ONG day 24 · IPN/PTY day 26), not from a global calendar date — this is the
+      fix for the bug that would otherwise label all of ABS and PS (44% of the dataset) as lapsed purely because
+      their recording stops earlier.</p>
+    </div>
+  </div>
+
+  <div class="box discuss rv"><span class="lab">Open decision — class balance is not yet measured</span>
+    Nobody has run <code>value_counts()</code> on this label yet. Do it <b>before</b> picking a metric or a
+    <code>class_weight</code> setting — do not assume it's balanced, and do not guess a number for the report.
+  </div>
+
+  <h3>Feature set</h3>
+  <div class="tw rv"><table>
+    <tr><th>Use as a feature</th><th>Exclude — leaks the label</th></tr>
+    <tr><td><code>vpip</code>, <code>pfr</code>, <code>fold_rate</code>, <code>wtsd</code>,
+      <code>aggression_factor</code>, <code>vpip_pfr_gap</code>, <code>avg_invested_bb</code>,
+      <code>avg_stack_bb</code>, <code>hands_per_day</code>, <code>max_tables</code> / <code>avg_tables</code> /
+      <code>distinct_tables</code> (null on iPoker — keep <code>tables_recorded</code> as a feature too),
+      <code>distinct_stakes</code>, <code>max_stake</code>, <code>btn_share</code>, <code>bb_vpip_rate</code>,
+      <code>hands_prior</code> (activity <i>up to</i> the cutoff — legitimate), a derived
+      <code>tenure_days = cutoff − first_day</code></td>
+      <td><code>hands_final7</code>, <code>days_since_last</code>, <code>last_day</code> — these <b>are</b> the
+      label. <code>site_last_day</code>, raw <code>first_day</code> — contextual only, not features.</td></tr>
+  </table></div>
+  <p style="margin-top:-6px;font-size:14px;color:var(--soft)">Every column in the left-hand list still carries
+  the lifetime-aggregation caveat from the Shared section — they're not literally "known before the cutoff,"
+  they're "the best available proxy for it" until <code>features.py</code> is extended to compute prior-window-only rates.</p>
+
+  <h3>Bake-off model — Step 5, a few hours</h3>
+  <p><b>Baseline:</b> majority-class predictor (predict "still active" for everyone). <b>Candidate:</b> a single
+  interpretable model, chosen so a coefficient can go straight into the business narrative:</p>
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">Python — bake-off, local, scikit-learn</span><span class="cbadge">fork a</span></div>
+    <pre><span class="cm"># subset Gold, pandas/polars in, sklearn out — throwaway code, not graded</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> LogisticRegression
+model = LogisticRegression(class_weight=<span class="st">"balanced"</span>, max_iter=1000)</pre>
+  </div>
+  <p>Score against the majority-class baseline with <b>precision/recall/F1</b>, not accuracy alone — a 93%
+  accurate model that never flags anyone is worthless to a retention team.</p>
+
+  <h3>If Fork A becomes the spine — Step 8 MLlib build</h3>
+  <div class="tw rv"><table>
+    <tr><th>Approach 1</th><th>Approach 2</th><th>Metrics compared</th></tr>
+    <tr><td><code>pyspark.ml.classification.LogisticRegression</code><br>(interpretable, coefficients map to a slide)</td>
+      <td><code>pyspark.ml.classification.GBTClassifier</code><br>(catches nonlinear interactions, e.g. aggression × table count)</td>
+      <td>ROC-AUC, <b>PR-AUC</b> (primary, given likely imbalance), F1 at a chosen threshold, confusion matrix.
+      Frame the threshold as a business choice: "flag the top 10% highest-risk active players" ties the model
+      output directly to a retention-campaign budget.</td></tr>
+  </table></div>
+
+  <div class="chips rv">
+    <span class="chip g">RUBRIC · Business Problem &amp; Storytelling (3)</span>
+    <span class="chip g">RUBRIC · ML Implementation (4)</span>
+    <span class="chip gr">COVERAGE · ~100% of kept players</span>
+    <span class="chip r">RISK · label-window leakage — not yet closed</span>
+  </div>
+</section>
+
+<!-- ===================== S5 — FORK B ===================== -->
+<section id="s5">
+  <div class="sec-eyebrow"><span class="num">04</span> Fork B</div>
+  <div class="fork-hd"><span class="fork-tag b">FORK B</span><h2 style="margin-bottom:0">Player value regression</h2></div>
+  <p class="lead" style="margin-top:14px">Predict how much a player is worth going forward, so retention spend
+  goes to high-value at-risk players first, not spread evenly across everyone.</p>
+
+  <h3>Problem it solves</h3>
+  <p>Not every lapsing player is worth the same retention effort. A model that ranks players by <i>expected
+  future value</i> — money generated or volume of play — turns Fork A's "who's leaving" list into "who's leaving
+  <b>and worth calling about</b>," which is the difference between a mass email and a targeted offer.</p>
+
+  <p>Two candidate targets, on the same table, with very different coverage:</p>
+
+  <h3>Variant 1 — money value (rake-adjacent)</h3>
+  <div class="ground rv">
+    <div class="ghead"><span class="gtag">Grounded</span><span class="gfile">Project/CLAUDE.md — money-coverage measurement, 2026-08-07</span></div>
+    <div class="gbody">
+      <p><b>Target:</b> <code>bb_per_100</code> (or <code>avg_net_bb</code>), computed only over
+      <code>money_hands</code> — hands whose winnings actually reconcile against the pot.</p>
+      <p><b>Coverage by venue:</b> ONG 99.1% · ABS 82.0% · PS 27.3% · FTP 27.2% · PTY 100% present but only 14%
+      reconciling · <b>IPN 0.0% — excluded entirely, it reconciles on none of its 6.0M hands.</b> Overall,
+      88,655 of 106,977 kept players (82.9%) have any usable money at all; median <code>money_hands</code> is
+      only 92.</p>
+    </div>
+  </div>
+  <div class="box brk rv"><span class="lab">Where it breaks — filter on money_hands, never hands_played</span>
+    6.4% of players sit beyond ±200 bb/100 — not talent, a small-sample artifact from thin money coverage. Worst
+    measured case: 103 hands played, 7 with usable money, −1,494 bb/100. <b>Open decision:</b> pick and record a
+    minimum <code>money_hands</code> threshold (e.g. ≥30 or ≥50) before training — there is no verified "correct"
+    number yet, this is a modelling call the team has to make and justify.
+  </div>
+
+  <h3>Variant 2 — next-week volume</h3>
+  <div class="ground rv">
+    <div class="ghead"><span class="gtag">Grounded</span><span class="gfile">src/features.py — hands_prior, hands_final7</span></div>
+    <div class="gbody">
+      <p><b>Target:</b> <code>hands_final7</code> — hands played in the trailing 7 days before this venue's own
+      last observed day. 100% coverage, no money-quality dependency.</p>
+    </div>
+  </div>
+  <div class="box brk rv"><span class="lab">Where it breaks — the same lifetime-aggregation leakage as Fork A</span>
+    Predicting <code>hands_final7</code> from lifetime-averaged <code>vpip</code>/<code>pfr</code>/<code>bb_per_100</code>
+    etc. leaks final-week behaviour into the predictors, because those columns already include the final week in
+    their average. The only cleanly "prior-only" feature currently in Gold is <code>hands_prior</code> itself.
+    Closing this properly means extending <code>features.py</code> to compute rate columns restricted to
+    <code>day &lt;= cutoff</code> — an open feature-engineering task, not yet done.
+  </div>
+
+  <h3>Feature set (money variant — the cleaner of the two)</h3>
+  <div class="tw rv"><table>
+    <tr><th>Use</th><th>Role</th></tr>
+    <tr><td><code>money_hands</code></td><td>filter / confidence weight, not a predictor of value itself</td></tr>
+    <tr><td><code>vpip</code>, <code>pfr</code>, <code>aggression_factor</code>, <code>avg_stack_bb</code>,
+      <code>max_tables</code>, <code>distinct_stakes</code>, <code>max_stake</code>, <code>site</code>/<code>venue</code></td>
+      <td>predictors — this variant characterises <i>realised</i> value from contemporaneous behaviour, so
+      lifetime aggregation is defensible here (it is not a forward-looking task unless explicitly reframed with a time split)</td></tr>
+  </table></div>
+
+  <h3>Bake-off model — Step 5, a few hours</h3>
+  <p><b>Baseline:</b> mean predictor — per-venue mean, not a single global mean, given how much the venues
+  differ in stakes and player mix. <b>Candidate:</b></p>
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">Python — bake-off, local, scikit-learn</span><span class="cbadge">fork b</span></div>
+    <pre><span class="cm"># money variant: exclude IPN, filter money_hands >= threshold, THEN fit</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> Ridge
+model = Ridge(alpha=1.0)</pre>
+  </div>
+
+  <h3>If Fork B becomes the spine — Step 8 MLlib build</h3>
+  <div class="tw rv"><table>
+    <tr><th>Approach 1</th><th>Approach 2</th><th>Metrics compared</th></tr>
+    <tr><td><code>pyspark.ml.regression.LinearRegression</code></td>
+      <td><code>pyspark.ml.regression.GBTRegressor</code></td>
+      <td>RMSE, MAE, R² — <b>reported per venue</b> for the money variant, since coverage and quality differ
+      sharply by venue; a single pooled metric would hide the ONG/ABS-vs-PS/FTP gap.</td></tr>
+  </table></div>
+
+  <div class="chips rv">
+    <span class="chip g">RUBRIC · Business Problem &amp; Storytelling (3)</span>
+    <span class="chip g">RUBRIC · ML Implementation (4)</span>
+    <span class="chip r">COVERAGE · money variant ~⅓ (4–5 venues), volume variant ~100%</span>
+    <span class="chip r">RISK · money-variant threshold undecided; volume-variant leakage not yet closed</span>
+  </div>
+</section>
+
+<!-- ===================== S6 — FORK C ===================== -->
+<section id="s6">
+  <div class="sec-eyebrow"><span class="num">05</span> Fork C</div>
+  <div class="fork-hd"><span class="fork-tag c">FORK C</span><h2 style="margin-bottom:0">Hand economics regression</h2></div>
+  <p class="lead" style="margin-top:14px">Predict pot size (in big blinds) from conditions known before a card
+  is dealt — a proxy for revenue-per-seat: bigger pots mean more rake, so this says which tables, hours, and
+  stakes generate the most rake per hand.</p>
+
+  <h3>Problem it solves</h3>
+  <p>Rake is a function of pot size. A model that predicts <code>pot_bb</code> from stake, seat count, time of
+  day, and table depth tells an operator <b>where to open more tables, staff support, or run promotions</b> —
+  which slices of the schedule are structurally worth more, before a single hand is dealt.</p>
+
+  <div class="box brk rv"><span class="lab">Honesty flag — frame this as revenue forecasting, not game analytics</span>
+    Without the business framing this reads as "predicting poker outcomes," which is the wrong story for a
+    responsible-gaming-adjacent project. Every slide on this fork should open with the rake connection, not the
+    poker mechanic.
+  </div>
+
+  <h3>Target &amp; feature set — no leakage risk, exactly as coded</h3>
+  <p>This is the cleanest fork methodologically: every hand is one row, and <code>features.py</code> already
+  separates pre-hand from outcome columns explicitly.</p>
+  <div class="ground rv">
+    <div class="ghead"><span class="gtag">Grounded</span><span class="gfile">src/features.py — gold/hand_features column groups</span></div>
+    <div class="gbody">
+      <p><b>Target:</b> <code>pot_bb</code>.</p>
+      <p><b>Features (known before a card is dealt):</b> <code>day</code>, <code>hour</code>,
+      <code>minute_of_day</code>, <code>is_weekend</code>, <code>stake</code>, <code>big_blind</code>,
+      <code>n_players</code>, <code>seat_count</code>, <code>avg_stack_bb</code>, <code>min_stack_bb</code>,
+      <code>table_id</code> / <code>venue</code> / <code>site</code> as categoricals.</p>
+      <p><b>Excluded — settled at the same time as the pot, target leakage:</b> <code>saw_flop</code>,
+      <code>showdown</code>, <code>rake_bb</code>, <code>money_status</code>. This exclusion is already written
+      into <code>features.py</code>'s column comments — do not add these back in.</p>
+    </div>
+  </div>
+
+  <h3>Bake-off model — Step 5, a few hours</h3>
+  <p><b>Baseline:</b> mean <code>pot_bb</code> <i>within each stake level</i> — pot size scales with stake by
+  construction, so a single global mean would make any real model look artificially good. <b>Candidate:</b></p>
+  <div class="code rv">
+    <div class="chead"><div class="dotrow"><span class="cdot"></span><span class="cdot"></span><span class="cdot"></span></div>
+      <span class="cname">Python — bake-off, local, scikit-learn</span><span class="cbadge">fork c</span></div>
+    <pre><span class="cm"># n_players x stake interactions are the expected nonlinear signal</span>
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> GradientBoostingRegressor
+model = GradientBoostingRegressor(max_depth=<span class="fn">4</span>)</pre>
+  </div>
+
+  <h3>If Fork C becomes the spine — Step 8 MLlib build</h3>
+  <div class="tw rv"><table>
+    <tr><th>Approach 1</th><th>Approach 2</th><th>Metrics compared</th></tr>
+    <tr><td><code>pyspark.ml.regression.LinearRegression</code></td>
+      <td><code>pyspark.ml.regression.GBTRegressor</code></td>
+      <td>RMSE/MAE in bb (already stake-normalised, so comparable across stakes), R², plus a per-stake
+      breakdown since higher stakes likely carry more variance.</td></tr>
+  </table></div>
+
+  <div class="chips rv">
+    <span class="chip g">RUBRIC · Data Engineering &amp; Architecture (4)</span>
+    <span class="chip g">RUBRIC · ML Implementation (4)</span>
+    <span class="chip gr">COVERAGE · ~100% of hands, no leakage</span>
+    <span class="chip r">RISK · easy to mis-frame as game analytics, not revenue analytics</span>
+  </div>
+</section>
+
+<!-- ===================== S7 — SCORECARD ===================== -->
+<section id="s7">
+  <div class="sec-eyebrow"><span class="num">06</span> Bake-off</div>
+  <h2>Scorecard — score it, then write the decision down</h2>
+  <p class="lead">Same four axes as <code>docs/execution-roadmap.html</code> Step 5. Fill this in <b>after</b>
+  each prototype has actually run — this table is a template, not a result.</p>
+
+  <div class="tw rv"><table>
+    <tr><th>Candidate</th><th>Signal (1–5)</th><th>Coverage (1–5)</th><th>Business story (1–5)</th><th>Rubric fit (1–5)</th><th>Total</th></tr>
+    <tr><td><b>K-Means segmentation</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+    <tr><td><b>Fork A · Lapse classification</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+    <tr><td><b>Fork B · Player value (money)</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+    <tr><td><b>Fork B · Player value (volume)</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+    <tr><td><b>Fork C · Hand economics</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+  </table></div>
+
+  <div class="box take rv"><span class="lab">Scoring reminder</span>
+    Accuracy is explicitly <b>not</b> the criterion. A fork that wins on a third of the data can lose the
+    scorecard — coverage and business story carry equal weight to signal.
+  </div>
+
+  <h4>Done when</h4>
+  <ol class="steps rv">
+    <li>Every candidate row above has run end-to-end on the subset Gold tables, against its stated baseline —
+    not just a score with no baseline beside it.</li>
+    <li>Fork A's class balance has actually been measured (see the open decision flagged in its section).</li>
+    <li>A one-page decision note is committed: the filled-in scorecard, the winner, and two sentences on why
+    each loser lost. This becomes the report's "alternatives considered" paragraph almost verbatim, and clears
+    Gate 0.3.</li>
+  </ol>
+
+  <div class="closer rv">
+    <p style="margin-bottom:0;max-width:56ch">This page specs the questions. It does not answer which one wins —
+    that's what running the bake-off is for.</p>
+  </div>
+
+  <a href="execution-roadmap.html#s8" class="next rv">
+    <span class="arw">→</span>
+    <span>
+      <span class="nl">Companion · the process this spec feeds</span>
+      <span class="nt" style="display:block">execution-roadmap.html — Step 5</span>
+      <span class="nd" style="display:block">The scorecard mechanics and "done when" checklist this page's Step 5 section mirrors.</span>
+    </span>
+  </a>
+</section>
+
+<footer>
+  <b>What on this page is measured vs. open.</b> Measured (cited from <code>Project/CLAUDE.md</code> and
+  <code>src/features.py</code>, full-scale Gold build 2026-08-07): both Gold table shapes, the money-coverage
+  breakdown by venue, the 61.8% drop rate at the 100-hand floor, the per-venue observation windows, and every
+  column named in each fork's feature table. <b>Open, not yet measured:</b> Fork A's class balance, a minimum
+  <code>money_hands</code> threshold for Fork B, and whether the lifetime-aggregation leakage flagged in the
+  Shared section gets closed before or after the bake-off. <b>Not yet run:</b> every bake-off prototype and the
+  scorecard above — this document specs them, it does not report on them.
+  Companions: <a href="execution-roadmap.html">execution-roadmap.html</a> ·
+  <a href="poker-project-plan.html">poker-project-plan.html</a> ·
+  <a href="delivery-gate.html">delivery-gate.html</a>.
+</footer>
+
+</main>
+</div>
+
+<script>
+/* ---------- reading progress ---------- */
+const prog = document.getElementById('progress');
+function onScroll(){
+  const h = document.documentElement;
+  const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  prog.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+document.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+/* ---------- scroll-spy rail ---------- */
+const links = [...document.querySelectorAll('.rail a')];
+const map = {};
+links.forEach(a => map[a.getAttribute('href').slice(1)] = a);
+const sections = [...document.querySelectorAll('section')];
+let spyActive = null;
+function setActive(){
+  const line = 150;
+  let current = sections[0];
+  for(const s of sections){
+    if(s.getBoundingClientRect().top <= line) current = s;
+  }
+  if(!current) return;
+  if(current.id === spyActive) return;
+  spyActive = current.id;
+  links.forEach(l=>l.classList.remove('on'));
+  const a = map[current.id];
+  if(a) a.classList.add('on');
+}
+document.addEventListener('scroll', setActive, {passive:true});
+window.addEventListener('resize', setActive, {passive:true});
+setActive();
+
+/* ---------- reveal on scroll (scroll-driven, never stuck hidden) ---------- */
+const rvEls = [...document.querySelectorAll('.rv')];
+function revealInView(){
+  const vh = window.innerHeight;
+  for(const el of rvEls){
+    if(el.classList.contains('in')) continue;
+    if(el.getBoundingClientRect().top < vh * 0.92) el.classList.add('in');
+  }
+}
+document.addEventListener('scroll', revealInView, {passive:true});
+window.addEventListener('resize', revealInView, {passive:true});
+window.addEventListener('hashchange', ()=>{ [80,300,600].forEach(t=>setTimeout(revealInView, t)); });
+revealInView();
+</script>
+</body>
+</html>
