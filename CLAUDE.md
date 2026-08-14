@@ -23,15 +23,29 @@ Explain jargon in plain language and always tie technical ideas to a business co
 | `src/parse_phh.py` | **A tested, working parser.** Turns one `.phhs` file into 3 flat tables. Run it from the repo root: `python3.13 src/parse_phh.py <file.phhs>` |
 | `src/build_silver.py` | **Bronze → Silver, done.** Parses all 21,782 files on 8 cores into batched Parquet parts. Run: `python3.13 src/build_silver.py`. **Must stay batched** — see gotchas. |
 | `src/features.py` | **Silver → Gold (Spark), done.** Writes `gold/player_features` (one row per **site + player**) and `gold/hand_features` (one row per hand, Fork C's target `pot_bb`). Run: `.venv/bin/python src/features.py`; smoke-test on a subset with `--parts 3` (writes to `data/gold_sample/`, never clobbers real Gold). |
+| `src/bakeoff.py` | **Step 5, done.** Five candidate ML questions prototyped in scikit-learn, each against its own baseline, to *choose* the fork. Throwaway by design — nothing here is graded. Writes `docs/bakeoff-results.json`. |
+| `src/features_lapse.py` | **Fork A part 1, done.** Silver → `gold/player_lapse`: every feature recomputed over `day <= cutoff` only, plus recency/trend columns. This is the leakage fix the bake-off made Fork A conditional on. Run: `.venv/bin/python src/features_lapse.py` (3.8 min; `--rebuild` re-does the 116 M-row join from Silver instead of reusing `data/_work/hp_enriched`). |
+| `src/fork_a.py` | **Fork A part 2, done.** The graded models in **PySpark MLlib**: logistic regression · GBT · random forest, on two feature sets, against three baselines, with the bake-off's leakage ablation re-run. Writes `docs/fork-a-results.json` and `gold/lapse_scores`. Run: `.venv/bin/python src/fork_a.py` (5.0 min; `--quick` for a 1.3-min smoke test). |
+| `docs/fork-specs.html` | The three forks specced on paper *before* any model ran — exact target, feature list, honest risk each. |
+| `docs/bakeoff-decision.md` · `bakeoff-results.html` | Step 5's scorecard and decision note: **Fork A wins, conditional on closing the leakage.** |
+| `docs/fork-a-results.md` | **Fork A's results.** Population, label, baselines, metrics, the leakage re-check, the contact-budget table, and what is still weak. |
+| `src/segments.py` | **The unsupervised layer, done.** MLlib K-Means (vs bisecting k-means) on prior-window behaviour, two views, cross-tabbed against Fork A's risk scores and the plan's four hypothesised archetypes. Writes `docs/segments-results.json` and `gold/player_segments`. Run: `.venv/bin/python src/segments.py` (2.0 min). |
+| `docs/segments-results.md` | **The segmentation write-up** — and where the ecosystem thesis stops being an assumption and becomes a measurement. |
+| `docs/delivery-gate.html` | 59 checks across 8 gates (48 blockers, 11 lifts) between here and submission. |
+| **`docs/next-session.md`** | **START HERE if picking the project up fresh.** The next task specced in full — the money-weighted "rake at risk" headline — plus what to read first, the traps already paid for, and the order of everything after it. |
 | `data/` | Bronze/Silver/Gold lake. **Contents gitignored**, structure committed via `.gitkeep`. `data/README.md` explains both download routes. |
 | `notebooks/` | Empty. The executable Databricks/PySpark deliverable (Phases 2 & 3) goes here. |
 | `deliverables/report/` · `deliverables/presentation/` | Empty. Consulting report PDF; exec deck (max 10 slides). |
 
-All four HTML files are self-contained (no external CSS/JS/fonts/images) and cross-link to each
-other **by bare filename** — they only work if all four stay in the same folder. Do not split them.
+The HTML files are self-contained (no external CSS/JS/fonts/images) and cross-link to each
+other **by bare filename** — they only work if they all stay in the same folder. Do not split them.
 
-`src/` now holds all three scripts the guides name. The Gold layer is built; Step 5 (the fork
-bake-off) is the next unrun step.
+**Where the work has got to:** the lake is built (Bronze → Silver → Gold), Step 5's bake-off chose
+**Fork A**, and both models now exist and are measured — Fork A in MLlib plus K-Means as the
+unsupervised layer. **All three Phase-3 model types are done; no graded artifact has been started.**
+`notebooks/` and both `deliverables/` folders are still empty, and Gate 0.1 (does the professor
+accept a gambling dataset?) is still open — see "Still open" below. The next steps are the
+money-weighted headline, the Databricks notebook (Steps 7–8), the dashboard, and packaging (Step 9).
 
 ## The brief (from `../Github folder/nmims_analytics/sessions/Big_Data_Analytics_Project_Guidelines.pdf`)
 
@@ -182,6 +196,88 @@ player_features    106,977 rows · 41 cols ·  18 MB   (from 280,363 seen; 61.8%
   value plus both counts on purpose — clipping here would hide the problem instead of letting Phase 2
   handle it, and "outliers" is a named part of that mark.
 
+### FORK A — measured 2026-08-14 (`features_lapse.py` 3.8 min + `fork_a.py` 5.0 min, seed 42)
+
+Full results and caveats: **`docs/fork-a-results.md`** · raw metrics `docs/fork-a-results.json`.
+
+```
+gold/player_lapse   90,469 players x 61 cols   (>= 100 PRIOR-window hands)
+prevalence          68.20% lapsed (61,702)     train 67,873 / test 22,596
+prior-window checks pooled VPIP 27.2% · PFR 13.7% · BB-VPIP 30.7%  (lifetime: 27.4 / 14.1 / 31.3)
+seat-rows           93,430,449 prior + 23,188,818 label = 116,619,267
+```
+
+- **THE POPULATION FILTER IS A SELECTION LEAK, and the arithmetic proves it.** Gold's `>= 100
+  hands` is a *lifetime* rule, so a player with 30 prior hands only clears it by playing 70+ hands
+  **in the week being predicted**. Measured: lifetime rule keeps 98,718 players, prior-window rule
+  keeps 90,469, and **both contain exactly 61,702 lapsers** — so all 8,249 extra players are
+  non-lapsed, every one. Fork A must filter on `p_hands`, never on `hands_played`. Prevalence
+  moves 62.5% → 68.2% as a result, so **PR-AUC is not comparable to the bake-off's**; quote
+  ROC-AUC across the two.
+- **The leakage the bake-off flagged is closed, and the honest features now WIN.** Same GBT, same
+  population, same split: old floor (`hands_prior`+`tenure`) ROC **0.690** · lifetime rates (leaky)
+  **0.819** · prior-window only **0.856**. In the bake-off the leaky set beat the honest one
+  (0.886 vs 0.798 PR-AUC) — that ordering reversing is the point. The honest claim rests on
+  construction (`day <= cutoff`), not on the scores.
+- **Headline (CORE, all six venues, n=22,596 held out):** GBT **ROC 0.857 / PR 0.917**, RF 0.857 /
+  0.918 (a tie), logistic 0.837 / 0.901. Baselines: flag-everyone 0.500 / 0.683; **rank by
+  days-since-last-seen 0.800 / 0.864** — that free spreadsheet sort is the real bar, and it is
+  the number to put beside every model in the report.
+- **At the default 0.5 threshold every model LOSES on F1 to the dumb rule** "quiet >= 1 day"
+  (0.856 vs GBT's 0.829). Tune the cut-point and GBT wins at 0.866 @ 0.25. The operating point is
+  a decision, not a default — say so; it is free Model-Evaluation marks.
+- **The business number:** at a 10% contact budget (2,260 calls), GBT finds **2,192 true lapsers
+  vs recency-sort's 2,001** — 191 fewer wasted offers. Recall is only 0.142 at that budget and
+  that is honest: 68% of players go quiet in any week, so **the real question is which lapsers are
+  worth calling** — i.e. Fork B as a second stage, not a discarded loser.
+- **EXTENDED (stacks + tables + money) is not worth it.** +0.007 ROC-AUC for dropping iPoker,
+  i.e. 14.6% of players. **CORE is the spine.**
+- Weakest where prevalence is lowest: ONG ROC 0.769 · ABS 0.780 vs PS 0.861.
+- **Not done:** a time-shifted backtest (train at `last_day-14`, test at `last_day-7`) — the split
+  is by player, so nothing is tested on a *different period*. Do not claim temporal generalisation.
+
+### K-MEANS SEGMENTATION — measured 2026-08-14 (`segments.py`, 2.0 min, seed 42)
+
+Full write-up: **`docs/segments-results.md`** · raw metrics `docs/segments-results.json`.
+**Clustered on the PRIOR-WINDOW columns, not `player_features`** — lifetime rates include the
+label week, so segments built on them partly encode the lapse answer before the cross-tab is drawn.
+
+```
+ECOSYSTEM view (5 venues, 77,268 players, k=4)   pooled lapse 70.5%
+seg  name(interp)   share   hands  tables  vpip   pfr   bb/100   LAPSE   % of all lapsers
+ 1   Grinder         3.7%   8,799   11.5   0.18  0.12    -3.3    61.3%    3.2%
+ 0   Regular        35.4%     884    3.0   0.22  0.11    -7.2    61.6%   30.9%
+ 2   Gambler        19.8%     331    1.3   0.59  0.20   -31.8    74.6%   20.9%
+ 3   Recreational   41.2%     352    1.4   0.39  0.11   -14.3    77.1%   45.0%
+```
+
+- **THE HEADLINE FINDING — the ecosystem thesis, measured.** The two segments that lose money
+  fastest are the two that leave fastest; the Grinder, who loses least, is the **stickiest**
+  player on the platform. Gambler + Recreational = **60.9% of players but 65.9% of all lapsers**.
+  The operator's problem is not "we lose players", it is **"we lose the players we earn from and
+  keep the ones we don't."**
+- **The grinder cluster only exists when volume + multi-tabling are in the feature set.** On
+  betting style alone, no grinder forms — two of four clusters both map onto "Recreational".
+  **Style cannot tell a professional from a customer; multi-tabling can.** This is the argument
+  for the showpiece feature, and for why iPoker's missing table identity was nulled not imputed.
+- **Archetype check vs `poker-project-plan.html`'s four hypotheses: 2 confirmed, 2 wrong.**
+  Grinder ✓ (11.5 tables) and Recreational ✓. **The "Nit" (VPIP 12%) does not exist** — no
+  extreme-tight cluster forms. **The "Gambler" is loose-PASSIVE, not loose-aggressive** (PFR 20%,
+  not the hypothesised 35%). Report both misses; they are findings.
+- **These are GRADIENTS, not natural groups — do not oversell them.** Silhouette peaks at **k=2**
+  (0.439); k=4 costs 0.12–0.15 and was chosen for business readability + one-to-one archetype
+  comparison. **Bisecting k-means beats k-means on silhouette in both views** (0.356 vs 0.317 ·
+  0.319 vs 0.228) and the two agree on only **~66% of players**. That instability is the honest
+  result.
+- **Fork A's risk scores rank correctly but are NOT calibrated.** Mean predicted risk per segment
+  (0.52 · 0.53 · 0.64 · 0.67) orders the segments exactly as observed lapse does (0.616 · 0.613 ·
+  0.746 · 0.771) but sits ~9 points low — balanced class weighting pulls probabilities toward 0.5.
+  **Recalibrate before multiplying any rupee figure by a risk score.**
+- Lapse rate by segment × venue spans **30.9% → 87.2%**. A global view mixes incomparable
+  populations — this is why the dashboard's venue filter is a gate blocker, not a nicety.
+- `share_losing` in the raw output is a **small-sample artifact** (median money hands ≈ 92) —
+  cluster *means* of bb/100 are reliable, the per-player sign is not. Not quoted in the write-up.
+
 ## Data & code gotchas (these bite — they are already flagged in the HTML)
 
 ### Cross-venue defects — found 2026-08-06 by running all 21,782 files (one-file-per-venue MISSED them all)
@@ -300,6 +396,22 @@ player_features    106,977 rows · 41 cols ·  18 MB   (from 280,363 seen; 61.8%
   gitignored, 230 GB free). Symptom to recognise: the job dies at a *shuffle read*, never at a write.
 - **Never `.toPandas()` or `.collect()` on anything but the Gold table.** On a laptop the driver *is*
   your 16 GB. This is the #1 way to kill a local Spark job.
+- **PIN `PYSPARK_PYTHON`, or Spark launches its workers under Apple's Python 3.9 — found
+  2026-08-14.** In a plain (non-conda) shell `/usr/bin/python3` wins the PATH, so Spark starts
+  workers with 3.9, which **cannot even import pyspark 4.2**: `TypeError: unsupported operand
+  type(s) for |: 'type' and 'type'` in `sql/types.py`, buried inside a Java stack trace that says
+  nothing about Python versions. **Fix, already in `features_lapse.py` and `fork_a.py`:**
+  `os.environ.setdefault("PYSPARK_PYTHON", sys.executable)` (and `PYSPARK_DRIVER_PYTHON`)
+  **before `import pyspark`**. `features.py` and `build_silver.py` do NOT have this guard yet —
+  they happen to work from the conda shell. Only bites where a Python worker is needed.
+- **MLlib's `Imputer` accepts only `DoubleType`/`FloatType`.** An int/long column fails the schema
+  check rather than being promoted. Cast every numeric feature to double once, up front.
+- **`GBTClassifier` is NOT bit-reproducible even with a fixed seed** — it sums tree histograms in
+  task-completion order, so two runs of identical code differ around the 6th decimal (measured:
+  ROC 0.856638 vs 0.856641). `LogisticRegression` and `RandomForestClassifier` reproduce exactly.
+  Quote 3 decimals and do not chase the wobble.
+- **`spark.ui.showConsoleProgress=false`** whenever output is redirected to a log — the progress
+  bar writes `\r`-heavy noise that makes the log unreadable afterwards.
 - **Databricks Community Edition retired 1 Jan 2026** → use **Databricks Free Edition**.
 
 ## HTML build rules
@@ -337,10 +449,16 @@ artifacts after a programmatic scroll: `.rv` caught mid-transition, stale rail h
 
 ## Still open — do not present these as settled
 
-1. **Is a gambling-industry dataset acceptable to the professor?** Unanswered as of 2 Aug. A
-   30-second office-hours question that de-risks three weeks of work. The responsible-gaming framing
-   is the defence. **Ask before the team invests.**
-2. **Which Databricks tier does the course use?** Free Edition vs a provided workspace.
+1. ~~Is a gambling-industry dataset acceptable to the professor?~~ **CLEARED — the professor
+   approved the topic (confirmed by the user 14 Aug 2026; the approval itself was earlier).**
+   Delivery-gate blocker 0.1 is closed. Keep the responsible-gaming framing in the report anyway —
+   it is the right framing for the work, not just a defence: this is a retention and
+   player-protection problem, not a how-to-win-at-poker problem.
+2. **Which Databricks tier does the course use?** Free Edition vs a provided workspace. Still
+   unanswered — but **the team has deliberately deferred Databricks to a later part of the project
+   (decided 14 Aug 2026)**, so this is no longer near-term blocking. Note the notebook deliverable
+   itself does not have to wait for it: the logic already runs as local PySpark, so moving it is a
+   re-hosting job, not a rewrite.
 3. ~~Only PokerStars files have been sampled.~~ **DONE 6 Aug** — all six venues sampled (Step 2) and
    then all 21,782 files parsed (Step 3). One-file-per-venue proved **insufficient**; see the
    cross-venue defects above.
@@ -350,7 +468,10 @@ artifacts after a programmatic scroll: `.rv` caught mid-transition, stale rail h
    What remains genuinely unexplained is *why the operators' exports differ* — but the effect is now
    measured, bounded, and handled in code.
 5. ~~Nothing has been run at full scale yet.~~ **Silver rebuilt from all 21,782 Bronze files with the
-   corrected parser (7 Aug), and Gold/Spark (Step 4) built from it.** Steps 5+ are still unrun.
+   corrected parser (7 Aug), Gold/Spark (Step 4) built from it, Step 5's bake-off run (12 Aug), and
+   **Fork A built and trained in MLlib, plus K-Means segmentation (14 Aug)** — see the two
+   measured sections above.** Still unrun: the money-weighted "rake at risk" headline, the
+   Databricks notebook (Steps 7–8), the dashboard, and Step 9's packaging (report PDF + deck).
 6. **Is player-ID stability real ACROSS venues?** 91.7% overlap was measured *within* PokerStars only.
    Never merge IDs across venues — and confirm the within-venue figure holds for the other five.
 

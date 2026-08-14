@@ -1,0 +1,392 @@
+{
+  "sweeps": {
+    "style_all_venues": {
+      "2": {
+        "silhouette": 0.43933900293135536,
+        "cost": 709620.0961499333,
+        "shares_pct": [
+          61.1,
+          38.9
+        ]
+      },
+      "3": {
+        "silhouette": 0.4123165857758543,
+        "cost": 613225.4286243581,
+        "shares_pct": [
+          51.0,
+          31.1,
+          17.9
+        ]
+      },
+      "4": {
+        "silhouette": 0.3174268504792198,
+        "cost": 545985.2319585936,
+        "shares_pct": [
+          36.7,
+          31.7,
+          16.1,
+          15.4
+        ]
+      },
+      "5": {
+        "silhouette": 0.32849803453483073,
+        "cost": 517866.55487735185,
+        "shares_pct": [
+          36.0,
+          31.0,
+          15.9,
+          15.0,
+          2.1
+        ]
+      },
+      "6": {
+        "silhouette": 0.3337749403258017,
+        "cost": 472827.7107912802,
+        "shares_pct": [
+          33.7,
+          29.9,
+          14.1,
+          12.2,
+          8.2,
+          1.9
+        ]
+      },
+      "7": {
+        "silhouette": 0.28853917699780046,
+        "cost": 448148.7482722647,
+        "shares_pct": [
+          27.6,
+          21.0,
+          15.7,
+          13.4,
+          13.2,
+          7.4,
+          1.7
+        ]
+      },
+      "8": {
+        "silhouette": 0.2683715499148567,
+        "cost": 424094.44422925066,
+        "shares_pct": [
+          22.4,
+          18.3,
+          18.1,
+          13.7,
+          9.3,
+          7.1,
+          6.5,
+          4.7
+        ]
+      }
+    },
+    "ecosystem_five_venues": {
+      "2": {
+        "silhouette": 0.3324562070016688,
+        "cost": 966105.338752012,
+        "shares_pct": [
+          54.8,
+          45.2
+        ]
+      },
+      "3": {
+        "silhouette": 0.37433534579873756,
+        "cost": 818590.251116886,
+        "shares_pct": [
+          56.9,
+          38.5,
+          4.6
+        ]
+      },
+      "4": {
+        "silhouette": 0.22762172489810337,
+        "cost": 752247.2089269825,
+        "shares_pct": [
+          41.2,
+          35.4,
+          19.8,
+          3.7
+        ]
+      },
+      "5": {
+        "silhouette": 0.24756974245138672,
+        "cost": 678467.3012215709,
+        "shares_pct": [
+          34.6,
+          31.5,
+          16.5,
+          13.9,
+          3.6
+        ]
+      },
+      "6": {
+        "silhouette": 0.248877333415339,
+        "cost": 640940.9409631143,
+        "shares_pct": [
+          33.9,
+          28.3,
+          14.5,
+          12.3,
+          7.6,
+          3.4
+        ]
+      },
+      "7": {
+        "silhouette": 0.23057754567593863,
+        "cost": 614130.8411698843,
+        "shares_pct": [
+          29.0,
+          27.8,
+          13.0,
+          13.0,
+          10.6,
+          5.6,
+          0.9
+        ]
+      },
+      "8": {
+        "silhouette": 0.19250907098957656,
+        "cost": 580326.6375857891,
+        "shares_pct": [
+          27.6,
+          20.3,
+          19.9,
+          11.6,
+          7.2,
+          7.0,
+          5.5,
+          0.9
+        ]
+      }
+    }
+  },
+  "segments": {
+    "style_all_venues": [
+      {
+        "prediction": 0,
+        "players": 14581.0,
+        "lapse_rate": 0.46910362800905286,
+        "mean_risk": 0.33843774775392643,
+        "p_vpip": 0.35487458403633837,
+        "p_pfr": 0.1790953129110971,
+        "p_aggression_factor": 2.737668901214729,
+        "p_wtsd": 0.07374795811484935,
+        "p_avg_invested_bb": 3.132006119651387,
+        "p_hands": 1872.3307729236678,
+        "p_hands_per_active_day": 249.82967250527645,
+        "p_active_day_share": 0.43984335092521815,
+        "p_max_tables": 2.5178896882494004,
+        "p_max_stake": 7.844626568822441,
+        "p_distinct_stakes": 2.7137370550716686,
+        "p_bb_per_100": -17.685873272351188,
+        "share_losing": 0.3686989918386942,
+        "share_pct": 16.117122992406237
+      },
+      {
+        "prediction": 1,
+        "players": 33239.0,
+        "lapse_rate": 0.6517644935166521,
+        "mean_risk": 0.5541293811486506,
+        "p_vpip": 0.22102876397800222,
+        "p_pfr": 0.10319119523432556,
+        "p_aggression_factor": 3.267248725490869,
+        "p_wtsd": 0.04822259363530646,
+        "p_avg_invested_bb": 1.685787502154259,
+        "p_hands": 1404.8262583110202,
+        "p_hands_per_active_day": 275.479191898263,
+        "p_active_day_share": 0.3938669823678361,
+        "p_max_tables": 3.492022008253095,
+        "p_max_stake": 1.156247179518036,
+        "p_distinct_stakes": 1.22590932338518,
+        "p_bb_per_100": -7.649720242365792,
+        "share_losing": 0.524805198712356,
+        "share_pct": 36.7407620289823
+      },
+      {
+        "prediction": 2,
+        "players": 13931.0,
+        "lapse_rate": 0.747038977819252,
+        "mean_risk": 0.6371920895843806,
+        "p_vpip": 0.6147137342051814,
+        "p_pfr": 0.20142529010387603,
+        "p_aggression_factor": 2.3086147396727474,
+        "p_wtsd": 0.18000827287046073,
+        "p_avg_invested_bb": 5.684824343745496,
+        "p_hands": 319.6175436077812,
+        "p_hands_per_active_day": 107.49463807574186,
+        "p_active_day_share": 0.3112785727438839,
+        "p_max_tables": 1.23376189681082,
+        "p_max_stake": 2.1047484028425814,
+        "p_distinct_stakes": 1.5192735625583231,
+        "p_bb_per_100": -32.957577040858204,
+        "share_losing": 0.37908262149163735,
+        "share_pct": 15.398644839668837
+      },
+      {
+        "prediction": 3,
+        "players": 28718.0,
+        "lapse_rate": 0.7936137614039975,
+        "mean_risk": 0.6967613796225364,
+        "p_vpip": 0.4157904532876092,
+        "p_pfr": 0.10783730681886158,
+        "p_aggression_factor": 2.218457754169688,
+        "p_wtsd": 0.11257758801086994,
+        "p_avg_invested_bb": 3.0791479718453574,
+        "p_hands": 349.82791280729856,
+        "p_hands_per_active_day": 111.8960200615035,
+        "p_active_day_share": 0.31819845629420573,
+        "p_max_tables": 1.4346104576685688,
+        "p_max_stake": 0.9576833344940455,
+        "p_distinct_stakes": 1.2312486941987604,
+        "p_bb_per_100": -13.274173697202844,
+        "share_losing": 0.4819625322097639,
+        "share_pct": 31.74347013894262
+      }
+    ],
+    "ecosystem_five_venues": [
+      {
+        "prediction": 0,
+        "players": 27376.0,
+        "lapse_rate": 0.6160870835768556,
+        "mean_risk": 0.5197473443892462,
+        "p_vpip": 0.2204184728594168,
+        "p_pfr": 0.10810111458666932,
+        "p_aggression_factor": 3.3023500787646216,
+        "p_wtsd": 0.04936696446386796,
+        "p_avg_invested_bb": 1.7223895103196103,
+        "p_hands": 883.7070061367622,
+        "p_hands_per_active_day": 196.56698302804128,
+        "p_active_day_share": 0.4151054554470443,
+        "p_max_tables": 3.025063938618926,
+        "p_max_stake": 1.8977023670368205,
+        "p_distinct_stakes": 1.325613676212741,
+        "p_bb_per_100": -7.248790095441503,
+        "share_losing": 0.5825540619520748,
+        "share_pct": 35.42993218408655
+      },
+      {
+        "prediction": 1,
+        "players": 2831.0,
+        "lapse_rate": 0.6125044154009184,
+        "mean_risk": 0.5344728717767574,
+        "p_vpip": 0.17901325541325727,
+        "p_pfr": 0.11632630255289846,
+        "p_aggression_factor": 3.203241650918521,
+        "p_wtsd": 0.03909578408505027,
+        "p_avg_invested_bb": 1.606036570847076,
+        "p_hands": 8799.285058283293,
+        "p_hands_per_active_day": 1340.2982248956882,
+        "p_active_day_share": 0.5071602772087944,
+        "p_max_tables": 11.457082303073118,
+        "p_max_stake": 2.492493818438714,
+        "p_distinct_stakes": 1.600141292829389,
+        "p_bb_per_100": -3.331044342824107,
+        "share_losing": 0.708230307311904,
+        "share_pct": 3.663871201532329
+      },
+      {
+        "prediction": 2,
+        "players": 15262.0,
+        "lapse_rate": 0.7464290394443717,
+        "mean_risk": 0.6388181824138386,
+        "p_vpip": 0.5934498723841003,
+        "p_pfr": 0.1992905504719586,
+        "p_aggression_factor": 2.3147523238744903,
+        "p_wtsd": 0.1775673528081188,
+        "p_avg_invested_bb": 5.348707344486175,
+        "p_hands": 331.23784562966847,
+        "p_hands_per_active_day": 107.46812271031467,
+        "p_active_day_share": 0.3192526809305414,
+        "p_max_tables": 1.274270730907899,
+        "p_max_stake": 2.505553007469532,
+        "p_distinct_stakes": 1.566767134058446,
+        "p_bb_per_100": -31.754484035432956,
+        "share_losing": 0.4439785087144542,
+        "share_pct": 19.75203188900968
+      },
+      {
+        "prediction": 3,
+        "players": 31799.0,
+        "lapse_rate": 0.7705902701342809,
+        "mean_risk": 0.6700199031416085,
+        "p_vpip": 0.39371299023162604,
+        "p_pfr": 0.1144767370358035,
+        "p_aggression_factor": 2.2998298934155046,
+        "p_wtsd": 0.10699016091202064,
+        "p_avg_invested_bb": 2.951521161464912,
+        "p_hands": 351.8473851378974,
+        "p_hands_per_active_day": 110.39745389983278,
+        "p_active_day_share": 0.3189782444663176,
+        "p_max_tables": 1.4112872782181956,
+        "p_max_stake": 1.937340796880405,
+        "p_distinct_stakes": 1.4158306864995756,
+        "p_bb_per_100": -14.322534708333363,
+        "share_losing": 0.541306330387748,
+        "share_pct": 41.15416472537143
+      }
+    ]
+  },
+  "archetype_match": {
+    "style_all_venues": [
+      {
+        "segment": 0,
+        "nearest": "The Recreational",
+        "distance": 0.16144305697852793
+      },
+      {
+        "segment": 1,
+        "nearest": "The Nit",
+        "distance": 0.11033029781821188
+      },
+      {
+        "segment": 2,
+        "nearest": "The Gambler",
+        "distance": 0.15056697829642315
+      },
+      {
+        "segment": 3,
+        "nearest": "The Recreational",
+        "distance": 0.044439866549138056
+      }
+    ],
+    "ecosystem_five_venues": [
+      {
+        "segment": 0,
+        "nearest": "The Nit",
+        "distance": 0.1304308887251116
+      },
+      {
+        "segment": 1,
+        "nearest": "The Grinder",
+        "distance": 0.08821108106752268
+      },
+      {
+        "segment": 2,
+        "nearest": "The Gambler",
+        "distance": 0.1525733733337707
+      },
+      {
+        "segment": 3,
+        "nearest": "The Recreational",
+        "distance": 0.06641931402133279
+      }
+    ]
+  },
+  "algorithm_comparison": {
+    "style_all_venues": {
+      "kmeans_silhouette": 0.3174268504792198,
+      "bisecting_silhouette": 0.3564331387999521,
+      "agreement": 0.6572527606141331,
+      "k": 4
+    },
+    "ecosystem_five_venues": {
+      "kmeans_silhouette": 0.22762172489810337,
+      "bisecting_silhouette": 0.3187914599604537,
+      "agreement": 0.6737329813117979,
+      "k": 4
+    }
+  },
+  "k_chosen": 4,
+  "seed": 42,
+  "players": 90469,
+  "runtime_seconds": 117.3
+}
