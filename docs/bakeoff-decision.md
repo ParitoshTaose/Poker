@@ -3,6 +3,15 @@
 **Status: DRAFT — awaiting team sign-off on the winner.** Everything below the scorecard is
 measured. The scorecard's two judgement columns are proposed, not settled.
 
+> **Update, 14 Aug 2026 — the condition below has been met.** This note recommended Fork A
+> *conditional on* extending `features.py` with prior-window-only rate columns before Step 8.
+> `src/features_lapse.py` now does exactly that and `src/fork_a.py` rebuilds the models in
+> PySpark MLlib. The leakage ablation reversed: the honest feature set now out-predicts the leaky
+> one (ROC-AUC 0.856 vs 0.819). One correction to this note: `hands_prior > 0` was not a strict
+> enough population filter — Gold's *lifetime* ≥100-hand rule admits 8,249 players who clear 100
+> only by playing in the label week, and every one of them is labelled "active". Prevalence is
+> therefore **68.2%, not 62.5%**. Full results in **[`fork-a-results.md`](fork-a-results.md)**.
+
 **Run:** `.venv/bin/python src/bakeoff.py` · 41 s · seed 42 · full Gold tables
 (106,977 players / 21,556,288 hands; Fork C on a 600,000-hand sample).
 **Raw metrics:** [`bakeoff-results.json`](bakeoff-results.json).

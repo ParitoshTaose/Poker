@@ -1,0 +1,1133 @@
+{
+  "population": {
+    "players": 90469,
+    "prevalence_lapsed": 0.6820236766185102,
+    "venues": [
+      "ABS",
+      "FTP",
+      "IPN",
+      "ONG",
+      "PS",
+      "PTY"
+    ],
+    "reference_venue": "PS",
+    "test_fraction": 0.25,
+    "null_rates": {
+      "p_bb_vpip_rate": 0.03335949330709967,
+      "p_btn_share": 0.03261890813427804,
+      "p_avg_stack_bb": 0.14591738606594523,
+      "p_min_stack_bb": 0.14591738606594523,
+      "p_max_tables": 0.14618267030695598,
+      "p_avg_tables": 0.14618267030695598,
+      "p_distinct_tables": 0.14618267030695598,
+      "p_bb_per_100": 0.16828969039118372
+    }
+  },
+  "core_all_venues": {
+    "n_train": 67873,
+    "n_test": 22596,
+    "prevalence_train": 0.6818469789165058,
+    "prevalence_test": 0.6825544344131704,
+    "features": [
+      "p_hands",
+      "p_days_active",
+      "p_active_minutes",
+      "p_hands_per_active_day",
+      "p_hands_per_minute",
+      "p_active_day_share",
+      "p_recency_days",
+      "p_tenure_days",
+      "p_prior_span_days",
+      "p_hands_w1",
+      "p_hands_w2",
+      "p_hands_last3",
+      "p_late_share",
+      "p_w1_w2_ratio",
+      "p_last3_share",
+      "p_weekend_share",
+      "p_vpip",
+      "p_pfr",
+      "p_fold_rate",
+      "p_wtsd",
+      "p_vpip_pfr_gap",
+      "p_aggression_factor",
+      "p_avg_invested_bb",
+      "p_avg_seats",
+      "p_bb_vpip_rate",
+      "p_btn_share",
+      "p_distinct_stakes",
+      "p_max_stake",
+      "p_min_stake",
+      "p_stake_range",
+      "site_ABS",
+      "site_FTP",
+      "site_IPN",
+      "site_ONG",
+      "site_PTY"
+    ],
+    "baselines": {
+      "majority_class": {
+        "rule": "predict lapsed for every player",
+        "roc_auc": 0.5,
+        "pr_auc": 0.6825544344131704,
+        "at_0.5": {
+          "tp": 15423,
+          "fp": 7173,
+          "tn": 0,
+          "fn": 0,
+          "precision": 0.6825544344131704,
+          "recall": 1.0,
+          "f1": 0.8113311765170046,
+          "accuracy": 0.6825544344131704
+        }
+      },
+      "recency_rank": {
+        "roc_auc": 0.800404900410587,
+        "pr_auc": 0.8636778522515866,
+        "budget_curve": [
+          {
+            "budget_pct": 0.05,
+            "contacted": 1130,
+            "true_lapsers_caught": 1004,
+            "precision": 0.8884955752212389,
+            "recall": 0.06509758153407248,
+            "lift_vs_random": 1.301721196764515
+          },
+          {
+            "budget_pct": 0.1,
+            "contacted": 2260,
+            "true_lapsers_caught": 2001,
+            "precision": 0.8853982300884956,
+            "recall": 0.12974129546780783,
+            "lift_vs_random": 1.2971833240666308
+          },
+          {
+            "budget_pct": 0.2,
+            "contacted": 4519,
+            "true_lapsers_caught": 3974,
+            "precision": 0.8793980969240982,
+            "recall": 0.257667120534267,
+            "lift_vs_random": 1.2883926212861911
+          },
+          {
+            "budget_pct": 0.25,
+            "contacted": 5649,
+            "true_lapsers_caught": 4975,
+            "precision": 0.8806868472295981,
+            "recall": 0.3225701873824807,
+            "lift_vs_random": 1.2902807495299229
+          },
+          {
+            "budget_pct": 0.5,
+            "contacted": 11298,
+            "true_lapsers_caught": 9886,
+            "precision": 0.8750221278102319,
+            "recall": 0.6409907281333074,
+            "lift_vs_random": 1.281981456266615
+          }
+        ],
+        "rule": "rank by p_recency_days, descending -- no model, no training",
+        "hard_rules": {
+          ">= 1 days quiet": {
+            "tp": 14585,
+            "fp": 4079,
+            "tn": 3094,
+            "fn": 838,
+            "precision": 0.7814509215602229,
+            "recall": 0.9456655644167802,
+            "f1": 0.8557514595006893,
+            "accuracy": 0.7823951141795008
+          },
+          ">= 2 days quiet": {
+            "tp": 13685,
+            "fp": 3062,
+            "tn": 4111,
+            "fn": 1738,
+            "precision": 0.8171612826177823,
+            "recall": 0.8873111586591454,
+            "f1": 0.8507926639726453,
+            "accuracy": 0.7875730217737653
+          },
+          ">= 3 days quiet": {
+            "tp": 12917,
+            "fp": 2430,
+            "tn": 4743,
+            "fn": 2506,
+            "precision": 0.8416628657066527,
+            "recall": 0.8375153990792972,
+            "f1": 0.83958401039974,
+            "accuracy": 0.7815542573906886
+          },
+          ">= 5 days quiet": {
+            "tp": 10833,
+            "fp": 1559,
+            "tn": 5614,
+            "fn": 4590,
+            "precision": 0.8741930277598451,
+            "recall": 0.702392530636063,
+            "f1": 0.7789322308107137,
+            "accuracy": 0.7278721897681005
+          }
+        }
+      }
+    },
+    "models": {
+      "logistic_regression": {
+        "roc_auc": 0.8372643983916758,
+        "pr_auc": 0.9011788547412084,
+        "at_0.5": {
+          "tp": 12130,
+          "fp": 1754,
+          "tn": 5419,
+          "fn": 3293,
+          "precision": 0.8736675309709018,
+          "recall": 0.7864877131556766,
+          "f1": 0.8277885829324052,
+          "accuracy": 0.7766418835192069
+        },
+        "best_f1": {
+          "threshold": 0.25999999999999995,
+          "tp": 14287,
+          "fp": 3620,
+          "tn": 3553,
+          "fn": 1136,
+          "precision": 0.7978444183838722,
+          "recall": 0.9263437722881411,
+          "f1": 0.8573057305730573,
+          "accuracy": 0.7895202690741724
+        },
+        "budget_curve": [
+          {
+            "budget_pct": 0.05,
+            "contacted": 1130,
+            "true_lapsers_caught": 1083,
+            "precision": 0.9584070796460177,
+            "recall": 0.07021980159502042,
+            "lift_vs_random": 1.4041474662310456
+          },
+          {
+            "budget_pct": 0.1,
+            "contacted": 2260,
+            "true_lapsers_caught": 2133,
+            "precision": 0.9438053097345133,
+            "recall": 0.13829994164559425,
+            "lift_vs_random": 1.3827546377981628
+          },
+          {
+            "budget_pct": 0.2,
+            "contacted": 4519,
+            "true_lapsers_caught": 4241,
+            "precision": 0.9384819650365125,
+            "recall": 0.27497892757569864,
+            "lift_vs_random": 1.3749554873866976
+          },
+          {
+            "budget_pct": 0.25,
+            "contacted": 5649,
+            "true_lapsers_caught": 5254,
+            "precision": 0.9300761196671977,
+            "recall": 0.3406600531673475,
+            "lift_vs_random": 1.36264021266939
+          },
+          {
+            "budget_pct": 0.5,
+            "contacted": 11298,
+            "true_lapsers_caught": 10182,
+            "precision": 0.9012214551248009,
+            "recall": 0.6601828438047073,
+            "lift_vs_random": 1.3203656876094148
+          }
+        ],
+        "fit_seconds": 9.8,
+        "top_coefficients": [
+          {
+            "feature": "p_recency_days_i",
+            "coef": 0.6418966830638595
+          },
+          {
+            "feature": "p_hands_last3_i",
+            "coef": -0.2741362611651799
+          },
+          {
+            "feature": "p_tenure_days_i",
+            "coef": -0.27342477793421316
+          },
+          {
+            "feature": "site_ABS",
+            "coef": -0.2405064575770768
+          },
+          {
+            "feature": "p_active_day_share_i",
+            "coef": -0.23207190369971067
+          },
+          {
+            "feature": "p_days_active_i",
+            "coef": -0.22379494515015547
+          },
+          {
+            "feature": "p_distinct_stakes_i",
+            "coef": -0.20326129785451255
+          },
+          {
+            "feature": "p_last3_share_i",
+            "coef": -0.1953153821794192
+          },
+          {
+            "feature": "site_FTP",
+            "coef": -0.18209979132692075
+          },
+          {
+            "feature": "p_min_stake_i",
+            "coef": -0.16423811581577252
+          },
+          {
+            "feature": "p_avg_seats_i",
+            "coef": 0.14207909380696554
+          },
+          {
+            "feature": "site_PTY",
+            "coef": 0.13167439486926122
+          }
+        ]
+      },
+      "gbt_classifier": {
+        "roc_auc": 0.8566414381507794,
+        "pr_auc": 0.9173301366857793,
+        "at_0.5": {
+          "tp": 12109,
+          "fp": 1677,
+          "tn": 5496,
+          "fn": 3314,
+          "precision": 0.8783548527491658,
+          "recall": 0.7851261103546651,
+          "f1": 0.8291280084905338,
+          "accuracy": 0.7791201982651796
+        },
+        "best_f1": {
+          "threshold": 0.24999999999999994,
+          "tp": 14327,
+          "fp": 3329,
+          "tn": 3844,
+          "fn": 1096,
+          "precision": 0.8114521975532397,
+          "recall": 0.9289373014329249,
+          "f1": 0.8662293297862692,
+          "accuracy": 0.8041688794476899
+        },
+        "budget_curve": [
+          {
+            "budget_pct": 0.05,
+            "contacted": 1130,
+            "true_lapsers_caught": 1100,
+            "precision": 0.9734513274336283,
+            "recall": 0.07132205148155353,
+            "lift_vs_random": 1.4261885621921977
+          },
+          {
+            "budget_pct": 0.1,
+            "contacted": 2260,
+            "true_lapsers_caught": 2192,
+            "precision": 0.9699115044247788,
+            "recall": 0.1421253971341503,
+            "lift_vs_random": 1.4210024219660444
+          },
+          {
+            "budget_pct": 0.2,
+            "contacted": 4519,
+            "true_lapsers_caught": 4328,
+            "precision": 0.9577340119495463,
+            "recall": 0.2806198534656033,
+            "lift_vs_random": 1.4031613651048402
+          },
+          {
+            "budget_pct": 0.25,
+            "contacted": 5649,
+            "true_lapsers_caught": 5397,
+            "precision": 0.9553903345724907,
+            "recall": 0.3499319198599494,
+            "lift_vs_random": 1.3997276794397977
+          },
+          {
+            "budget_pct": 0.5,
+            "contacted": 11298,
+            "true_lapsers_caught": 10278,
+            "precision": 0.9097185342538502,
+            "recall": 0.6664073137521883,
+            "lift_vs_random": 1.3328146275043766
+          }
+        ],
+        "fit_seconds": 43.1,
+        "top_importances": [
+          {
+            "feature": "p_recency_days_i",
+            "importance": 0.24910352460638163
+          },
+          {
+            "feature": "p_hands_last3_i",
+            "importance": 0.08763989743495741
+          },
+          {
+            "feature": "p_days_active_i",
+            "importance": 0.05411920321713565
+          },
+          {
+            "feature": "p_max_stake_i",
+            "importance": 0.04957417834915382
+          },
+          {
+            "feature": "p_hands_w1_i",
+            "importance": 0.03478279572508996
+          },
+          {
+            "feature": "p_min_stake_i",
+            "importance": 0.034398571983895856
+          },
+          {
+            "feature": "p_vpip_pfr_gap_i",
+            "importance": 0.03435416107870512
+          },
+          {
+            "feature": "p_hands_per_minute_i",
+            "importance": 0.02973093797543877
+          },
+          {
+            "feature": "p_active_day_share_i",
+            "importance": 0.028559833130251084
+          },
+          {
+            "feature": "p_pfr_i",
+            "importance": 0.027925890159974254
+          },
+          {
+            "feature": "p_active_minutes_i",
+            "importance": 0.025580345843687
+          },
+          {
+            "feature": "p_aggression_factor_i",
+            "importance": 0.024627552382320568
+          }
+        ],
+        "per_venue": {
+          "ABS": {
+            "players": 1679,
+            "roc_auc": 0.7804017839229105,
+            "pr_auc": 0.7186251763438506,
+            "prevalence": 0.4502680166765932
+          },
+          "IPN": {
+            "players": 3236,
+            "roc_auc": 0.7996886415312363,
+            "pr_auc": 0.807199189318369,
+            "prevalence": 0.5636588380716935
+          },
+          "FTP": {
+            "players": 1339,
+            "roc_auc": 0.8118228521627445,
+            "pr_auc": 0.7512561831851814,
+            "prevalence": 0.4174757281553398
+          },
+          "PTY": {
+            "players": 3186,
+            "roc_auc": 0.8167937933226321,
+            "pr_auc": 0.9050550674379115,
+            "prevalence": 0.7325800376647834
+          },
+          "ONG": {
+            "players": 969,
+            "roc_auc": 0.7689825117881295,
+            "pr_auc": 0.7247461713298857,
+            "prevalence": 0.48606811145510836
+          },
+          "PS": {
+            "players": 12187,
+            "roc_auc": 0.8614210835021614,
+            "pr_auc": 0.9452523830428291,
+            "prevalence": 0.777796012144088
+          }
+        }
+      },
+      "random_forest": {
+        "roc_auc": 0.856936604401629,
+        "pr_auc": 0.9181705022354657,
+        "at_0.5": {
+          "tp": 12031,
+          "fp": 1641,
+          "tn": 5532,
+          "fn": 3392,
+          "precision": 0.8799736688121709,
+          "recall": 0.7800687285223368,
+          "f1": 0.8270149510225123,
+          "accuracy": 0.7772614622057001
+        },
+        "best_f1": {
+          "threshold": 0.24999999999999994,
+          "tp": 14426,
+          "fp": 3505,
+          "tn": 3668,
+          "fn": 997,
+          "precision": 0.8045284702470582,
+          "recall": 0.9353562860662646,
+          "f1": 0.8650236853151047,
+          "accuracy": 0.8007611966719773
+        },
+        "budget_curve": [
+          {
+            "budget_pct": 0.05,
+            "contacted": 1130,
+            "true_lapsers_caught": 1097,
+            "precision": 0.9707964601769912,
+            "recall": 0.07112753679569474,
+            "lift_vs_random": 1.4222989570225828
+          },
+          {
+            "budget_pct": 0.1,
+            "contacted": 2260,
+            "true_lapsers_caught": 2183,
+            "precision": 0.965929203539823,
+            "recall": 0.14154185307657394,
+            "lift_vs_random": 1.4151680142116219
+          },
+          {
+            "budget_pct": 0.2,
+            "contacted": 4519,
+            "true_lapsers_caught": 4332,
+            "precision": 0.9586191635317548,
+            "recall": 0.2808792063800817,
+            "lift_vs_random": 1.4044581870688928
+          },
+          {
+            "budget_pct": 0.25,
+            "contacted": 5649,
+            "true_lapsers_caught": 5401,
+            "precision": 0.9560984244999114,
+            "recall": 0.3501912727744278,
+            "lift_vs_random": 1.4007650910977112
+          },
+          {
+            "budget_pct": 0.5,
+            "contacted": 11298,
+            "true_lapsers_caught": 10284,
+            "precision": 0.9102496016994158,
+            "recall": 0.6667963431239059,
+            "lift_vs_random": 1.3335926862478118
+          }
+        ],
+        "fit_seconds": 14.4,
+        "top_importances": [
+          {
+            "feature": "p_recency_days_i",
+            "importance": 0.23576280142372838
+          },
+          {
+            "feature": "p_hands_last3_i",
+            "importance": 0.13635591815815964
+          },
+          {
+            "feature": "p_last3_share_i",
+            "importance": 0.1250059847444359
+          },
+          {
+            "feature": "p_max_stake_i",
+            "importance": 0.10138838386812656
+          },
+          {
+            "feature": "p_min_stake_i",
+            "importance": 0.09581041311673659
+          },
+          {
+            "feature": "p_hands_w1_i",
+            "importance": 0.04630999489424231
+          },
+          {
+            "feature": "p_w1_w2_ratio_i",
+            "importance": 0.03422985980164481
+          },
+          {
+            "feature": "p_active_day_share_i",
+            "importance": 0.03094141770361037
+          },
+          {
+            "feature": "p_late_share_i",
+            "importance": 0.02788696517194743
+          },
+          {
+            "feature": "p_days_active_i",
+            "importance": 0.024328751140005423
+          },
+          {
+            "feature": "p_stake_range_i",
+            "importance": 0.01828220924360325
+          },
+          {
+            "feature": "p_hands_i",
+            "importance": 0.013233328678681634
+          }
+        ]
+      }
+    }
+  },
+  "extended_five_venues": {
+    "n_train": 57908,
+    "n_test": 19360,
+    "prevalence_train": 0.706240933895144,
+    "prevalence_test": 0.7024276859504133,
+    "features": [
+      "p_hands",
+      "p_days_active",
+      "p_active_minutes",
+      "p_hands_per_active_day",
+      "p_hands_per_minute",
+      "p_active_day_share",
+      "p_recency_days",
+      "p_tenure_days",
+      "p_prior_span_days",
+      "p_hands_w1",
+      "p_hands_w2",
+      "p_hands_last3",
+      "p_late_share",
+      "p_w1_w2_ratio",
+      "p_last3_share",
+      "p_weekend_share",
+      "p_vpip",
+      "p_pfr",
+      "p_fold_rate",
+      "p_wtsd",
+      "p_vpip_pfr_gap",
+      "p_aggression_factor",
+      "p_avg_invested_bb",
+      "p_avg_seats",
+      "p_bb_vpip_rate",
+      "p_btn_share",
+      "p_distinct_stakes",
+      "p_max_stake",
+      "p_min_stake",
+      "p_stake_range",
+      "p_avg_stack_bb",
+      "p_min_stack_bb",
+      "p_max_tables",
+      "p_avg_tables",
+      "p_distinct_tables",
+      "p_money_hands",
+      "p_money_coverage",
+      "p_bb_per_100",
+      "site_ABS",
+      "site_FTP",
+      "site_ONG",
+      "site_PTY"
+    ],
+    "baselines": {
+      "majority_class": {
+        "rule": "predict lapsed for every player",
+        "roc_auc": 0.5,
+        "pr_auc": 0.7024276859504133,
+        "at_0.5": {
+          "tp": 13599,
+          "fp": 5761,
+          "tn": 0,
+          "fn": 0,
+          "precision": 0.7024276859504133,
+          "recall": 1.0,
+          "f1": 0.8252070754573865,
+          "accuracy": 0.7024276859504133
+        }
+      },
+      "recency_rank": {
+        "roc_auc": 0.8047873107162901,
+        "pr_auc": 0.8771862196803308,
+        "budget_curve": [
+          {
+            "budget_pct": 0.05,
+            "contacted": 968,
+            "true_lapsers_caught": 873,
+            "precision": 0.9018595041322314,
+            "recall": 0.0641958967571145,
+            "lift_vs_random": 1.2839179351422898
+          },
+          {
+            "budget_pct": 0.1,
+            "contacted": 1936,
+            "true_lapsers_caught": 1734,
+            "precision": 0.8956611570247934,
+            "recall": 0.12750937568938892,
+            "lift_vs_random": 1.2750937568938892
+          },
+          {
+            "budget_pct": 0.2,
+            "contacted": 3872,
+            "true_lapsers_caught": 3449,
+            "precision": 0.890754132231405,
+            "recall": 0.2536215898227811,
+            "lift_vs_random": 1.2681079491139053
+          },
+          {
+            "budget_pct": 0.25,
+            "contacted": 4840,
+            "true_lapsers_caught": 4310,
+            "precision": 0.890495867768595,
+            "recall": 0.3169350687550555,
+            "lift_vs_random": 1.267740275020222
+          },
+          {
+            "budget_pct": 0.5,
+            "contacted": 9680,
+            "true_lapsers_caught": 8567,
+            "precision": 0.8850206611570248,
+            "recall": 0.6299727921170675,
+            "lift_vs_random": 1.2599455842341347
+          }
+        ],
+        "rule": "rank by p_recency_days, descending -- no model, no training",
+        "hard_rules": {
+          ">= 1 days quiet": {
+            "tp": 12942,
+            "fp": 3290,
+            "tn": 2471,
+            "fn": 657,
+            "precision": 0.7973139477575161,
+            "recall": 0.9516876240900066,
+            "f1": 0.8676879755958566,
+            "accuracy": 0.7961260330578512
+          },
+          ">= 2 days quiet": {
+            "tp": 12200,
+            "fp": 2469,
+            "tn": 3292,
+            "fn": 1399,
+            "precision": 0.8316858681573386,
+            "recall": 0.8971247885873961,
+            "f1": 0.8631668317532191,
+            "accuracy": 0.800206611570248
+          },
+          ">= 3 days quiet": {
+            "tp": 11571,
+            "fp": 1988,
+            "tn": 3773,
+            "fn": 2028,
+            "precision": 0.853381517811048,
+            "recall": 0.8508713876020295,
+            "f1": 0.8521246041682009,
+            "accuracy": 0.7925619834710744
+          },
+          ">= 5 days quiet": {
+            "tp": 9736,
+            "fp": 1280,
+            "tn": 4481,
+            "fn": 3863,
+            "precision": 0.8838053740014524,
+            "recall": 0.7159349952202367,
+            "f1": 0.7910623603493804,
+            "accuracy": 0.734349173553719
+          }
+        }
+      }
+    },
+    "models": {
+      "logistic_regression": {
+        "roc_auc": 0.843826660064488,
+        "pr_auc": 0.911565463720859,
+        "at_0.5": {
+          "tp": 10819,
+          "fp": 1391,
+          "tn": 4370,
+          "fn": 2780,
+          "precision": 0.886076986076986,
+          "recall": 0.7955732039120523,
+          "f1": 0.8383897090162347,
+          "accuracy": 0.784555785123967
+        },
+        "best_f1": {
+          "threshold": 0.29,
+          "tp": 12423,
+          "fp": 2547,
+          "tn": 3214,
+          "fn": 1176,
+          "precision": 0.8298597194388777,
+          "recall": 0.913523053165674,
+          "f1": 0.8696839231334663,
+          "accuracy": 0.8076962809917355
+        },
+        "budget_curve": [
+          {
+            "budget_pct": 0.05,
+            "contacted": 968,
+            "true_lapsers_caught": 930,
+            "precision": 0.9607438016528925,
+            "recall": 0.06838738142510478,
+            "lift_vs_random": 1.3677476285020955
+          },
+          {
+            "budget_pct": 0.1,
+            "contacted": 1936,
+            "true_lapsers_caught": 1840,
+            "precision": 0.9504132231404959,
+            "recall": 0.13530406647547613,
+            "lift_vs_random": 1.3530406647547613
+          },
+          {
+            "budget_pct": 0.2,
+            "contacted": 3872,
+            "true_lapsers_caught": 3658,
+            "precision": 0.9447314049586777,
+            "recall": 0.2689903669387455,
+            "lift_vs_random": 1.3449518346937275
+          },
+          {
+            "budget_pct": 0.25,
+            "contacted": 4840,
+            "true_lapsers_caught": 4549,
+            "precision": 0.9398760330578513,
+            "recall": 0.33450989043312007,
+            "lift_vs_random": 1.3380395617324803
+          },
+          {
+            "budget_pct": 0.5,
+            "contacted": 9680,
+            "true_lapsers_caught": 8849,
+            "precision": 0.9141528925619835,
+            "recall": 0.6507096110008089,
+            "lift_vs_random": 1.3014192220016176
+          }
+        ],
+        "fit_seconds": 4.4,
+        "top_coefficients": [
+          {
+            "feature": "p_recency_days_i",
+            "coef": 0.6659154176222554
+          },
+          {
+            "feature": "p_tenure_days_i",
+            "coef": -0.25618446160282266
+          },
+          {
+            "feature": "p_hands_last3_i",
+            "coef": -0.24493512571300283
+          },
+          {
+            "feature": "p_distinct_stakes_i",
+            "coef": -0.23065583461797637
+          },
+          {
+            "feature": "p_active_day_share_i",
+            "coef": -0.21729065770469813
+          },
+          {
+            "feature": "p_days_active_i",
+            "coef": -0.20150603565968475
+          },
+          {
+            "feature": "site_ABS",
+            "coef": -0.20012245752319124
+          },
+          {
+            "feature": "p_last3_share_i",
+            "coef": -0.19330906057362668
+          },
+          {
+            "feature": "site_FTP",
+            "coef": -0.18896217471352866
+          },
+          {
+            "feature": "p_avg_seats_i",
+            "coef": 0.16880242540076104
+          },
+          {
+            "feature": "p_min_stake_i",
+            "coef": -0.16693081702109572
+          },
+          {
+            "feature": "p_avg_tables_i",
+            "coef": 0.1630958502938592
+          }
+        ]
+      },
+      "gbt_classifier": {
+        "roc_auc": 0.8631237805438664,
+        "pr_auc": 0.9256107187883429,
+        "at_0.5": {
+          "tp": 10707,
+          "fp": 1288,
+          "tn": 4473,
+          "fn": 2892,
+          "precision": 0.8926219258024177,
+          "recall": 0.7873373042135451,
+          "f1": 0.8366804719856216,
+          "accuracy": 0.7840909090909091
+        },
+        "best_f1": {
+          "threshold": 0.25999999999999995,
+          "tp": 12554,
+          "fp": 2532,
+          "tn": 3229,
+          "fn": 1045,
+          "precision": 0.8321622696539839,
+          "recall": 0.923156114420178,
+          "f1": 0.8753006797978038,
+          "accuracy": 0.8152376033057851
+        },
+        "budget_curve": [
+          {
+            "budget_pct": 0.05,
+            "contacted": 968,
+            "true_lapsers_caught": 933,
+            "precision": 0.9638429752066116,
+            "recall": 0.06860798588131481,
+            "lift_vs_random": 1.3721597176262958
+          },
+          {
+            "budget_pct": 0.1,
+            "contacted": 1936,
+            "true_lapsers_caught": 1868,
+            "precision": 0.9648760330578512,
+            "recall": 0.13736304140010294,
+            "lift_vs_random": 1.3736304140010294
+          },
+          {
+            "budget_pct": 0.2,
+            "contacted": 3872,
+            "true_lapsers_caught": 3727,
+            "precision": 0.962551652892562,
+            "recall": 0.27406426943157586,
+            "lift_vs_random": 1.370321347157879
+          },
+          {
+            "budget_pct": 0.25,
+            "contacted": 4840,
+            "true_lapsers_caught": 4646,
+            "precision": 0.9599173553719008,
+            "recall": 0.34164276785057723,
+            "lift_vs_random": 1.366571071402309
+          },
+          {
+            "budget_pct": 0.5,
+            "contacted": 9680,
+            "true_lapsers_caught": 8961,
+            "precision": 0.9257231404958678,
+            "recall": 0.6589455106993162,
+            "lift_vs_random": 1.3178910213986321
+          }
+        ],
+        "fit_seconds": 38.6,
+        "top_importances": [
+          {
+            "feature": "p_recency_days_i",
+            "importance": 0.28285230653886545
+          },
+          {
+            "feature": "p_max_stake_i",
+            "importance": 0.053261859152671405
+          },
+          {
+            "feature": "p_distinct_tables_i",
+            "importance": 0.038734318484476137
+          },
+          {
+            "feature": "p_hands_last3_i",
+            "importance": 0.034018606428152326
+          },
+          {
+            "feature": "p_vpip_pfr_gap_i",
+            "importance": 0.030225360296094045
+          },
+          {
+            "feature": "p_bb_per_100_i",
+            "importance": 0.028138628980597782
+          },
+          {
+            "feature": "p_min_stack_bb_i",
+            "importance": 0.02577141482592392
+          },
+          {
+            "feature": "p_days_active_i",
+            "importance": 0.02510904461378675
+          },
+          {
+            "feature": "p_pfr_i",
+            "importance": 0.023865104647465146
+          },
+          {
+            "feature": "p_aggression_factor_i",
+            "importance": 0.023429632568123693
+          },
+          {
+            "feature": "p_min_stake_i",
+            "importance": 0.02156949152802564
+          },
+          {
+            "feature": "p_hands_per_minute_i",
+            "importance": 0.021097859116754773
+          }
+        ],
+        "per_venue": {
+          "ABS": {
+            "players": 1679,
+            "roc_auc": 0.7766427625582549,
+            "pr_auc": 0.7131525471743642,
+            "prevalence": 0.4502680166765932
+          },
+          "FTP": {
+            "players": 1339,
+            "roc_auc": 0.8173982844823627,
+            "pr_auc": 0.7531213066787049,
+            "prevalence": 0.4174757281553398
+          },
+          "PTY": {
+            "players": 3186,
+            "roc_auc": 0.8184477473237022,
+            "pr_auc": 0.9056612786581638,
+            "prevalence": 0.7325800376647834
+          },
+          "ONG": {
+            "players": 969,
+            "roc_auc": 0.7651540343966098,
+            "pr_auc": 0.7211640242949015,
+            "prevalence": 0.48606811145510836
+          },
+          "PS": {
+            "players": 12187,
+            "roc_auc": 0.8630878909345278,
+            "pr_auc": 0.9460689995628776,
+            "prevalence": 0.777796012144088
+          }
+        }
+      },
+      "random_forest": {
+        "roc_auc": 0.8634607630090734,
+        "pr_auc": 0.9270875718786195,
+        "at_0.5": {
+          "tp": 10781,
+          "fp": 1304,
+          "tn": 4457,
+          "fn": 2818,
+          "precision": 0.8920976417045925,
+          "recall": 0.7927788808000589,
+          "f1": 0.8395109795981934,
+          "accuracy": 0.7870867768595041
+        },
+        "best_f1": {
+          "threshold": 0.24,
+          "tp": 12811,
+          "fp": 2828,
+          "tn": 2933,
+          "fn": 788,
+          "precision": 0.8191700236588018,
+          "recall": 0.9420545628355026,
+          "f1": 0.8763253300499351,
+          "accuracy": 0.8132231404958677
+        },
+        "budget_curve": [
+          {
+            "budget_pct": 0.05,
+            "contacted": 968,
+            "true_lapsers_caught": 941,
+            "precision": 0.9721074380165289,
+            "recall": 0.06919626443120817,
+            "lift_vs_random": 1.3839252886241633
+          },
+          {
+            "budget_pct": 0.1,
+            "contacted": 1936,
+            "true_lapsers_caught": 1870,
+            "precision": 0.9659090909090909,
+            "recall": 0.1375101110375763,
+            "lift_vs_random": 1.3751011103757629
+          },
+          {
+            "budget_pct": 0.2,
+            "contacted": 3872,
+            "true_lapsers_caught": 3716,
+            "precision": 0.9597107438016529,
+            "recall": 0.2732553864254725,
+            "lift_vs_random": 1.3662769321273622
+          },
+          {
+            "budget_pct": 0.25,
+            "contacted": 4840,
+            "true_lapsers_caught": 4639,
+            "precision": 0.9584710743801653,
+            "recall": 0.34112802411942056,
+            "lift_vs_random": 1.3645120964776822
+          },
+          {
+            "budget_pct": 0.5,
+            "contacted": 9680,
+            "true_lapsers_caught": 8971,
+            "precision": 0.9267561983471074,
+            "recall": 0.6596808588866828,
+            "lift_vs_random": 1.3193617177733656
+          }
+        ],
+        "fit_seconds": 13.2,
+        "top_importances": [
+          {
+            "feature": "p_recency_days_i",
+            "importance": 0.19428534141393744
+          },
+          {
+            "feature": "p_last3_share_i",
+            "importance": 0.1360569283452063
+          },
+          {
+            "feature": "p_hands_last3_i",
+            "importance": 0.13180652846738306
+          },
+          {
+            "feature": "p_max_stake_i",
+            "importance": 0.0957768393740508
+          },
+          {
+            "feature": "p_min_stake_i",
+            "importance": 0.08840272264383976
+          },
+          {
+            "feature": "p_hands_w1_i",
+            "importance": 0.05659975161647469
+          },
+          {
+            "feature": "p_active_day_share_i",
+            "importance": 0.03969463416887535
+          },
+          {
+            "feature": "p_w1_w2_ratio_i",
+            "importance": 0.034601541183108896
+          },
+          {
+            "feature": "p_late_share_i",
+            "importance": 0.02601555502615087
+          },
+          {
+            "feature": "p_days_active_i",
+            "importance": 0.01959080224781001
+          },
+          {
+            "feature": "p_stake_range_i",
+            "importance": 0.018263175463164437
+          },
+          {
+            "feature": "p_money_coverage_i",
+            "importance": 0.015947272255270154
+          }
+        ]
+      }
+    }
+  },
+  "leakage_recheck": {
+    "old floor (hands_prior + tenure)": {
+      "n_features": 2,
+      "roc_auc": 0.690218730629828,
+      "pr_auc": 0.805015353583084
+    },
+    "LIFETIME rates only (leaky)": {
+      "n_features": 11,
+      "roc_auc": 0.818802252884838,
+      "pr_auc": 0.9109316215631862
+    },
+    "PRIOR-WINDOW only (honest, this build)": {
+      "n_features": 30,
+      "roc_auc": 0.8559571204989238,
+      "pr_auc": 0.9165594056221745
+    }
+  },
+  "runtime_seconds": 264.6,
+  "seed": 42,
+  "quick_mode": false
+}
