@@ -35,21 +35,24 @@ Explain jargon in plain language and always tie technical ideas to a business co
 | `docs/rake-at-risk-results.md` | **The headline write-up** — the sentence, the reliability curve, the rake estimator and its validation, who to call, and four sensitivities. |
 | `src/dashboard_data.py` | **The dashboard payload, done.** Polars only, **no Spark**, 0.2 s. Joins `gold/rake_at_risk` + `gold/player_lapse` + a modal-stake pass over the seat join, encodes all 77,268 players as base64 typed arrays, and injects the result into `docs/dashboard.html` between its `/*DATA:START*/ … /*DATA:END*/` markers. Self-checks decode the payload back and reconcile it against Gold *and* the run log before writing. Run: `.venv/bin/python src/dashboard_data.py` (`--rebuild-stake` rescans `hp_enriched`, 6 s · `--dump PATH` writes the payload as readable JSON · `--no-inject` to dry-run). |
 | `docs/dashboard.html` | **The decision surface, done (Gate A).** One self-contained 4.2 MB file — no server, no CDN, no `fetch`, opens from `file://`. Headline band → sticky venue/segment/stake filters → contact-budget panel with three ranking curves → segment × venue money matrix (click to drill) → the call list with CSV export → the trust strip. **Every figure is computed in the browser from the embedded Gold rows**; nothing is hand-typed. Rebuild its numbers with `dashboard_data.py`, never by editing the file. |
+| `src/deck_charts.py` | **The deck's numbers and charts, done.** Polars only, no Spark, ~2 s. Re-derives the three ranking curves straight from `gold/rake_at_risk`, checks them against `rake-at-risk-results.json` (and **refuses to write if they disagree**), then rewrites the deck: three SVG charts + two tables between `<!--CHART:name:START-->` markers, and every prose figure inside a `class="fig" data-fig="<json.path>" data-fmt="…"` span. Run: `.venv/bin/python src/deck_charts.py` (`--check` verifies only, exit 1 on drift). |
+| `deliverables/presentation/ecosystem-engine-deck.html` · `.pdf` | **The executive deck, done (Gate B), 16 Aug 2026.** Exactly **10 slides** incl. title and thank-you. Self-contained, keyboard-driven, opens from `file://`. The PDF is the same file printed at one slide per 16:9 page — see `deliverables/presentation/README.md` for the re-export command and the ten-page check. |
 | `docs/delivery-gate.html` | 59 checks across 8 gates (48 blockers, 11 lifts) between here and submission. |
 | **`docs/next-session.md`** | **START HERE if picking the project up fresh.** The next task specced in full — the money-weighted "rake at risk" headline — plus what to read first, the traps already paid for, and the order of everything after it. |
 | `data/` | Bronze/Silver/Gold lake. **Contents gitignored**, structure committed via `.gitkeep`. `data/README.md` explains both download routes. |
 | `notebooks/` | Empty. The executable Databricks/PySpark deliverable (Phases 2 & 3) goes here. |
-| `deliverables/report/` · `deliverables/presentation/` | Empty. Consulting report PDF; exec deck (max 10 slides). |
+| `deliverables/report/` | Empty. The consulting report PDF goes here. |
+| `deliverables/presentation/` | **The deck (done)** — `ecosystem-engine-deck.html` + `.pdf` + its own `README.md`. |
 
 The HTML files are self-contained (no external CSS/JS/fonts/images) and cross-link to each
 other **by bare filename** — they only work if they all stay in the same folder. Do not split them.
 
 **Where the work has got to:** the lake is built (Bronze → Silver → Gold), Step 5's bake-off chose
 **Fork A**, both models exist and are measured (Fork A in MLlib plus K-Means as the unsupervised
-layer), the **money-weighted headline is built** — so the analysis is complete — and **the
-dashboard is now built too (15 Aug 2026)**, which is the first graded artifact to exist.
-Still empty: `notebooks/` and both `deliverables/` folders. What remains is the **deck**, the
-**report PDF** and the **notebook** (then Databricks). See `docs/next-session.md`.
+layer), the **money-weighted headline is built** — so the analysis is complete — the **dashboard is
+built (15 Aug 2026)**, and the **executive deck is built (16 Aug 2026)**, which closes Gate B.
+Still empty: `notebooks/` and `deliverables/report/`. What remains is the **report PDF** and the
+**notebook** (then Databricks). See `docs/next-session.md`.
 
 ## The brief (from `../Github folder/nmims_analytics/sessions/Big_Data_Analytics_Project_Guidelines.pdf`)
 
@@ -391,6 +394,39 @@ page on disk 4.22 MB, self-contained, no fetch and no external reference
   greyed out the red/green calibration annotations. Set SVG fill via inline `style`, always.
 - Charts use the house palette; red↔gold sit in the 6–8 ΔE colour-vision band, so the three
   ranking series carry **dash patterns and direct labels** as secondary encoding, not colour alone.
+
+### THE DECK — built 2026-08-16 (`deck_charts.py` ~2 s + `deliverables/presentation/`)
+
+```
+10 slides incl. title and thank-you   (B1 — a named constraint, and a hard fail if broken)
+46 tagged figures, 3 SVG charts, 2 tables — all injected from JSON/Gold, none typed
+HTML 223 KB self-contained (one 112 KB dashboard screenshot inline) · PDF 1.6 MB, 10 pages
+```
+
+- **The deck holds no hand-typed numbers, by construction.** Every figure is
+  `<b class="fig" data-fig="rake.headline.players" data-fmt="int">77,268</b>` and
+  `deck_charts.py` rewrites the text from the JSON path, printing anything it changed. **A run
+  that rewrites nothing is the proof the deck still matches the analysis** — that is the check to
+  run before submitting, via `--check` (exit 1 on drift).
+- **`player_id` IS NOT UNIQUE IN GOLD — it is unique only within a venue.** The first overlap
+  calculation put the top-10% lists in `set(player_id)` and reported the expected-loss list as
+  sharing **99.8%** of its names with itself. Identity is `site + ":" + player_id`; the script now
+  asserts the top-k set has exactly k members. Same reason the deck never merges IDs across venues.
+- **Re-deriving the risk-only ranking gives $4,751 where the run log says $4,729** — 0.8% of the
+  money either way. Same cause as the dashboard's $1,386-vs-$1,375: `risk_cal` ships rounded to
+  4 dp, so its many ties break differently outside the run. Stated on the slide rather than hidden.
+- **Chrome lays a printed page out at 3/4 of its declared pixel size.** `@page{size:1707px 960px}`
+  therefore yields a **1280×720 layout box** — the on-screen design, unchanged — and the PDF comes
+  out at exactly ten pages. Declaring the page in mm instead put the layout under the responsive
+  breakpoint, collapsed every two-column grid to one column, and clipped each slide top *and*
+  bottom (because `.s` is a centred flex column with `overflow:hidden`). Two more parts of the same
+  fix: scope the stacking breakpoint to **`@media screen and (max-width:900px)`** so print keeps
+  its columns, and size the slide `height:100vh` in print rather than in mm or px.
+- **Always set `print-color-adjust:exact`** or every tinted panel, bar and callout prints white.
+- The reveal animation (`.u`) makes screenshots catch mid-transition — the documented artifact.
+  Inject `.s.on .u{animation:none!important;opacity:1!important}` before screenshotting.
+- Verified at full scale by exporting to PDF and reading all ten pages back as images. That is the
+  test worth repeating after any edit: **eleven pages is a rubric violation on a named constraint.**
 
 ## Data & code gotchas (these bite — they are already flagged in the HTML)
 
