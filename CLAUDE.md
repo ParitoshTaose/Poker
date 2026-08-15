@@ -33,6 +33,8 @@ Explain jargon in plain language and always tie technical ideas to a business co
 | `docs/segments-results.md` | **The segmentation write-up** — and where the ecosystem thesis stops being an assumption and becomes a measurement. |
 | `src/rake_at_risk.py` | **The money-weighted headline, done.** Recalibrates Fork A's GBT (drops `weightCol`, verifies with a reliability curve), prices every hand's rake with a validated conditional-mean estimator, attributes it to players by contributed share, and multiplies. Writes `docs/rake-at-risk-results.json` and `gold/rake_at_risk`. Run: `.venv/bin/python src/rake_at_risk.py` (2.1 min reusing `data/_work/player_rake`; `--rebuild-rake` redoes the 116 M-row attribution, 5.1 min total). **Run twice end to end: every reported figure reproduced identically.** |
 | `docs/rake-at-risk-results.md` | **The headline write-up** — the sentence, the reliability curve, the rake estimator and its validation, who to call, and four sensitivities. |
+| `src/dashboard_data.py` | **The dashboard payload, done.** Polars only, **no Spark**, 0.2 s. Joins `gold/rake_at_risk` + `gold/player_lapse` + a modal-stake pass over the seat join, encodes all 77,268 players as base64 typed arrays, and injects the result into `docs/dashboard.html` between its `/*DATA:START*/ … /*DATA:END*/` markers. Self-checks decode the payload back and reconcile it against Gold *and* the run log before writing. Run: `.venv/bin/python src/dashboard_data.py` (`--rebuild-stake` rescans `hp_enriched`, 6 s · `--dump PATH` writes the payload as readable JSON · `--no-inject` to dry-run). |
+| `docs/dashboard.html` | **The decision surface, done (Gate A).** One self-contained 4.2 MB file — no server, no CDN, no `fetch`, opens from `file://`. Headline band → sticky venue/segment/stake filters → contact-budget panel with three ranking curves → segment × venue money matrix (click to drill) → the call list with CSV export → the trust strip. **Every figure is computed in the browser from the embedded Gold rows**; nothing is hand-typed. Rebuild its numbers with `dashboard_data.py`, never by editing the file. |
 | `docs/delivery-gate.html` | 59 checks across 8 gates (48 blockers, 11 lifts) between here and submission. |
 | **`docs/next-session.md`** | **START HERE if picking the project up fresh.** The next task specced in full — the money-weighted "rake at risk" headline — plus what to read first, the traps already paid for, and the order of everything after it. |
 | `data/` | Bronze/Silver/Gold lake. **Contents gitignored**, structure committed via `.gitkeep`. `data/README.md` explains both download routes. |
@@ -44,10 +46,10 @@ other **by bare filename** — they only work if they all stay in the same folde
 
 **Where the work has got to:** the lake is built (Bronze → Silver → Gold), Step 5's bake-off chose
 **Fork A**, both models exist and are measured (Fork A in MLlib plus K-Means as the unsupervised
-layer), and the **money-weighted headline is now built too** — so **the analysis is complete**.
-**No graded artifact has been started.** `notebooks/` and both `deliverables/` folders are still
-empty. The next steps are all writing and packaging: the dashboard, the deck, the report PDF, and
-the Databricks notebook (Steps 7–8). See `docs/next-session.md`.
+layer), the **money-weighted headline is built** — so the analysis is complete — and **the
+dashboard is now built too (15 Aug 2026)**, which is the first graded artifact to exist.
+Still empty: `notebooks/` and both `deliverables/` folders. What remains is the **deck**, the
+**report PDF** and the **notebook** (then Databricks). See `docs/next-session.md`.
 
 ## The brief (from `../Github folder/nmims_analytics/sessions/Big_Data_Analytics_Project_Guidelines.pdf`)
 
@@ -344,6 +346,51 @@ whole window   $8,217,411 of rake on 15.56 M hands / 5 venues = $0.53 per hand
   smaller pots. Per-player weekly rake spans **$18.99 (PS) to $103.82 (ONG)** on stakes alone.
 - Dollars are **2009 USD at 25NL–1000NL**. No INR conversion (the 2009 rate would be invented)
   and no inflation adjustment — say so rather than quietly converting.
+
+### THE DASHBOARD — built 2026-08-15 (`dashboard_data.py` 0.2 s + `docs/dashboard.html`)
+
+```
+payload      77,268 players x 9 columns, base64 typed arrays          1.85 MB
+             + all 77,268 player ids                                  1.78 MB
+             + venue/segment/stake dimensions and the three run logs   109 KB
+page on disk 4.22 MB, self-contained, no fetch and no external reference
+```
+
+- **The whole population travels with the page, and that is the point.** Rather than
+  pre-aggregating a venue × segment × stake cube, all 77,268 Gold rows are embedded columnar and
+  the page recomputes every headline, curve and ranking in the browser. So **any** filter
+  combination is exact rather than interpolated, and "no number on screen is hand-typed" is
+  literally true. Cost: 4.2 MB, which opens instantly.
+- **Stake is the player's MODAL stake, not `p_max_stake`.** `gold/rake_at_risk` has no stake
+  column at all, and the obvious join column is the wrong one: one hand at 1000NL would file a
+  25NL regular as a high-roller. Modal stake is computed over each venue's own prior window from
+  `data/_work/hp_enriched` (5.5 s, cached to `data/_work/player_stake.parquet`) and **differs
+  from the highest stake for 24.8% of players**. Its regression check is triple-green and runs on
+  every rebuild: 0 players missing, **0 prior-hand-count mismatches** against `p_hands`, 0
+  distinct-stake mismatches, on all 90,469.
+- **GOLD STORES `risk_cal` ROUNDED TO 4 dp — this bites twice, and both bites are real.**
+  (1) `expected_rake_at_risk` was computed from the *unrounded* probability, so multiplying the
+  two shipped columns back together is off by up to **$0.16 a player**. **Ship the
+  `expected_rake_at_risk` column; never recompute it as `risk_cal × weekly_rake_usd`.**
+  (2) Two players sitting just under 0.50 round onto it, so **re-deriving "players at risk" from
+  the published table gives 58,837, not the run log's 58,836.** 58,837 is the reproducible
+  figure — it is what anyone re-deriving from Gold gets — so the dashboard shows it and
+  `dashboard_data.py` prints the difference rather than hiding it.
+- **Encode money and probability as float32, not as scaled integers.** The first version stored
+  probability at 1e-4 and dollars in whole cents — each column's natural precision — and 77,268
+  half-cent roundings walked the headline to **$604,162 against the report's $604,163**. float32
+  costs 154 KB and drops the drift to **$0.01**.
+- **The page reproduces the run log end to end, and this is the check to re-run after any
+  rebuild.** Held-out fold, 10% budget: **1,936 contacts · $107,598 reached (70%) · 1,013 true
+  lapsers · $104,523 realised · risk-only 1,876 lapsers at 0.9% of the money · 0.2% name
+  overlap** — every figure matching `rake-at-risk-results.md` §8. Per-venue and per-segment
+  totals match to the cent. The one deliberate exception is risk-only *reach* ($1,386 vs $1,375):
+  ties on the 4 dp probability break differently, and the page's tie-break favours the ranking it
+  argues against, which is the honest direction.
+- **The documented SVG trap bit again — `.atxt{fill:…}` beat a `fill=` attribute** and silently
+  greyed out the red/green calibration annotations. Set SVG fill via inline `style`, always.
+- Charts use the house palette; red↔gold sit in the 6–8 ΔE colour-vision band, so the three
+  ranking series carry **dash patterns and direct labels** as secondary encoding, not colour alone.
 
 ## Data & code gotchas (these bite — they are already flagged in the HTML)
 
