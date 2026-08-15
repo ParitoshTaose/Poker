@@ -1,0 +1,789 @@
+{
+  "calibration": {
+    "weighted": {
+      "reliability": {
+        "bins": [
+          {
+            "decile": 1,
+            "n": 2260,
+            "p_low": 0.0149,
+            "p_high": 0.0995,
+            "mean_predicted": 0.056446814159292036,
+            "observed": 0.10575221238938053,
+            "deviation": -0.04930539823008849
+          },
+          {
+            "decile": 2,
+            "n": 2260,
+            "p_low": 0.0996,
+            "p_high": 0.2165,
+            "mean_predicted": 0.1522728761061947,
+            "observed": 0.30442477876106194,
+            "deviation": -0.15215190265486725
+          },
+          {
+            "decile": 3,
+            "n": 2260,
+            "p_low": 0.2165,
+            "p_high": 0.3838,
+            "mean_predicted": 0.3041633628318584,
+            "observed": 0.504424778761062,
+            "deviation": -0.20026141592920355
+          },
+          {
+            "decile": 4,
+            "n": 2260,
+            "p_low": 0.3838,
+            "p_high": 0.5133,
+            "mean_predicted": 0.4478675221238938,
+            "observed": 0.6212389380530974,
+            "deviation": -0.17337141592920358
+          },
+          {
+            "decile": 5,
+            "n": 2260,
+            "p_low": 0.5133,
+            "p_high": 0.6421,
+            "mean_predicted": 0.5794724336283186,
+            "observed": 0.7415929203539823,
+            "deviation": -0.1621204867256637
+          },
+          {
+            "decile": 6,
+            "n": 2260,
+            "p_low": 0.6421,
+            "p_high": 0.7526,
+            "mean_predicted": 0.697881017699115,
+            "observed": 0.8075221238938053,
+            "deviation": -0.10964110619469025
+          },
+          {
+            "decile": 7,
+            "n": 2259,
+            "p_low": 0.7526,
+            "p_high": 0.8544,
+            "mean_predicted": 0.8066122620628597,
+            "observed": 0.8840194776449757,
+            "deviation": -0.07740721558211594
+          },
+          {
+            "decile": 8,
+            "n": 2259,
+            "p_low": 0.8545,
+            "p_high": 0.8967,
+            "mean_predicted": 0.8785772023019035,
+            "observed": 0.9415670650730412,
+            "deviation": -0.06298986277113772
+          },
+          {
+            "decile": 9,
+            "n": 2259,
+            "p_low": 0.8967,
+            "p_high": 0.9191,
+            "mean_predicted": 0.90868406374502,
+            "observed": 0.9455511288180611,
+            "deviation": -0.03686706507304116
+          },
+          {
+            "decile": 10,
+            "n": 2259,
+            "p_low": 0.9191,
+            "p_high": 0.9756,
+            "mean_predicted": 0.9296406374501992,
+            "observed": 0.9698981850376273,
+            "deviation": -0.040257547587428055
+          }
+        ],
+        "max_abs_deviation": 0.20026141592920355,
+        "ece": 0.10644655691272792,
+        "brier": 0.15155219128075764,
+        "mean_predicted": 0.5761078775004426,
+        "observed_rate": 0.6825544344131704,
+        "n": 22596
+      },
+      "roc_auc": 0.8566383783793605,
+      "pr_auc": 0.9172922806043018
+    },
+    "unweighted": {
+      "reliability": {
+        "bins": [
+          {
+            "decile": 1,
+            "n": 2260,
+            "p_low": 0.019896286899093396,
+            "p_high": 0.182515879672408,
+            "mean_predicted": 0.09959329550572468,
+            "observed": 0.10663716814159292,
+            "deviation": -0.00704387263586824
+          },
+          {
+            "decile": 2,
+            "n": 2260,
+            "p_low": 0.18263064962908737,
+            "p_high": 0.3732365484748347,
+            "mean_predicted": 0.27350151888388585,
+            "observed": 0.3,
+            "deviation": -0.026498481116114136
+          },
+          {
+            "decile": 3,
+            "n": 2260,
+            "p_low": 0.3732775059943979,
+            "p_high": 0.5647096209291922,
+            "mean_predicted": 0.4740055729328248,
+            "observed": 0.49911504424778763,
+            "deviation": -0.025109471314962828
+          },
+          {
+            "decile": 4,
+            "n": 2260,
+            "p_low": 0.5647314846724418,
+            "p_high": 0.6991576693985662,
+            "mean_predicted": 0.6355787227670779,
+            "observed": 0.6243362831858407,
+            "deviation": 0.011242439581237273
+          },
+          {
+            "decile": 5,
+            "n": 2260,
+            "p_low": 0.6991715878327575,
+            "p_high": 0.7920288659811984,
+            "mean_predicted": 0.7500215969708199,
+            "observed": 0.7429203539823008,
+            "deviation": 0.0071012429885191075
+          },
+          {
+            "decile": 6,
+            "n": 2260,
+            "p_low": 0.7920313610611626,
+            "p_high": 0.8527503820944596,
+            "mean_predicted": 0.8228161212467922,
+            "observed": 0.8137168141592921,
+            "deviation": 0.009099307087500064
+          },
+          {
+            "decile": 7,
+            "n": 2259,
+            "p_low": 0.8527844273769104,
+            "p_high": 0.926643100578771,
+            "mean_predicted": 0.8915385273243011,
+            "observed": 0.8813634351482957,
+            "deviation": 0.010175092176005318
+          },
+          {
+            "decile": 8,
+            "n": 2259,
+            "p_low": 0.9266453999674339,
+            "p_high": 0.9468369355608449,
+            "mean_predicted": 0.9380592545942292,
+            "observed": 0.9415670650730412,
+            "deviation": -0.00350781047881199
+          },
+          {
+            "decile": 9,
+            "n": 2259,
+            "p_low": 0.9468546111408375,
+            "p_high": 0.9586486185833969,
+            "mean_predicted": 0.9531443690335497,
+            "observed": 0.9490925188136343,
+            "deviation": 0.004051850219915387
+          },
+          {
+            "decile": 10,
+            "n": 2259,
+            "p_low": 0.9586493488457872,
+            "p_high": 0.9791269005268062,
+            "mean_predicted": 0.9631823946669332,
+            "observed": 0.9672421425409473,
+            "deviation": -0.004059747874014086
+          }
+        ],
+        "max_abs_deviation": 0.026498481116114136,
+        "ece": 0.010789876901580576,
+        "brier": 0.13649601486158694,
+        "mean_predicted": 0.6800987599808574,
+        "observed_rate": 0.6825544344131704,
+        "n": 22596
+      },
+      "roc_auc": 0.85749412006393,
+      "pr_auc": 0.9186843795369122
+    },
+    "n_train": 67873,
+    "n_test": 22596,
+    "gappy_columns": [
+      "p_bb_vpip_rate",
+      "p_btn_share"
+    ],
+    "tolerance": 0.03,
+    "per_fold_calibration": {
+      "train": {
+        "n": 67873,
+        "mean_predicted": 0.6815325591353685,
+        "observed_rate": 0.6818469789165058,
+        "max_abs_deviation": 0.034554604405998016,
+        "ece": 0.012580920677911238,
+        "brier": 0.12339453986357422
+      },
+      "test": {
+        "n": 22596,
+        "mean_predicted": 0.6800987599808574,
+        "observed_rate": 0.6825544344131704,
+        "max_abs_deviation": 0.026498481116114136,
+        "ece": 0.010789876901580576,
+        "brier": 0.13649601486158694
+      }
+    },
+    "chosen": "unweighted",
+    "best_f1": {
+      "threshold": 0.3999999999999999,
+      "tp": 14405,
+      "fp": 3415,
+      "tn": 3758,
+      "fn": 1018,
+      "precision": 0.808361391694725,
+      "recall": 0.9339946832652531,
+      "f1": 0.8666486177541136,
+      "accuracy": 0.8038148344839795
+    }
+  },
+  "money_coverage_by_venue": [
+    {
+      "site": "PS",
+      "venue": "PokerStars",
+      "hands": 8293797,
+      "reconciling": 2231818,
+      "plausible": 2231818,
+      "coverage": 0.2690948428084266,
+      "usd_reconciling": 479905.79720005544,
+      "usd_plausible": 479905.79720005544
+    },
+    {
+      "site": "IPN",
+      "venue": "iPoker Network",
+      "hands": 5996194,
+      "reconciling": 0,
+      "plausible": 0,
+      "coverage": 0.0,
+      "usd_reconciling": 0.0,
+      "usd_plausible": 0.0
+    },
+    {
+      "site": "PTY",
+      "venue": "PartyPoker",
+      "hands": 3092685,
+      "reconciling": 437142,
+      "plausible": 341781,
+      "coverage": 0.11051270982980808,
+      "usd_reconciling": 1236747.3985489677,
+      "usd_plausible": 559616.5266309886
+    },
+    {
+      "site": "ONG",
+      "venue": "Ongame Network",
+      "hands": 1631839,
+      "reconciling": 1584889,
+      "plausible": 1579938,
+      "coverage": 0.9681947790192538,
+      "usd_reconciling": 1761521.5991998385,
+      "usd_plausible": 1458484.3427999066
+    },
+    {
+      "site": "FTP",
+      "venue": "Full Tilt Poker",
+      "hands": 1283795,
+      "reconciling": 344262,
+      "plausible": 344059,
+      "coverage": 0.2680015111446921,
+      "usd_reconciling": 221059.85879999772,
+      "usd_plausible": 214347.30779999765
+    },
+    {
+      "site": "ABS",
+      "venue": "Absolute Poker",
+      "hands": 1257978,
+      "reconciling": 780763,
+      "plausible": 573513,
+      "coverage": 0.4559006596299776,
+      "usd_reconciling": 489762.48940003384,
+      "usd_plausible": 221973.251799987
+    }
+  ],
+  "excluded_venues": [
+    "IPN"
+  ],
+  "max_rake_share": 0.06,
+  "rake_share_by_venue": [
+    {
+      "site": "ABS",
+      "flop_hands": 497285,
+      "median_share": 0.05,
+      "p90_share": 0.11333333333333333,
+      "above_ceiling": 0.41503966538302983,
+      "at_parser_bound": 0.03129392601827926
+    },
+    {
+      "site": "FTP",
+      "flop_hands": 159399,
+      "median_share": 0.045454545454545456,
+      "p90_share": 0.05,
+      "above_ceiling": 0.001273533711001951,
+      "at_parser_bound": 9.410347618241018e-05
+    },
+    {
+      "site": "ONG",
+      "flop_hands": 705887,
+      "median_share": 0.048882681564245814,
+      "p90_share": 0.05,
+      "above_ceiling": 0.0070167038066999395,
+      "at_parser_bound": 0.0006573290059173777
+    },
+    {
+      "site": "PS",
+      "flop_hands": 1107219,
+      "median_share": 0.0425531914893617,
+      "p90_share": 0.05,
+      "above_ceiling": 0.0,
+      "at_parser_bound": 0.0
+    },
+    {
+      "site": "PTY",
+      "flop_hands": 435472,
+      "median_share": 0.04935622317596566,
+      "p90_share": 0.13333333333333333,
+      "above_ceiling": 0.2190014512988206,
+      "at_parser_bound": 0.07984899143917405
+    }
+  ],
+  "representativeness": [
+    {
+      "site": "ABS",
+      "measured": true,
+      "hands": 573513,
+      "median_pot_bb": 3.0,
+      "mean_pot_bb": 7.815170146622647,
+      "saw_flop_share": 0.5073171837430015
+    },
+    {
+      "site": "ABS",
+      "measured": false,
+      "hands": 684465,
+      "median_pot_bb": 6.5,
+      "mean_pot_bb": 20.879614344780087,
+      "saw_flop_share": 0.6370362253731017
+    },
+    {
+      "site": "FTP",
+      "measured": true,
+      "hands": 344059,
+      "median_pot_bb": 2.5,
+      "mean_pot_bb": 8.32215386953982,
+      "saw_flop_share": 0.46269971138670984
+    },
+    {
+      "site": "FTP",
+      "measured": false,
+      "hands": 939736,
+      "median_pot_bb": 2.5,
+      "mean_pot_bb": 14.388475034797008,
+      "saw_flop_share": 0.461650931751045
+    },
+    {
+      "site": "ONG",
+      "measured": true,
+      "hands": 1579938,
+      "median_pot_bb": 2.5,
+      "mean_pot_bb": 10.739967370048708,
+      "saw_flop_share": 0.44364778871069627
+    },
+    {
+      "site": "ONG",
+      "measured": false,
+      "hands": 51901,
+      "median_pot_bb": 56.5,
+      "mean_pot_bb": 117.04210047397926,
+      "saw_flop_share": 0.8741642742914395
+    },
+    {
+      "site": "PS",
+      "measured": true,
+      "hands": 2231818,
+      "median_pot_bb": 2.5,
+      "mean_pot_bb": 6.840961520414918,
+      "saw_flop_share": 0.49610631332841654
+    },
+    {
+      "site": "PS",
+      "measured": false,
+      "hands": 6061979,
+      "median_pot_bb": 3.0,
+      "mean_pot_bb": 14.95488148541409,
+      "saw_flop_share": 0.5478141709167914
+    },
+    {
+      "site": "PTY",
+      "measured": true,
+      "hands": 341781,
+      "median_pot_bb": 23.4,
+      "mean_pot_bb": 41.28013341876395,
+      "saw_flop_share": 0.9951138302012107
+    },
+    {
+      "site": "PTY",
+      "measured": false,
+      "hands": 2750904,
+      "median_pot_bb": 2.5,
+      "mean_pot_bb": 9.398295208611993,
+      "saw_flop_share": 0.3899670799126396
+    }
+  ],
+  "estimator_validation": [
+    {
+      "site": "ABS",
+      "hands": 286797,
+      "actual_usd": 111400.63619999719,
+      "predicted_usd": 111732.5302036616,
+      "ratio": 1.0029792828388213,
+      "mae_usd_per_hand": 0.10480767797188491,
+      "mean_actual_usd_per_hand": 0.388430270191101
+    },
+    {
+      "site": "FTP",
+      "hands": 171955,
+      "actual_usd": 107357.00059999886,
+      "predicted_usd": 108009.3320955728,
+      "ratio": 1.0060762827941183,
+      "mae_usd_per_hand": 0.038537957081926415,
+      "mean_actual_usd_per_hand": 0.6243319508010751
+    },
+    {
+      "site": "ONG",
+      "hands": 790027,
+      "actual_usd": 727201.6562000108,
+      "predicted_usd": 731109.0926277539,
+      "ratio": 1.005373250176796,
+      "mae_usd_per_hand": 0.1710260676573642,
+      "mean_actual_usd_per_hand": 0.9204769662302817
+    },
+    {
+      "site": "PS",
+      "hands": 1116165,
+      "actual_usd": 239959.93199995122,
+      "predicted_usd": 241018.89081764122,
+      "ratio": 1.0044130651682723,
+      "mae_usd_per_hand": 0.017175894873529194,
+      "mean_actual_usd_per_hand": 0.2149860746394585
+    },
+    {
+      "site": "PTY",
+      "hands": 171007,
+      "actual_usd": 281265.86694999767,
+      "predicted_usd": 279282.6469286122,
+      "ratio": 0.9929489488259233,
+      "mae_usd_per_hand": 0.7570280999936188,
+      "mean_actual_usd_per_hand": 1.6447623018355837
+    }
+  ],
+  "priced_by_venue": [
+    {
+      "site": "ABS",
+      "hands": 1257978,
+      "usd_per_hand_all": 0.5319239463184899,
+      "usd_per_hand_measured": 0.38704136052711446,
+      "total_usd_all": 669148.6221418413,
+      "total_usd_measured": 221973.251799987
+    },
+    {
+      "site": "FTP",
+      "hands": 1283795,
+      "usd_per_hand_all": 0.7994712756570869,
+      "usd_per_hand_measured": 0.6229957879317142,
+      "total_usd_all": 1026357.2263321899,
+      "total_usd_measured": 214347.30779999765
+    },
+    {
+      "site": "ONG",
+      "hands": 1631839,
+      "usd_per_hand_all": 1.0518035188907349,
+      "usd_per_hand_measured": 0.9231275801961258,
+      "total_usd_all": 1716374.0024631377,
+      "total_usd_measured": 1458484.3427999066
+    },
+    {
+      "site": "PS",
+      "hands": 8293797,
+      "usd_per_hand_all": 0.37668575892173645,
+      "usd_per_hand_measured": 0.2150290916195028,
+      "total_usd_all": 3124155.2172878208,
+      "total_usd_measured": 479905.79720005544
+    },
+    {
+      "site": "PTY",
+      "hands": 3092685,
+      "usd_per_hand_all": 0.5436623585133715,
+      "usd_per_hand_measured": 1.6373541145674821,
+      "total_usd_all": 1681376.4212389265,
+      "total_usd_measured": 559616.5266309886
+    }
+  ],
+  "attribution_check": {
+    "contributed_total_usd": 8217411.489469097,
+    "equal_split_total_usd": 8217411.489469053,
+    "ratio": 1.0000000000000053,
+    "seat_rows": 86216438,
+    "prior_window_usd": 5999598.8016467495,
+    "prior_window_measured_usd": 2136566.778156011,
+    "measured_share": 0.3561182753702753,
+    "subset_run": false
+  },
+  "hand_count_check": {
+    "mismatched_players": 0,
+    "subset_run": false
+  },
+  "segment_names": {
+    "1": "Grinder",
+    "0": "Regular",
+    "2": "Gambler",
+    "3": "Recreational"
+  },
+  "headline": {
+    "players": 77268,
+    "weekly_rake_usd": 2114625.6127881156,
+    "weekly_rake_measured_usd": 727527.846661208,
+    "measured_share": 0.34404569880432345,
+    "expected_rake_at_risk_usd": 604163.0736374091,
+    "at_risk_share_of_weekly": 0.28570687406023865,
+    "at_risk_players": 58836,
+    "at_risk_players_weekly_rake_usd": 498155.6143029059,
+    "top_budget_reach_usd": 421064.00103759323,
+    "top_budget_players": 7727,
+    "recreational_share_of_risk": 0.3020412590404071
+  },
+  "by_segment": [
+    {
+      "segment": "Recreational",
+      "players": 31799,
+      "at_risk": 26870,
+      "lapsed_actual": 24504,
+      "weekly_rake": 432177.0030930076,
+      "weekly_rake_measured": 162977.3621454548,
+      "expected_at_risk": 182482.1754271652,
+      "mean_risk": 0.769603984,
+      "lapse_rate": 0.7705902701,
+      "share_of_risk": 0.302041259,
+      "at_risk_rate": 0.4222394392,
+      "measured_share": 0.3771079002,
+      "usd_per_player": 13.5908991821
+    },
+    {
+      "segment": "Gambler",
+      "players": 15262,
+      "at_risk": 12677,
+      "lapsed_actual": 11392,
+      "weekly_rake": 380162.0381486908,
+      "weekly_rake_measured": 110887.1498664089,
+      "expected_at_risk": 157896.9770290693,
+      "mean_risk": 0.7449442523,
+      "lapse_rate": 0.7464290394,
+      "share_of_risk": 0.2613482749,
+      "at_risk_rate": 0.4153412524,
+      "measured_share": 0.2916839104,
+      "usd_per_player": 24.9090576693
+    },
+    {
+      "segment": "Regular",
+      "players": 27376,
+      "at_risk": 17434,
+      "lapsed_actual": 16866,
+      "weekly_rake": 676974.7342206729,
+      "weekly_rake_measured": 224022.7105305624,
+      "expected_at_risk": 155173.4797470083,
+      "mean_risk": 0.6176678882,
+      "lapse_rate": 0.6160870836,
+      "share_of_risk": 0.2568403905,
+      "at_risk_rate": 0.2292160577,
+      "measured_share": 0.3309173876,
+      "usd_per_player": 24.7287673225
+    },
+    {
+      "segment": "Grinder",
+      "players": 2831,
+      "at_risk": 1855,
+      "lapsed_actual": 1734,
+      "weekly_rake": 625311.8373257446,
+      "weekly_rake_measured": 229640.6241187818,
+      "expected_at_risk": 108610.4414341664,
+      "mean_risk": 0.620882177,
+      "lapse_rate": 0.6125044154,
+      "share_of_risk": 0.1797700756,
+      "at_risk_rate": 0.1736900454,
+      "measured_share": 0.3672417671,
+      "usd_per_player": 220.8801968653
+    }
+  ],
+  "by_venue": [
+    {
+      "venue": "PokerStars",
+      "players": 48561,
+      "at_risk": 40877,
+      "lapsed_actual": 37850,
+      "weekly_rake": 922103.8992434777,
+      "weekly_rake_measured": 142801.4280369619,
+      "expected_at_risk": 270725.8409199994,
+      "mean_risk": 0.7788181906,
+      "lapse_rate": 0.7794320545,
+      "share_of_risk": 0.4481006085,
+      "at_risk_rate": 0.2935958097,
+      "measured_share": 0.1548647914,
+      "usd_per_player": 18.9885690007
+    },
+    {
+      "venue": "PartyPoker",
+      "players": 12976,
+      "at_risk": 10694,
+      "lapsed_actual": 9575,
+      "weekly_rake": 488652.0210720416,
+      "weekly_rake_measured": 162914.3203612067,
+      "expected_at_risk": 184389.3193558954,
+      "mean_risk": 0.7369601807,
+      "lapse_rate": 0.7379007398,
+      "share_of_risk": 0.3051979298,
+      "at_risk_rate": 0.3773427949,
+      "measured_share": 0.3333953679,
+      "usd_per_player": 37.658139725
+    },
+    {
+      "venue": "Ongame Network",
+      "players": 3722,
+      "at_risk": 2063,
+      "lapsed_actual": 1854,
+      "weekly_rake": 386417.0386256361,
+      "weekly_rake_measured": 327196.0920271446,
+      "expected_at_risk": 77485.7898928824,
+      "mean_risk": 0.5027900472,
+      "lapse_rate": 0.4981192907,
+      "share_of_risk": 0.1282531046,
+      "at_risk_rate": 0.2005237403,
+      "measured_share": 0.8467434386,
+      "usd_per_player": 103.819730958
+    },
+    {
+      "venue": "Absolute Poker",
+      "players": 6737,
+      "at_risk": 3259,
+      "lapsed_actual": 3086,
+      "weekly_rake": 206272.5714824607,
+      "weekly_rake_measured": 68629.8582231356,
+      "expected_at_risk": 46966.1149597072,
+      "mean_risk": 0.4623649033,
+      "lapse_rate": 0.458067389,
+      "share_of_risk": 0.0777374802,
+      "at_risk_rate": 0.227689579,
+      "measured_share": 0.3327144163,
+      "usd_per_player": 30.6178672232
+    },
+    {
+      "venue": "Full Tilt Poker",
+      "players": 5272,
+      "at_risk": 1943,
+      "lapsed_actual": 2131,
+      "weekly_rake": 111180.0823644995,
+      "weekly_rake_measured": 25986.1480127591,
+      "expected_at_risk": 24596.0085089248,
+      "mean_risk": 0.4058511856,
+      "lapse_rate": 0.4042109256,
+      "share_of_risk": 0.0407108769,
+      "at_risk_rate": 0.221226752,
+      "measured_share": 0.2337302461,
+      "usd_per_player": 21.088786488
+    }
+  ],
+  "ranking_full": {
+    "expected loss (risk x $)": {
+      "contacted": 7727,
+      "expected_at_risk_reached": 421064.00103759323,
+      "share_of_total": 0.6969376637048434,
+      "realised_lost_rake": 420379.306177757,
+      "true_lapsers": 4146,
+      "precision": 0.5365601138863725,
+      "overlap_with_expected_loss": 1.0
+    },
+    "risk alone": {
+      "contacted": 7727,
+      "expected_at_risk_reached": 4729.181788490678,
+      "share_of_total": 0.00782765778785235,
+      "realised_lost_rake": 4769.832629588418,
+      "true_lapsers": 7554,
+      "precision": 0.9776109745049826,
+      "overlap_with_expected_loss": 0.0007764979940468488
+    },
+    "weekly rake alone": {
+      "contacted": 7727,
+      "expected_at_risk_reached": 381313.89760901604,
+      "share_of_total": 0.6311439977840537,
+      "realised_lost_rake": 375706.6895697402,
+      "true_lapsers": 2521,
+      "precision": 0.3262585738320176,
+      "overlap_with_expected_loss": 0.6743885078296881
+    }
+  },
+  "ranking_test_fold": {
+    "expected loss (risk x $)": {
+      "contacted": 1936,
+      "expected_at_risk_reached": 107597.77590620579,
+      "share_of_total": 0.700239301944496,
+      "realised_lost_rake": 104522.72813341858,
+      "true_lapsers": 1013,
+      "precision": 0.5232438016528925,
+      "overlap_with_expected_loss": 1.0
+    },
+    "risk alone": {
+      "contacted": 1936,
+      "expected_at_risk_reached": 1374.5786393337976,
+      "share_of_total": 0.008945668056503002,
+      "realised_lost_rake": 1359.1982131851419,
+      "true_lapsers": 1876,
+      "precision": 0.96900826446281,
+      "overlap_with_expected_loss": 0.0015495867768595042
+    },
+    "weekly rake alone": {
+      "contacted": 1936,
+      "expected_at_risk_reached": 97814.38066035556,
+      "share_of_total": 0.6365696043145643,
+      "realised_lost_rake": 95144.22885307306,
+      "true_lapsers": 622,
+      "precision": 0.3212809917355372,
+      "overlap_with_expected_loss": 0.6683884297520661
+    }
+  },
+  "sensitivity_probability": {
+    "shipped weighted scores": 424809.5608274537,
+    "unweighted refit": 604163.0736374091,
+    "chosen (calibrated)": 604163.0736374091
+  },
+  "sensitivity_estimator": {
+    "players": 70866,
+    "estimator_usd": 1981801.1397688498,
+    "naive_usd": 2483876.0182898417,
+    "inflation_x": 1.253342713577989
+  },
+  "sensitivity_high_coverage": {
+    "venues": [
+      "ONG",
+      "ABS"
+    ],
+    "players": 10459,
+    "weekly_usd": 592689.6101080967,
+    "measured_share": 0.6678469531093824,
+    "expected_at_risk_usd": 124451.90485258959,
+    "at_risk_rate": 0.20997821242368603
+  },
+  "sensitivity_attribution": {
+    "contributed_usd": 5569696.204507036,
+    "equal_split_usd": 5682447.645786356,
+    "ratio": 0.9801579445500167
+  },
+  "seed": 42,
+  "quick_mode": false,
+  "subset_parts": null,
+  "runtime_seconds": 291.6
+}
