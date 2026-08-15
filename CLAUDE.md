@@ -31,6 +31,8 @@ Explain jargon in plain language and always tie technical ideas to a business co
 | `docs/fork-a-results.md` | **Fork A's results.** Population, label, baselines, metrics, the leakage re-check, the contact-budget table, and what is still weak. |
 | `src/segments.py` | **The unsupervised layer, done.** MLlib K-Means (vs bisecting k-means) on prior-window behaviour, two views, cross-tabbed against Fork A's risk scores and the plan's four hypothesised archetypes. Writes `docs/segments-results.json` and `gold/player_segments`. Run: `.venv/bin/python src/segments.py` (2.0 min). |
 | `docs/segments-results.md` | **The segmentation write-up** — and where the ecosystem thesis stops being an assumption and becomes a measurement. |
+| `src/rake_at_risk.py` | **The money-weighted headline, done.** Recalibrates Fork A's GBT (drops `weightCol`, verifies with a reliability curve), prices every hand's rake with a validated conditional-mean estimator, attributes it to players by contributed share, and multiplies. Writes `docs/rake-at-risk-results.json` and `gold/rake_at_risk`. Run: `.venv/bin/python src/rake_at_risk.py` (2.1 min reusing `data/_work/player_rake`; `--rebuild-rake` redoes the 116 M-row attribution, 5.1 min total). **Run twice end to end: every reported figure reproduced identically.** |
+| `docs/rake-at-risk-results.md` | **The headline write-up** — the sentence, the reliability curve, the rake estimator and its validation, who to call, and four sensitivities. |
 | `docs/delivery-gate.html` | 59 checks across 8 gates (48 blockers, 11 lifts) between here and submission. |
 | **`docs/next-session.md`** | **START HERE if picking the project up fresh.** The next task specced in full — the money-weighted "rake at risk" headline — plus what to read first, the traps already paid for, and the order of everything after it. |
 | `data/` | Bronze/Silver/Gold lake. **Contents gitignored**, structure committed via `.gitkeep`. `data/README.md` explains both download routes. |
@@ -41,11 +43,11 @@ The HTML files are self-contained (no external CSS/JS/fonts/images) and cross-li
 other **by bare filename** — they only work if they all stay in the same folder. Do not split them.
 
 **Where the work has got to:** the lake is built (Bronze → Silver → Gold), Step 5's bake-off chose
-**Fork A**, and both models now exist and are measured — Fork A in MLlib plus K-Means as the
-unsupervised layer. **All three Phase-3 model types are done; no graded artifact has been started.**
-`notebooks/` and both `deliverables/` folders are still empty, and Gate 0.1 (does the professor
-accept a gambling dataset?) is still open — see "Still open" below. The next steps are the
-money-weighted headline, the Databricks notebook (Steps 7–8), the dashboard, and packaging (Step 9).
+**Fork A**, both models exist and are measured (Fork A in MLlib plus K-Means as the unsupervised
+layer), and the **money-weighted headline is now built too** — so **the analysis is complete**.
+**No graded artifact has been started.** `notebooks/` and both `deliverables/` folders are still
+empty. The next steps are all writing and packaging: the dashboard, the deck, the report PDF, and
+the Databricks notebook (Steps 7–8). See `docs/next-session.md`.
 
 ## The brief (from `../Github folder/nmims_analytics/sessions/Big_Data_Analytics_Project_Guidelines.pdf`)
 
@@ -278,6 +280,71 @@ seg  name(interp)   share   hands  tables  vpip   pfr   bb/100   LAPSE   % of al
 - `share_losing` in the raw output is a **small-sample artifact** (median money hands ≈ 92) —
   cluster *means* of bb/100 are reliable, the per-player sign is not. Not quoted in the write-up.
 
+### RAKE AT RISK — measured 2026-08-14 (`rake_at_risk.py`, 5.1 min, seed 42)
+
+Full write-up: **`docs/rake-at-risk-results.md`** · raw metrics `docs/rake-at-risk-results.json`
+· output table `gold/rake_at_risk` (77,268 players × 23 cols).
+
+```
+THE SENTENCE   $604,163 of next week's rake sits at risk across 77,268 players on five venues
+               — 30% of it recreational — and contacting the top 10% by expected loss
+               (7,727 players) puts $421,064 of it in reach.
+weekly rake    $2,114,626   (34.4% MEASURED, the rest estimated)
+at-risk        58,836 players at calibrated P >= 0.5, holding $498,156 of weekly rake
+whole window   $8,217,411 of rake on 15.56 M hands / 5 venues = $0.53 per hand
+```
+
+- **THE CALIBRATION FIX WORKED, AND IT WAS WORTH 30% OF THE HEADLINE.** Refitting Fork A's CORE
+  GBT with `weightCol` simply **removed** (at 68/32 there was never an imbalance to correct)
+  moves the worst reliability decile from **0.200 → 0.026** and ECE from 0.106 → 0.011, while
+  ROC-AUC does not move (0.8566 → 0.8575). A 0.03 tolerance was declared in the source *before*
+  the run, so **isotonic regression was not needed and not fitted**. Using the old uncalibrated
+  scores would have understated the headline by **29.7%** ($424,810 vs $604,163).
+  **Fork A's tuned threshold 0.25 belongs to the weighted scores and does NOT transfer** — the
+  recalibrated best-F1 point is **0.40 → F1 0.867**.
+- **THE OBVIOUS RAKE METHOD IS WRONG, AND MEASURABLY SO.** "Scale each player's observed rake
+  per 100 hands to all their hands" inflates by **25%**, because the hands where rake reconciles
+  are **not a random sample**: the parser accepts a residual only if it is ≤15% of the pot, which
+  is easier to pass on a big pot. Measured on PartyPoker: reconciling hands have a **median pot
+  of 23.4 bb and 99.5% saw a flop**, against **2.5 bb and 39.0%** on the rest. Scaling off them
+  charges every hand at the rate of the biggest pots and ignores "no flop, no drop".
+- **THE PLAUSIBILITY SCREEN — a new, decisive measurement.** Median rake is **4.3%–5.0% of the
+  pot on all six venues** (the real commercial rate), but **on PokerStars, whose exports
+  reconcile completely, NOT ONE of 1,107,219 flop hands rakes above 5.0%**. FTP (0.13% above 6%)
+  and ONG (0.70%) agree; **ABS 41.5% and PTY 21.9% do not** (p90 share 11.3% and 13.3%). That
+  tail is missing money, not rake, and it is worth **$267,789 on ABS and $677,131 on PTY**. So
+  `rake_at_risk.py` counts a hand as *measured* only if `rake_bb <= 0.06 * pot_bb`; the rest are
+  estimated. Post-screen coverage: **ONG 96.8% · ABS 45.6% · PS 26.9% · FTP 26.8% · PTY 11.1% ·
+  IPN 0.0% (excluded)**.
+- **The estimator, and it validates.** Conditional-mean rake **in big blinds** over
+  (site, big_blind, saw_flop, pot bucket), falling back to (site, flop, bucket) then
+  (flop, bucket); dollars only at the end. Fitted on half the measured hands and scored against
+  the other half: **ratios 0.993–1.006 on every venue.** Per *hand* it is rough (PTY MAE $0.76 on
+  a $1.64 mean) — trustworthy for sums, never for one hand. 87.1% of estimated dollars come from
+  the most specific cell.
+- **NEVER FIT RAKE CELLS IN DOLLARS.** The first version did, and priced 59,910 PokerStars 25NL
+  monster pots at **$29.79 each** from a fallback cell built out of Ongame $10-blind hands. Fit
+  in bb, multiply by `big_blind` at the end.
+- **Two regression tests, both green at full scale, keep them:** contributed-share and
+  equal-split attribution must total the same (**$8,217,411.49 both, ratio 1.000000** — this is
+  what catches a fan-out on the non-unique `hand_uid`), and prior-window hand counts must equal
+  `p_hands` in `gold/player_lapse` player by player (**0 mismatches / 77,268**).
+- **THE BUSINESS FINDING: a retention list sorted by churn risk is almost exactly the wrong
+  list.** Top 10% by risk alone vs top 10% by expected loss share **0.2% of their names**. The
+  risk-only list finds *more* leavers (1,876 vs 1,013 on the held-out fold, 96.9% precision) and
+  reaches **0.9% of the money**; expected loss reaches **70%**. Money-only reaches 63.7%.
+- **Per head the Grinder is worth 16× the Recreational player** ($220.88 vs $13.59 of weekly
+  rake), yet Recreational + Gambler hold **56% of the rake at risk** against the Grinder's 18%.
+  **Not a contradiction — contributed rake measures who PAID, not whose money FUNDED it.** A
+  grinder pays with money lost to them by recreational players (bb/100: Gambler −31.8,
+  Recreational −14.3, Grinder −3.3). A "funded-by" attribution weighted by net losses has not
+  been run and is the natural next measurement.
+- **The headline is substantially a PokerStars number** (63% of players, 44.8% of the rake at
+  risk) — and PS has the *lowest* measured share (15.5%), because its reconciling hands are its
+  smaller pots. Per-player weekly rake spans **$18.99 (PS) to $103.82 (ONG)** on stakes alone.
+- Dollars are **2009 USD at 25NL–1000NL**. No INR conversion (the 2009 rate would be invented)
+  and no inflation adjustment — say so rather than quietly converting.
+
 ## Data & code gotchas (these bite — they are already flagged in the HTML)
 
 ### Cross-venue defects — found 2026-08-06 by running all 21,782 files (one-file-per-venue MISSED them all)
@@ -351,6 +418,11 @@ seg  name(interp)   share   hands  tables  vpip   pfr   bb/100   LAPSE   % of al
   player looks like a heavy loser; Fork B is a four-venue question and must exclude iPoker entirely;
   never impute the zeros — that invents a break-even player who never existed.**
   **Behavioural features work on 100% of hands; money features do not.** Say so in the report.
+  **REFINED 2026-08-14 — `rake_bb IS NOT NULL` is necessary but not sufficient.** A further
+  screen is needed: a derived rake above **6% of the pot** is missing money wearing a rake's
+  clothes (PokerStars, whose exports reconcile completely, never exceeds 5.0% on 1.1 M flop
+  hands). It drops 41.5% of ABS's and 21.9% of PTY's reconciling flop hands. See the RAKE AT
+  RISK section above, and use `rake_at_risk.py`'s `measured()` helper rather than re-deriving it.
 - **iPoker records NO table identity — it writes the literal string `'HandHQ'` (the data vendor's
   name) into all 5,996,194 of its `table` fields. Measured 2026-08-07.** Distinct `table_id` per
   venue: **PS 11,355 · ONG 1,252 · ABS 1,046 · FTP 809 · PTY 697 · IPN 1**. PS also has 256,213
@@ -468,10 +540,11 @@ artifacts after a programmatic scroll: `.rv` caught mid-transition, stale rail h
    What remains genuinely unexplained is *why the operators' exports differ* — but the effect is now
    measured, bounded, and handled in code.
 5. ~~Nothing has been run at full scale yet.~~ **Silver rebuilt from all 21,782 Bronze files with the
-   corrected parser (7 Aug), Gold/Spark (Step 4) built from it, Step 5's bake-off run (12 Aug), and
-   **Fork A built and trained in MLlib, plus K-Means segmentation (14 Aug)** — see the two
-   measured sections above.** Still unrun: the money-weighted "rake at risk" headline, the
-   Databricks notebook (Steps 7–8), the dashboard, and Step 9's packaging (report PDF + deck).
+   corrected parser (7 Aug), Gold/Spark (Step 4) built from it, Step 5's bake-off run (12 Aug),
+   **Fork A trained in MLlib, K-Means segmentation, and the money-weighted "rake at risk"
+   headline (14 Aug)** — see the three measured sections above. **The analysis is complete.**
+   Still unrun/unstarted: the dashboard, the deck, the report PDF, and the Databricks notebook
+   (Steps 7–8) — i.e. writing and packaging only.**
 6. **Is player-ID stability real ACROSS venues?** 91.7% overlap was measured *within* PokerStars only.
    Never merge IDs across venues — and confirm the within-venue figure holds for the other five.
 

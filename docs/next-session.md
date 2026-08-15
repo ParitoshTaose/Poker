@@ -6,119 +6,84 @@
 
 ## Read these first (in this order)
 
-1. `Project/CLAUDE.md` — especially the two measured sections **FORK A** and **K-MEANS
-   SEGMENTATION**, and the whole *Data & code gotchas* block. The gotchas cost days to find; do
-   not rediscover them.
-2. `docs/fork-a-results.md` — the lapse model, its baselines, and its known defects.
-3. `docs/segments-results.md` — the segments, and the calibration warning at the end of it.
+1. `Project/CLAUDE.md` — especially the three measured sections **FORK A**, **K-MEANS
+   SEGMENTATION** and **RAKE AT RISK**, and the whole *Data & code gotchas* block. The gotchas
+   cost days to find; do not rediscover them.
+2. `docs/rake-at-risk-results.md` — the headline the dashboard, the deck and the report all open
+   on, plus the four sensitivities behind it.
+3. `docs/fork-a-results.md` — the lapse model, its baselines, and its known defects.
+4. `docs/segments-results.md` — the segments. (Its closing calibration warning is now **closed**;
+   see §1 of the rake write-up.)
 
 ## Where the project stands
 
-The pipeline and the models are **done**: Bronze → Silver → Gold, then Fork A (short-horizon lapse
-classification, three MLlib algorithms against three baselines) and K-Means segmentation. All three
-Phase-3 model types exist and are measured.
+**The analysis is complete.** Bronze → Silver → Gold, then Fork A (short-horizon lapse
+classification, three MLlib algorithms against three baselines), K-Means segmentation, and the
+money-weighted "rake at risk" headline. All three Phase-3 model types exist and are measured, and
+every model output now has a dollar figure attached to it.
 
 The topic is **cleared with the professor** — that blocker is closed.
 
 What does *not* exist yet: **any graded artifact.** `notebooks/` and both `deliverables/` folders
-are empty. Submission is **8 Sept 2026**; presentations 11–12 Sept.
+are empty. Submission is **8 Sept 2026**; presentations 11–12 Sept. Everything remaining is
+writing and packaging.
 
 **Databricks is deliberately deferred to later in the project** (user's decision, 14 Aug). Note the
 notebook itself does not have to wait for it — the logic is already written as local PySpark, so
 the notebook is a re-hosting job whenever it happens.
 
+## The line everything else opens on
+
+> **$604,163 of next week's rake sits at risk across 77,268 players on five venues — 30% of it in
+> the recreational segment — and contacting the top 10% by expected loss (7,727 players) puts
+> $421,064 of it in reach.**
+
+Quote it with its small print attached: weekly rake $2,114,626 of which **34.4% is measured** and
+the rest estimated; five venues (iPoker excluded, it reconciles on none of its 6.0 M hands);
+**2009 US dollars**, no conversion, no inflation. And the finding that earns the recommendation
+marks: **a retention list sorted by churn risk shares 0.2% of its names with a list sorted by
+expected loss, and reaches 0.9% of the money.**
+
 ---
 
-## THE TASK — the money-weighted headline ("rake at risk")
+## THE TASK — the dashboard
 
-**Build `src/rake_at_risk.py`.** This is the last piece of *analysis* in the project. Everything
-after it is writing and packaging.
+**The money-weighted headline is DONE** (`src/rake_at_risk.py`, 14 Aug — see
+`docs/rake-at-risk-results.md`). The analysis is finished; the dashboard is the terminal artifact
+and the faculty's explicit steer.
 
-**Why it comes first:** the dashboard headline, slide 1, the report's executive summary and the
-recommendations section all resolve to the same single sentence. Write them before this number
-exists and they get written twice.
+`docs/delivery-gate.html` **Gate A** is the checklist, and it is the spec — 7 blockers, 3 lifts.
+Build it the way the four guides in `docs/` are built: **one self-contained HTML file, no server,
+no CDN**, cloning the `<style>` block from `docs/poker-project-plan.html` verbatim.
 
-**The sentence it has to produce:**
+**A1 — it opens on a decision, not a chart.** The top of the screen is the headline sentence
+above, in words, with the number large. Charts justify it; they never replace it.
 
-> "$X of weekly rake sits with N at-risk players — Y% of it in the recreational segment — and
-> contacting the top 10% by expected loss puts $Z of it in reach."
+**A3 — the filters are venue, segment and stake, and venue is mandatory.** The venues do not share
+an observation window, a lapse rate (40.4%–77.9%), or money coverage (11.1%–96.8%), so a global
+view mixes populations that do not belong in one average.
 
-### Step 1 — Recalibrate the lapse probabilities (do this first, it gates the rest)
+**A4 — iPoker is excluded or visibly flagged wherever money or table count appears.** It has no
+rake and no table identity. Never render `max_tables = 1` for it.
 
-Fork A's GBT was fitted with balanced class weights, which pulls probabilities toward 0.5. Measured:
-mean predicted risk per segment (0.52 · 0.53 · 0.64 · 0.67) orders the segments exactly right but
-sits **~9 points below** the observed lapse rates (0.616 · 0.613 · 0.746 · 0.771).
+**A5 — every number traces to a Gold column.** `gold/rake_at_risk` (77,268 × 23) is now the
+primary source: `weekly_rake_usd`, `weekly_rake_usd_measured`, `measured_share`, `risk_cal`,
+`expected_rake_at_risk`, `segment_id`. Join `gold/player_segments` and `gold/player_lapse` for
+behaviour. Export what the page needs to a small JSON and inline it — do not hand-type figures.
 
-**Multiplying dollars by an uncalibrated probability produces a confidently wrong number.** So:
+**A9 (lift) — drill from segment → player list → the action.** `gold/rake_at_risk` sorted by
+`expected_rake_at_risk` *is* the call list; the top 12 rows are in the run log.
 
-- Refit the CORE GBT **without `weightCol`**, on the same hash split (seed 42, 25% test) from
-  `src/fork_a.py`. At 68/32 there was never a real imbalance to correct, so weighting was probably
-  unnecessary in the first place.
-- **Verify with a reliability curve:** bin the test set into 10 deciles of predicted probability,
-  compare mean predicted against observed lapse rate in each. Report the largest deviation.
-- Confirm ranking is unharmed — ROC-AUC should stay near **0.857**. Only calibration should move.
-- If it is still off, fit `pyspark.ml.regression.IsotonicRegression` on the *train* fold's
-  (score → label) and apply it to test. Never fit calibration on the test fold.
-
-The before/after reliability curve is itself Model Evaluation material — keep it for the report.
-
-### Step 2 — Attribute rake to players
-
-Use the **contributed-rake** method, which is the industry-standard attribution:
-
-```
-player_rake_bb = hand.rake_bb × (player.invested_bb / Σ invested_bb over that hand)
-```
-
-- Inputs: `data/_work/hp_enriched` (seat rows: `hand_uid`, `player_id`, `invested_bb`, `site`,
-  `day`, `money_ok`) joined to `data/gold/hand_features` for `rake_bb` and `big_blind`.
-- **The money filter is `rake_bb IS NOT NULL`, never "winnings present."** This is a recorded
-  gotcha — 13.8% of hands carry a full set of winnings that sums to ~1.5× the pot and are
-  unusable.
-- Aggregate **over the prior window only** (`day <= cutoff`), so it lines up with Fork A's
-  features. Per player: `p_rake_usd_observed`, `p_rake_hands`.
-- Dollars, not big blinds: `rake_bb × big_blind`. Money is comparable across stakes only after
-  that conversion.
-
-**The coverage hole, and how to handle it honestly.** Rake reconciles on only ~25% of hands and
-it is a venue property, not random: ONG 99.1% · ABS 82.0% · PS 27.3% · FTP 27.2% · PTY 14% ·
-**IPN 0.0%**.
-
-- **Exclude iPoker entirely.** It reconciles on none of its 6.0M hands. Never impute it.
-- For the other five, compute an observed **rake per 100 hands** from the covered hands, then scale
-  to the player's full prior-window hand count. **Label this an estimate everywhere it appears**
-  and report the observed total beside the estimated one, so the size of the extrapolation is visible.
-- Say "five venues, N% of players" out loud every time the money number is quoted.
-
-### Step 3 — The headline
-
-- **Weekly rake** = rake attributable in the **last 7 days of the prior window** (the `p_hands_w1`
-  window). This matches the 7-day lapse horizon, so the two halves of the multiplication describe
-  the same period.
-- `expected_rake_at_risk = Σ [ calibrated P(lapse) × weekly_rake_usd ]` over players active at the
-  cutoff.
-- Slice by **segment** (join `data/gold/player_segments`) and by **venue**. Both are mandatory —
-  the venue spread on lapse alone runs 30.9%–87.2%.
-- **The budget version:** rank by `P(lapse) × weekly_rake` (expected loss), take the top 10%, and
-  report the dollars in reach.
-- **Then compare that ranking against ranking by `P(lapse)` alone.** Does weighting by money change
-  who you would actually call? Either answer is a finding worth a paragraph — and if it barely
-  changes the list, say so.
-
-### Step 4 — Write it up
-
-- `docs/rake-at-risk-results.md` + `docs/rake-at-risk-results.json`, following the shape of
-  `docs/fork-a-results.md`: what was run, the numbers, then a section on where it is weak.
-- Update `Project/CLAUDE.md` with a measured section, as was done for Fork A and the segments.
+**Show the measured share wherever a dollar figure appears.** Two thirds of the weekly rake is
+estimated, and the page must not pretend otherwise — a small "34% measured" chip beside the
+headline does the whole job.
 
 ### Done when
 
-- The headline sentence exists with real numbers in it.
-- The reliability curve is reported and the max calibration deviation stated.
-- Coverage caveats are explicit: five venues, ~25% of hands measured, the rest estimated and labelled.
-- Every number traces to a named Gold column — no hand-typed figures.
-
----
+- A teammate opens the file on their own machine and states a business decision unaided (A7).
+- Every panel survives "so what do I do?" said out loud (A2).
+- Venue, segment and stake filters all change the decision, not the decoration (A3).
+- No number on screen is hand-typed (A5).
 
 ## Traps already paid for — do not rediscover these
 
@@ -138,13 +103,24 @@ it is a venue property, not random: ONG 99.1% · ABS 82.0% · PS 27.3% · FTP 27
 
 ## After this task, in order
 
-1. **The dashboard** — the faculty's explicit steer, and the terminal artifact. Gate A in
-   `docs/delivery-gate.html` has the full checklist; A1 (opens on a decision, not a chart) and A8
-   (money-weighted headline) are what this task unlocks.
-2. **The deck** — max 10 slides including title and thank-you.
-3. **The report PDF** — the appendix needs three named items that are easy to forget: references,
+1. **The deck** — max 10 slides including title and thank-you. Slide 1 is the headline sentence;
+   the risk-only-vs-expected-loss finding is the recommendation slide.
+2. **The report PDF** — the appendix needs three named items that are easy to forget: references,
    **AI-usage disclosure**, and **team contributions**.
-4. **The notebook**, then Databricks when the team gets to it.
+3. **The notebook**, then Databricks when the team gets to it.
 
 Two small things that are pure marks and take minutes: the **team table in `README.md` is still a
-`TODO`**, and Gate 0.2 — **which Databricks tier** the course uses — is still unanswered.
+`TODO`**, and Gate 0.2 — **which Databricks tier** the course uses — is still unanswered. The
+README is also drifting: it still describes `src/` as "no Spark needed" and lists only
+`parse_phh.py`, and it says the window is 23 days (it is 26, per venue). Worth ten minutes before
+submission, since Professionalism & Documentation is 2 marks.
+
+## Not run, and worth knowing about
+
+- **A time-shifted backtest** (train at `site_last_day − 14`, test at `− 7`). Fork A is split by
+  player, never by period, so temporal generalisation is not claimed anywhere.
+- **A "funded-by" rake attribution** weighted by net losses rather than contributions. Contributed
+  rake says who *paid*; the ecosystem thesis is about whose money *funded* it. Both belong in the
+  story and only the first is measured.
+- **`features.py` still writes `+inf` into `avg_stack_bb`** for all iPoker players. The guard
+  exists in `features_lapse.py` (`finite()`); porting it back and rebuilding Gold has not been done.

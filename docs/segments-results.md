@@ -123,6 +123,11 @@ silhouette scores already say — see below.
   balanced class weighting pulls probabilities toward 0.5. **Anything that multiplies a rupee
   figure by these scores must recalibrate first** — this matters directly for the money-weighted
   headline that comes next.
+  **CLOSED, 14 Aug** — [`rake-at-risk-results.md`](rake-at-risk-results.md) §1 refits the same
+  GBT without class weights: the worst reliability decile falls from 0.200 to 0.026 and ROC-AUC
+  does not move. Use `risk_cal` in `gold/rake_at_risk` for anything money-weighted; the
+  `lapse_risk` column in this table is still the old uncalibrated score, which would have
+  understated the headline by 29.7%.
 - Money columns are five-venue only, and bb/100 is the *player's* profit, not the operator's rake.
 
 ## Where the risk actually sits — lapse rate by segment × venue (style view)
