@@ -368,6 +368,17 @@ have nothing to do with how their rake was priced.
 rake measured and estimated, the measured share, and expected rake at risk. Every figure in this
 document traces to one of those columns — there are no hand-typed numbers.
 
+**Two notes for anyone re-deriving these numbers from the table** (both found while building the
+dashboard, 15 Aug):
+
+- `risk_cal` is stored **rounded to 4 decimal places** while `expected_rake_at_risk` was computed
+  from the unrounded probability. So `risk_cal × weekly_rake_usd` is *not* exactly
+  `expected_rake_at_risk` — it differs by up to $0.16 on a player. **Use the stored column.**
+- For the same reason, two players sitting just under 0.50 round onto it, so **counting players
+  at `risk_cal >= 0.5` in the published table returns 58,837, not the 58,836 quoted above**,
+  which was computed in memory before the rounding. The one-player difference moves no dollar
+  figure; the dashboard shows 58,837 because that is what the shipped table reproduces.
+
 That is the input for the three things left:
 
 1. **The dashboard** — Gate A1 says it must open on a decision, not a chart, and Gate A8 asks
