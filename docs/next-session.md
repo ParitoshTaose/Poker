@@ -17,17 +17,17 @@
 
 ## Where the project stands
 
-**The analysis is complete, and the dashboard is built.** Bronze → Silver → Gold, then Fork A
-(short-horizon lapse classification, three MLlib algorithms against three baselines), K-Means
-segmentation, and the money-weighted "rake at risk" headline. All three Phase-3 model types exist
-and are measured, every model output has a dollar figure attached, and **`docs/dashboard.html`
-(15 Aug) is the first graded artifact to exist** — Gate A, all seven blockers met bar A7, which
-needs a teammate rather than more code.
+**The analysis is complete, the dashboard is built, and the deck is built.** Bronze → Silver →
+Gold, then Fork A (short-horizon lapse classification, three MLlib algorithms against three
+baselines), K-Means segmentation, and the money-weighted "rake at risk" headline. All three
+Phase-3 model types exist and are measured, every model output has a dollar figure attached,
+**`docs/dashboard.html` (15 Aug)** closes Gate A bar A7 — which needs a teammate rather than more
+code — and **`deliverables/presentation/ecosystem-engine-deck.html` (16 Aug)** closes Gate B.
 
 The topic is **cleared with the professor** — that blocker is closed.
 
-What does *not* exist yet: the **deck**, the **report PDF** and the **notebook**. `notebooks/` and
-both `deliverables/` folders are empty. Submission is **8 Sept 2026**; presentations 11–12 Sept.
+What does *not* exist yet: the **report PDF** and the **notebook**. `notebooks/` and
+`deliverables/report/` are empty. Submission is **8 Sept 2026**; presentations 11–12 Sept.
 Everything remaining is writing and packaging.
 
 **Databricks is deliberately deferred to later in the project** (user's decision, 14 Aug). Note the
@@ -72,26 +72,47 @@ Every figure matches `rake-at-risk-results.md` §8. If those move, something bro
 
 ---
 
-## THE TASK — the deck
+## DONE — the deck (16 Aug)
 
-**Max 10 slides including title and thank-you** (B1 — a named constraint, and the cheapest mark
-anyone ever loses). That is eight working slides. `docs/delivery-gate.html` **Gate B** is the spec.
+`deliverables/presentation/ecosystem-engine-deck.html`, exported to `.pdf` at exactly ten pages,
+with `deliverables/presentation/README.md` covering how to present it and how to re-export.
+Gate B: **B1–B8 all met.** Ten slides including title and thank-you; the business problem lands
+before any technology; the architecture is one diagram carrying *116,619,267 seat-rows in, 18 MB
+out*; the failure has its own slide with the baseline comparison on it; the closing slide is four
+decisions each with a number and an owner; every title states its conclusion; the dashboard appears
+as a captioned screenshot.
 
-- **Slide 1 is the headline sentence**, with its small print attached: 34% measured, five venues,
-  2009 USD.
-- **The business problem lands before any technology** (B2). Rake, recreational churn, ecosystem
-  collapse — in the operator's language. No Spark, no Parquet, no medallion until they care.
-- **The architecture is one slide, one diagram** (B3), carrying the compression story:
-  **116,619,267 seat-rows in, 18 MB out. ML never touches the big data.**
-- **The failure gets its own slide** (B4), with the baseline comparison on it — the recency sort
-  at ROC 0.800 against GBT's 0.857, and the fact that at the default threshold every model *loses*
-  on F1 to "quiet ≥ 1 day".
-- **The recommendation slide is the 0.2% overlap finding**: a retention list sorted by churn risk
-  is almost exactly the wrong list. Screenshot the budget panel — the two curves make the argument
-  faster than any sentence.
-- **The closing slide is decisions, each with its number and its owner** (B5).
+**Do not hand-edit its numbers.** `src/deck_charts.py` re-derives the three ranking curves from
+`gold/rake_at_risk`, checks them against `rake-at-risk-results.json`, refuses to write if they
+disagree, and rewrites all 46 tagged figures plus five chart/table blocks in place.
+`--check` verifies without writing and exits 1 on drift — run it before submitting.
 
-The dashboard is the source for every figure; screenshot it rather than retyping numbers.
+**Two things left on the deck itself, both needing a person, not code:**
+
+1. **Team names.** Two amber `TEAM: add names & roll numbers` chips (slides 1 and 10) mark where.
+2. **Gate A7 / a first-reader test.** Hand the deck (or the dashboard) to a teammate, say nothing,
+   and write down their first sentence. A question about a chart means the slide needs fixing; a
+   statement about the business means it works.
+
+---
+
+## THE TASK — the report PDF
+
+The consulting report, into `deliverables/report/`. Named sections from the brief: Exec Summary ·
+Business Context · Data Understanding (**the 5 Vs**) · Enterprise Architecture · Data Engineering ·
+ML · Business Insights · Strategic Recommendations · **Appendix**. `docs/delivery-gate.html`
+**Gate D** is the spec.
+
+- **The appendix has three named requirements that are easy to forget and cheap to lose marks on:
+  references, an AI-usage disclosure, and team contributions.**
+- Everything is already written down somewhere — `docs/rake-at-risk-results.md`,
+  `fork-a-results.md`, `segments-results.md` and `bakeoff-decision.md` between them carry every
+  number, every caveat and most of the prose. The report is assembly and narrative, not new work.
+- The two paragraphs that show the analysis was *understood* rather than executed: **who paid the
+  rake versus whose money funded it** (rake write-up §6), and **why the population filter was a
+  selection leak** (Fork A §1).
+- Reuse the deck's structure for the spine, then go deeper — the report is where the rejected
+  options belong (the bake-off's five candidate questions, why Fork A won, why EXTENDED lost).
 
 ## Traps already paid for — do not rediscover these
 
@@ -110,6 +131,14 @@ The dashboard is the source for every figure; screenshot it rather than retyping
   from the unrounded probability.** Never recompute `risk × rake` yourself — read the column. Same
   rounding means "players at risk" re-derived from the table is **58,837**, one more than the
   58,836 in the run log; both are stated in `rake-at-risk-results.md` §11.
+- **Printing HTML to PDF: Chrome lays a page out at 3/4 of its declared pixel size.** The deck
+  uses `@page{size:1707px 960px}` to get a 1280x720 layout box and ten exact pages. Declare the
+  page in mm and the layout drops under the responsive breakpoint, every grid collapses to one
+  column, and content is clipped. Also set `print-color-adjust:exact`, or tinted panels print white,
+  and scope stacking media queries to `@media screen`.
+- **`player_id` is unique only within a venue.** Any set/join on it alone silently de-duplicates
+  across sites — it made the deck's first overlap figure 99.8% where it had to be 100%. Use
+  `site + ":" + player_id`.
 - **`gold/rake_at_risk` has no stake column.** The stake filter uses each player's *modal* stake,
   computed over their venue's own prior window and cached at `data/_work/player_stake.parquet`.
   `p_max_stake` is the wrong join — it differs for a quarter of players.
@@ -118,9 +147,10 @@ The dashboard is the source for every figure; screenshot it rather than retyping
 
 ## After this task, in order
 
-1. **The report PDF** — the appendix needs three named items that are easy to forget: references,
-   **AI-usage disclosure**, and **team contributions**.
-2. **The notebook**, then Databricks when the team gets to it.
+1. **The notebook** — Gate C. "Fully executable" is the brief's word: it must ship **with outputs
+   saved**, run top-to-bottom on a fresh kernel, and print both correctness tests (the zero-sum
+   identity and big-blind VPIP ≈ 31.3%) plus the 21,605,687 reconciliation. Then Databricks when
+   the team gets to it.
 
 Two small things that are pure marks and take minutes: the **team table in `README.md` is still a
 `TODO`**, and Gate 0.2 — **which Databricks tier** the course uses — is still unanswered. The
