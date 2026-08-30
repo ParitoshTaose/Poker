@@ -1,0 +1,236 @@
+{
+  "build_log": {
+    "published_hands": 21605687,
+    "dropped_no_big_blind": 49119,
+    "dropped_no_hand_id": 133,
+    "skipped_files": 0,
+    "build_minutes": 27.7,
+    "build_cores": 8
+  },
+  "bronze": {
+    "files": 21782,
+    "bytes": 16308349059,
+    "venues": [
+      "ABS",
+      "FTP",
+      "IPN",
+      "ONG",
+      "PS",
+      "PTY"
+    ]
+  },
+  "silver": {
+    "hands": {
+      "rows": 21556835,
+      "bytes": 311140763,
+      "parts": 44
+    },
+    "hand_players": {
+      "rows": 116621636,
+      "bytes": 1085552383,
+      "parts": 44
+    },
+    "actions": {
+      "rows": 183671936,
+      "bytes": 940032774,
+      "parts": 44
+    }
+  },
+  "silver_total_bytes": 2336725920,
+  "compression_x": 6.979145016288432,
+  "seats_per_hand": 5.409960970615584,
+  "actions_per_hand": 8.520357278793478,
+  "reconciliation": {
+    "silver_rows": 21556835,
+    "distinct_hand_uid": 21556435,
+    "excess_rows_from_reused_ids": 400,
+    "dropped": 49252,
+    "accounted_for": 21605687,
+    "published": 21605687,
+    "exact": true,
+    "loss_share": 0.00227958500000486,
+    "reconciling_hands": 5378874,
+    "venues": 6,
+    "day_min": 1,
+    "day_max": 26
+  },
+  "colliding_ids": {
+    "uids": 147,
+    "rows": 547,
+    "share_of_hands": 2.5374782522573467e-05
+  },
+  "by_venue": [
+    {
+      "site": "PS",
+      "venue": "PokerStars",
+      "hands": 8293797,
+      "reconciling": 2231818,
+      "last_day": 20,
+      "first_day": 1,
+      "tables": 11355,
+      "median_bb": 0.25,
+      "share": 0.3847409417940992,
+      "reconciling_share": 0.2690948428084266
+    },
+    {
+      "site": "IPN",
+      "venue": "iPoker Network",
+      "hands": 5996741,
+      "reconciling": 0,
+      "last_day": 26,
+      "first_day": 1,
+      "tables": 1,
+      "median_bb": 2.0,
+      "share": 0.27818281301499037,
+      "reconciling_share": 0.0
+    },
+    {
+      "site": "PTY",
+      "venue": "PartyPoker",
+      "hands": 3092685,
+      "reconciling": 437142,
+      "last_day": 26,
+      "first_day": 1,
+      "tables": 697,
+      "median_bb": 0.25,
+      "share": 0.14346656176567665,
+      "reconciling_share": 0.14134708190455866
+    },
+    {
+      "site": "ONG",
+      "venue": "Ongame Network",
+      "hands": 1631839,
+      "reconciling": 1584889,
+      "last_day": 24,
+      "first_day": 1,
+      "tables": 1252,
+      "median_bb": 4.0,
+      "share": 0.0756993779467162,
+      "reconciling_share": 0.9712287793097236
+    },
+    {
+      "site": "FTP",
+      "venue": "Full Tilt Poker",
+      "hands": 1283795,
+      "reconciling": 344262,
+      "last_day": 23,
+      "first_day": 1,
+      "tables": 809,
+      "median_bb": 6.0,
+      "share": 0.05955396513449215,
+      "reconciling_share": 0.268159636078969
+    },
+    {
+      "site": "ABS",
+      "venue": "Absolute Poker",
+      "hands": 1257978,
+      "reconciling": 780763,
+      "last_day": 20,
+      "first_day": 1,
+      "tables": 1046,
+      "median_bb": 1.0,
+      "share": 0.058356340344025454,
+      "reconciling_share": 0.6206491687453993
+    }
+  ],
+  "vpip_check": {
+    "seats": 116621636,
+    "vpip": 0.2739003935770546,
+    "pfr": 0.14059745311753302,
+    "bb_seats": 21556835,
+    "bb_vpip": 0.3126295673738747
+  },
+  "no_flop_no_drop": {
+    "by_venue": [
+      {
+        "site": "PS",
+        "venue": "PokerStars",
+        "hands": 1124599,
+        "zero": 1124599,
+        "zero_share": 1.0
+      },
+      {
+        "site": "ONG",
+        "venue": "Ongame Network",
+        "hands": 879002,
+        "zero": 879001,
+        "zero_share": 0.9999988623461608
+      },
+      {
+        "site": "ABS",
+        "venue": "Absolute Poker",
+        "hands": 283478,
+        "zero": 282318,
+        "zero_share": 0.9959079716944524
+      },
+      {
+        "site": "FTP",
+        "venue": "Full Tilt Poker",
+        "hands": 184863,
+        "zero": 184861,
+        "zero_share": 0.9999891811774124
+      },
+      {
+        "site": "PTY",
+        "venue": "PartyPoker",
+        "hands": 1670,
+        "zero": 1670,
+        "zero_share": 1.0
+      }
+    ],
+    "hands": 2473612,
+    "zero": 2472449,
+    "zero_share": 0.9995298373390815
+  },
+  "zero_sum_check": {
+    "skipped": false,
+    "rake_bb": 2064328.966,
+    "net_bb": -2064329.5486000003,
+    "ratio": 1.0000002822224605,
+    "abs_gap_bb": 0.5826000003144145
+  },
+  "gold": {
+    "hand_features": {
+      "rows": 21556288,
+      "cols": 20,
+      "bytes": 402918438
+    },
+    "player_features": {
+      "rows": 106977,
+      "cols": 41,
+      "bytes": 18641841
+    },
+    "player_lapse": {
+      "rows": 90469,
+      "cols": 61,
+      "bytes": 21177699
+    },
+    "player_segments": {
+      "rows": 90469,
+      "cols": 7,
+      "bytes": 2630645
+    },
+    "lapse_scores": {
+      "rows": 90469,
+      "cols": 11,
+      "bytes": 3301698
+    },
+    "rake_at_risk": {
+      "rows": 77268,
+      "cols": 23,
+      "bytes": 8890471
+    }
+  },
+  "gold_total_bytes": 457560792,
+  "funnel": {
+    "seat_rows_in": 116621636,
+    "model_table_rows": 90469,
+    "model_table_bytes": 21177699,
+    "shrink_x": 51.2592224018294,
+    "excel_row_limit": 1048576,
+    "seats_vs_excel": 111.21905899047852,
+    "actions_vs_excel": 175.1632080078125
+  },
+  "measured_seconds": 13.8,
+  "polars_version": "1.43.2"
+}
