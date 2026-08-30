@@ -14,21 +14,23 @@
 3. `docs/fork-a-results.md` — the lapse model, its baselines, and its known defects.
 4. `docs/segments-results.md` — the segments. (Its closing calibration warning is now **closed**;
    see §1 of the rake write-up.)
+5. `deliverables/report/README.md` — how the report is built and the two checks it cannot ship
+   without. The same discipline applies to the notebook.
 
 ## Where the project stands
 
-**The analysis is complete, the dashboard is built, and the deck is built.** Bronze → Silver →
+**The analysis is complete, and the dashboard, the deck and the report are all built.** Bronze → Silver →
 Gold, then Fork A (short-horizon lapse classification, three MLlib algorithms against three
 baselines), K-Means segmentation, and the money-weighted "rake at risk" headline. All three
 Phase-3 model types exist and are measured, every model output has a dollar figure attached,
 **`docs/dashboard.html` (15 Aug)** closes Gate A bar A7 — which needs a teammate rather than more
-code — and **`deliverables/presentation/ecosystem-engine-deck.html` (16 Aug)** closes Gate B.
+code — **`deliverables/presentation/ecosystem-engine-deck.html` (16 Aug)** closes Gate B, and
+**`deliverables/report/ecosystem-engine-report.html` (29 Aug)** closes Gate D.
 
 The topic is **cleared with the professor** — that blocker is closed.
 
-What does *not* exist yet: the **report PDF** and the **notebook**. `notebooks/` and
-`deliverables/report/` are empty. Submission is **8 Sept 2026**; presentations 11–12 Sept.
-Everything remaining is writing and packaging.
+What does *not* exist yet: the **executable notebook**. `notebooks/` is empty. Submission is
+**8 Sept 2026**; presentations 11–12 Sept.
 
 **Databricks is deliberately deferred to later in the project** (user's decision, 14 Aug). Note the
 notebook itself does not have to wait for it — the logic is already written as local PySpark, so
@@ -96,23 +98,52 @@ disagree, and rewrites all 46 tagged figures plus five chart/table blocks in pla
 
 ---
 
-## THE TASK — the report PDF
+## DONE — the report (29 Aug)
 
-The consulting report, into `deliverables/report/`. Named sections from the brief: Exec Summary ·
-Business Context · Data Understanding (**the 5 Vs**) · Enterprise Architecture · Data Engineering ·
-ML · Business Insights · Strategic Recommendations · **Appendix**. `docs/delivery-gate.html`
-**Gate D** is the spec.
+`deliverables/report/ecosystem-engine-report.html`, exported to `.pdf` at **exactly 35 A4 pages**,
+with `deliverables/report/README.md` covering the build and the checks. Gate D: **D1–D8 all met.**
+The brief's nine sections under the brief's own headings; the 5 Vs answered with measured numbers;
+references, AI-usage disclosure and team contributions as Appendices A, B and C; a CLO → evidence
+mapping and a rubric ledger in Appendix D; the 2009 date argued in §2.6 rather than buried.
 
-- **The appendix has three named requirements that are easy to forget and cheap to lose marks on:
-  references, an AI-usage disclosure, and team contributions.**
-- Everything is already written down somewhere — `docs/rake-at-risk-results.md`,
-  `fork-a-results.md`, `segments-results.md` and `bakeoff-decision.md` between them carry every
-  number, every caveat and most of the prose. The report is assembly and narrative, not new work.
-- The two paragraphs that show the analysis was *understood* rather than executed: **who paid the
-  rake versus whose money funded it** (rake write-up §6), and **why the population filter was a
-  selection leak** (Fork A §1).
-- Reuse the deck's structure for the spine, then go deeper — the report is where the rejected
-  options belong (the bake-off's five candidate questions, why Fork A won, why EXTENDED lost).
+**Do not hand-edit its numbers.** `src/report_figures.py` re-derives the three ranking curves from
+`gold/rake_at_risk`, checks them against `rake-at-risk-results.json`, refuses to write if they
+disagree, and rewrites **240 tagged figures and 22 generated blocks** — then stamps the page
+numbers from sheet order. `--check` exits 1 on drift.
+
+### The two checks to re-run after any edit
+
+```bash
+.venv/bin/python src/report_figures.py --check   # 240 figures still match the runs
+.venv/bin/python src/report_fit.py               # no page overflows its sheet, or the column
+```
+
+**`report_fit.py` is not optional.** Every page is a fixed 794×1123 px box with `overflow:hidden`,
+so content that does not fit is **silently clipped in the PDF and the page count does not change**.
+It caught 27 clipped pages on the first pass and one table running 125 px past the column.
+
+**One thing left on the report itself, and it needs a person:** three amber `TEAM:` chips (cover,
+Appendix C, last page) mark where the names and roll numbers go.
+
+---
+
+## THE TASK — the executable notebook
+
+Gate C. "Fully executable" is the brief's word: it must ship **with outputs saved**, run
+top-to-bottom on a fresh kernel, and print both correctness tests (the zero-sum identity and
+big-blind VPIP ≈ 31.3%) plus the 21,605,687 reconciliation. Then Databricks when the team gets
+to it.
+
+- The logic already exists and is measured — this is **re-hosting, not re-deriving**. The spine is
+  `src/build_silver.py` → `src/features_lapse.py` → `src/fork_a.py` → `src/segments.py` →
+  `src/rake_at_risk.py`, and `src/pipeline_facts.py` already prints the three checks the notebook
+  has to show.
+- It cannot re-run the 27.7-minute Silver build inside a notebook cell that an examiner will
+  execute. Decide early whether the notebook **reads the existing Silver/Gold tables** (fast, honest,
+  needs the lake present) or **rebuilds from a documented subset** (self-contained, slower). Either
+  is defensible; say which, in the first cell.
+- Keep the same discipline as everything else: every figure printed by a cell, none typed into a
+  markdown cell.
 
 ## Traps already paid for — do not rediscover these
 
@@ -131,11 +162,21 @@ ML · Business Insights · Strategic Recommendations · **Appendix**. `docs/deli
   from the unrounded probability.** Never recompute `risk × rake` yourself — read the column. Same
   rounding means "players at risk" re-derived from the table is **58,837**, one more than the
   58,836 in the run log; both are stated in `rake-at-risk-results.md` §11.
-- **Printing HTML to PDF: Chrome lays a page out at 3/4 of its declared pixel size.** The deck
-  uses `@page{size:1707px 960px}` to get a 1280x720 layout box and ten exact pages. Declare the
-  page in mm and the layout drops under the responsive breakpoint, every grid collapses to one
-  column, and content is clipped. Also set `print-color-adjust:exact`, or tinted panels print white,
-  and scope stacking media queries to `@media screen`.
+- **Printing HTML to PDF: Chrome lays a page out at 3/4 of its declared pixel size — but only when
+  the page is declared in pixels.** The deck uses `@page{size:1707px 960px}` to get a 1280x720
+  layout box and ten exact pages. Measured for the report: `@page{size:A4;margin:14mm}` gives a
+  **688 px** layout box and `@page{size:A4;margin:0}` gives **794 px**, i.e. A4 at 96 dpi with no
+  scaling. Either way, set `print-color-adjust:exact` or tinted panels print white, and scope
+  stacking media queries to `@media screen` or every grid collapses to one column in print.
+- **A fixed-height page with `overflow:hidden` clips silently, and the page count does not change.**
+  That is how the report is built, and it is why `src/report_fit.py` exists. If the notebook grows
+  any HTML export, keep the same check.
+- **A `.chip` (or anything `white-space:nowrap`) inside a table forces the table wider than the
+  page** and clips the right-hand column of every row. `report_fit.py` measures width as well as
+  height for exactly this reason.
+- **Read the rendered PDF back as text before shipping.** `pdftotext -layout` caught a mislabelled
+  total row and an unexplained $4,751-vs-$4,729 discrepancy that no automated check would have
+  flagged, because both numbers were individually correct.
 - **`player_id` is unique only within a venue.** Any set/join on it alone silently de-duplicates
   across sites — it made the deck's first overlap figure 99.8% where it had to be 100%. Use
   `site + ":" + player_id`.
@@ -147,16 +188,22 @@ ML · Business Insights · Strategic Recommendations · **Appendix**. `docs/deli
 
 ## After this task, in order
 
-1. **The notebook** — Gate C. "Fully executable" is the brief's word: it must ship **with outputs
-   saved**, run top-to-bottom on a fresh kernel, and print both correctness tests (the zero-sum
-   identity and big-blind VPIP ≈ 31.3%) plus the 21,605,687 reconciliation. Then Databricks when
-   the team gets to it.
+1. **Databricks**, when the team gets to it — a re-hosting job, not a rewrite. Gate 0.2, **which
+   tier the course uses**, is still unanswered.
+2. **Team names**, in five places: three `TEAM:` chips in the report (cover, Appendix C, last
+   page), two in the deck (slides 1 and 10), and the table in `README.md`. Appendix C and the
+   README table must match.
+3. **Gate A7 / the first-reader test** — hand the dashboard or the deck to a teammate, say nothing,
+   and write down their first sentence. A question about a chart means the slide needs fixing; a
+   statement about the business means it works.
+4. **The pre-submission pass**, an hour at most: run `report_figures.py --check`,
+   `report_fit.py`, `deck_charts.py --check`, re-export both PDFs, confirm 35 and 10 pages, and
+   extract every `§n.n` cross-reference to check it against the actual headings.
 
-Two small things that are pure marks and take minutes: the **team table in `README.md` is still a
-`TODO`**, and Gate 0.2 — **which Databricks tier** the course uses — is still unanswered. The
-README is also drifting: it still describes `src/` as "no Spark needed" and lists only
-`parse_phh.py`, and it says the window is 23 days (it is 26, per venue). Worth ten minutes before
-submission, since Professionalism & Documentation is 2 marks.
+*(The README drift noted here previously is fixed: `src/` is described as the real pipeline, the
+window says 26 days per venue, the action-row count is the measured 183.7 M rather than the old
+229 M estimate, and the team table is pre-filled with workstreams so the split can be recorded
+against real deliverables.)*
 
 ## Not run, and worth knowing about
 

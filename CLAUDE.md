@@ -36,12 +36,16 @@ Explain jargon in plain language and always tie technical ideas to a business co
 | `src/dashboard_data.py` | **The dashboard payload, done.** Polars only, **no Spark**, 0.2 s. Joins `gold/rake_at_risk` + `gold/player_lapse` + a modal-stake pass over the seat join, encodes all 77,268 players as base64 typed arrays, and injects the result into `docs/dashboard.html` between its `/*DATA:START*/ … /*DATA:END*/` markers. Self-checks decode the payload back and reconcile it against Gold *and* the run log before writing. Run: `.venv/bin/python src/dashboard_data.py` (`--rebuild-stake` rescans `hp_enriched`, 6 s · `--dump PATH` writes the payload as readable JSON · `--no-inject` to dry-run). |
 | `docs/dashboard.html` | **The decision surface, done (Gate A).** One self-contained 4.2 MB file — no server, no CDN, no `fetch`, opens from `file://`. Headline band → sticky venue/segment/stake filters → contact-budget panel with three ranking curves → segment × venue money matrix (click to drill) → the call list with CSV export → the trust strip. **Every figure is computed in the browser from the embedded Gold rows**; nothing is hand-typed. Rebuild its numbers with `dashboard_data.py`, never by editing the file. |
 | `src/deck_charts.py` | **The deck's numbers and charts, done.** Polars only, no Spark, ~2 s. Re-derives the three ranking curves straight from `gold/rake_at_risk`, checks them against `rake-at-risk-results.json` (and **refuses to write if they disagree**), then rewrites the deck: three SVG charts + two tables between `<!--CHART:name:START-->` markers, and every prose figure inside a `class="fig" data-fig="<json.path>" data-fmt="…"` span. Run: `.venv/bin/python src/deck_charts.py` (`--check` verifies only, exit 1 on drift). |
+| `src/pipeline_facts.py` | **The lake, re-measured, done.** Recomputes every engineering figure the report quotes — row counts, sizes, per-venue splits, the 21,605,687 reconciliation, big-blind VPIP and the zero-sum identity — straight from `data/bronze|silver|gold`, and writes `docs/pipeline-facts.json`. **Aborts if the reconciliation does not close exactly.** Run: `.venv/bin/python src/pipeline_facts.py` (23 s; `--fast` skips the 23-s zero-sum join). Polars only, no Spark. |
+| `src/report_figures.py` | **The report's numbers and blocks, done.** Same discipline as `deck_charts.py`: re-derives the three ranking curves from `gold/rake_at_risk`, checks them against `rake-at-risk-results.json`, **refuses to write if they disagree**, then rewrites **240 tagged figures and 22 generated tables/charts** in the report, and **stamps the page numbers from sheet order**. Run: `.venv/bin/python src/report_figures.py` (`--check` verifies only, exit 1 on drift). |
+| `src/report_fit.py` | **The check the report cannot ship without.** Every page is a fixed 794×1123 px box with `overflow:hidden`, so content that does not fit is *silently clipped in the PDF*. This renders the report in headless Chrome and measures the lowest and right-most content pixel on every sheet. Run: `.venv/bin/python src/report_fit.py` (`-v` also lists spare room; exit 1 on any overflow). |
+| `deliverables/report/ecosystem-engine-report.html` · `.pdf` | **The consulting report, done (Gate D), 29 Aug 2026.** **35 A4 pages**, the brief's nine sections under the brief's own headings, with references · AI-usage disclosure · team contributions as Appendices A/B/C. See `deliverables/report/README.md`. |
 | `deliverables/presentation/ecosystem-engine-deck.html` · `.pdf` | **The executive deck, done (Gate B), 16 Aug 2026.** Exactly **10 slides** incl. title and thank-you. Self-contained, keyboard-driven, opens from `file://`. The PDF is the same file printed at one slide per 16:9 page — see `deliverables/presentation/README.md` for the re-export command and the ten-page check. |
 | `docs/delivery-gate.html` | 59 checks across 8 gates (48 blockers, 11 lifts) between here and submission. |
 | **`docs/next-session.md`** | **START HERE if picking the project up fresh.** The next task specced in full — the money-weighted "rake at risk" headline — plus what to read first, the traps already paid for, and the order of everything after it. |
 | `data/` | Bronze/Silver/Gold lake. **Contents gitignored**, structure committed via `.gitkeep`. `data/README.md` explains both download routes. |
 | `notebooks/` | Empty. The executable Databricks/PySpark deliverable (Phases 2 & 3) goes here. |
-| `deliverables/report/` | Empty. The consulting report PDF goes here. |
+| `deliverables/report/` | **The report (done)** — `ecosystem-engine-report.html` + `.pdf` + its own `README.md`. |
 | `deliverables/presentation/` | **The deck (done)** — `ecosystem-engine-deck.html` + `.pdf` + its own `README.md`. |
 
 The HTML files are self-contained (no external CSS/JS/fonts/images) and cross-link to each
@@ -50,9 +54,11 @@ other **by bare filename** — they only work if they all stay in the same folde
 **Where the work has got to:** the lake is built (Bronze → Silver → Gold), Step 5's bake-off chose
 **Fork A**, both models exist and are measured (Fork A in MLlib plus K-Means as the unsupervised
 layer), the **money-weighted headline is built** — so the analysis is complete — the **dashboard is
-built (15 Aug 2026)**, and the **executive deck is built (16 Aug 2026)**, which closes Gate B.
-Still empty: `notebooks/` and `deliverables/report/`. What remains is the **report PDF** and the
-**notebook** (then Databricks). See `docs/next-session.md`.
+built (15 Aug 2026)**, the **executive deck is built (16 Aug 2026)**, which closes Gate B, and the
+**consulting report is built (29 Aug 2026)**, which closes Gate D. Still empty: **`notebooks/`**.
+What remains is the **executable notebook** (then Databricks), plus the two people-shaped items:
+**team names** (three `TEAM:` chips in the report, two in the deck, the table in `README.md`) and
+the **Gate A7 first-reader test**. See `docs/next-session.md`.
 
 ## The brief (from `../Github folder/nmims_analytics/sessions/Big_Data_Analytics_Project_Guidelines.pdf`)
 
@@ -428,6 +434,61 @@ HTML 223 KB self-contained (one 112 KB dashboard screenshot inline) · PDF 1.6 M
 - Verified at full scale by exporting to PDF and reading all ten pages back as images. That is the
   test worth repeating after any edit: **eleven pages is a rubric violation on a named constraint.**
 
+### THE REPORT — built 2026-08-29 (`pipeline_facts.py` 23 s + `report_figures.py` ~2 s + `report_fit.py`)
+
+```
+35 A4 pages, one .pg sheet per printed page   (the brief's nine sections, under its own headings)
+240 tagged figures + 22 generated tables/charts — none typed by hand
+HTML 270 KB self-contained · PDF 4.0 MB, 35 pages, MediaBox exactly A4
+```
+
+- **THE ENGINEERING NUMBERS ARE NOW MEASURED, NOT REMEMBERED.** `src/pipeline_facts.py` recomputes
+  them from `data/bronze|silver|gold` in 23 s and writes `docs/pipeline-facts.json`. Everything in
+  CLAUDE.md reproduced exactly: **21,556,435 distinct + 49,252 dropped = 21,605,687**, big-blind
+  VPIP **31.3%**, pooled VPIP **27.4%** / PFR **14.1%**, zero-sum ratio **1.0000003**, colliding
+  ids **147 uids / 547 rows**, per-venue last days and table counts (PS 11,355 · ONG 1,252 ·
+  ABS 1,046 · FTP 809 · PTY 697 · **IPN 1**). The script **exits non-zero if the reconciliation
+  does not close**, so a future Silver rebuild that breaks it cannot ship quietly.
+- **SIZES ARE APPARENT BYTES IN DECIMAL GB, AND THAT CHANGES THE HEADLINE NUMBERS SLIGHTLY.**
+  `du` reports allocated blocks, which inflates a tree of 21,782 small files and makes the ratio
+  filesystem-dependent. Summing `st_size` instead: Bronze **16.31 GB**, Silver **2.34 GB**,
+  **7.0×**. The deck's older "15.0 GB → 2.2 GB, 6.8×" was the same bytes in **GiB** — not wrong,
+  differently labelled. **The report quotes decimal GB throughout; the deck has not been restated.**
+- **A NEW MEASUREMENT: "no flop, no drop" at full scale.** Of 2,473,612 pre-flop-only hands whose
+  money reconciles, **99.95%** rake exactly $0.00 — 100.00000% on PokerStars and PartyPoker,
+  99.99989% on Ongame, 99.99892% on Full Tilt, **99.59% on Absolute**.
+- **THE HAND COUNTS IN THE MONEY TABLES ARE 547 LOWER ON iPOKER THAN THE SILVER COUNTS**
+  (5,996,194 vs 5,996,741) because `features.py` drops the colliding uids before any join. Both
+  numbers appear in the report and the coverage table's caption says why. Do not "fix" either.
+- **PAGES ARE EXPLICIT SHEETS, NOT FLOWED TEXT — AND THAT IS THE ONE THING THAT CAN SHIP BROKEN.**
+  `@page{size:A4;margin:0}` plus `.pg{width:794px;height:1123px;overflow:hidden}` gives one printed
+  page per section, per-page footers and stamped page numbers. The cost: **content that does not
+  fit is silently clipped in the PDF and the page count does not change.** `src/report_fit.py`
+  renders in headless Chrome and measures the lowest and right-most content pixel per sheet
+  (safe bottom **1082 px**, column **696 px**). It found **27 of 33 pages clipped** on the first
+  pass. **Run it after every edit.**
+- **PAGE NUMBERS ARE STAMPED FROM SHEET ORDER, NEVER TYPED.** Splitting or merging a page
+  desynchronises hand-typed footers instantly; `report_figures.py` rewrites every
+  `<span class="pn">` from its section's index.
+- **A `.chip` is `white-space:nowrap`, and one inside a table forces the table wider than the
+  page.** Appendix D's Databricks note did exactly that — 125 px past the column, silently
+  clipping the right-hand text of every row. Use `class="chip wrap"` inside tables. This is why
+  `report_fit.py` checks width as well as height.
+- **The cover's full-height flex wrapper needs `class="fill"`**, or the fit checker reads its
+  bottom edge (which is the padding box by definition) as an overflow.
+- **Chrome's 3/4 print rule does not apply when the page is declared in `A4`.** Measured:
+  `@page{size:A4;margin:14mm}` yields a **688 px** layout box, and `margin:0` yields **794 px** —
+  i.e. A4 at 96 dpi, no scaling. The deck's `1707px × 960px` trick is only needed when the page is
+  declared in pixels. **Both still require `@media screen` on stacking breakpoints and
+  `print-color-adjust:exact`.**
+- **Two content bugs the proofread caught, worth repeating as a checklist:** a generated total row
+  put `at_risk_share_of_weekly` under a column headed "Lapse rate" (now the pooled 70.5%), and the
+  re-derived risk-only reach ($4,751) sat on the same page as the run log's ($4,729) with no
+  explanation. **Always read the rendered PDF back as text**, not just the source.
+- Cross-references are hand-written and drift when sections move: `§8.4`, `§9E` and a wrong
+  limitations pointer all survived until a pass that extracted every `§n.n` and checked it against
+  the actual headings. Do that pass before submitting.
+
 ## Data & code gotchas (these bite — they are already flagged in the HTML)
 
 ### Cross-venue defects — found 2026-08-06 by running all 21,782 files (one-file-per-venue MISSED them all)
@@ -625,9 +686,9 @@ artifacts after a programmatic scroll: `.rv` caught mid-transition, stale rail h
 5. ~~Nothing has been run at full scale yet.~~ **Silver rebuilt from all 21,782 Bronze files with the
    corrected parser (7 Aug), Gold/Spark (Step 4) built from it, Step 5's bake-off run (12 Aug),
    **Fork A trained in MLlib, K-Means segmentation, and the money-weighted "rake at risk"
-   headline (14 Aug)** — see the three measured sections above. **The analysis is complete.**
-   Still unrun/unstarted: the dashboard, the deck, the report PDF, and the Databricks notebook
-   (Steps 7–8) — i.e. writing and packaging only.**
+   headline (14 Aug)** — see the three measured sections above. **The analysis is complete**, and
+   so are the dashboard (15 Aug), the deck (16 Aug) and the report (29 Aug). **Still unstarted: the
+   executable notebook, then Databricks.**
 6. **Is player-ID stability real ACROSS venues?** 91.7% overlap was measured *within* PokerStars only.
    Never merge IDs across venues — and confirm the within-venue figure holds for the other five.
 
